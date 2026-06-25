@@ -98,7 +98,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
   public:
     pixdecor_theme_t theme;
     pixdecor_layout_t layout;
-    wf::region_t cached_region;
+    wf::regionf_t cached_region;
 
     wf::dimensions_t size;
 
@@ -109,7 +109,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     simple_decoration_node_t(wayfire_toplevel_view view) :
         node_t(false),
         theme{},
-        layout{theme, [=] (wlr_box box) { wf::scene::damage_node(shared_from_this(), box + get_offset()); }}
+        layout{theme, [=] (wf::geometry_t box)
+        {
+            wf::scene::damage_node(shared_from_this(), box + wf::pointf_t {get_offset()});
+        }}
     {
         this->_view = view->weak_from_this();
         view->connect(&title_set);
@@ -147,7 +150,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         {
             for (auto& box : data.damage)
             {
-                wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
+                wf::gles::render_target_logic_scissor(data.target, box);
                 OpenGL::draw_cached();
             }
         });
@@ -158,7 +161,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     void render_region(const wf::scene::render_instruction_t& data, wf::point_t origin)
     {
         int border = theme.get_border_size();
-        wlr_box geometry{origin.x, origin.y, size.width, size.height};
+        wf::geometry_t geometry = wf::construct_box(wf::pointf_t{origin}, size);
 
         bool activated = false;
         bool maximized = false;
@@ -205,11 +208,12 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 if (item->get_type() == DECORATION_AREA_TITLE)
                 {
                     render_title(data,
-                        item->get_geometry() + offset, size.width - border * 2, title_border, buttons_width);
+                        item->get_geometry() + wf::pointf_t{offset}, size.width - border * 2, title_border,
+                        buttons_width);
                 } else // button
                 {
                     item->as_button().render(data,
-                        item->get_geometry() + origin);
+                        item->get_geometry() + wf::pointf_t{origin});
                 }
             }
         });
@@ -223,21 +227,21 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             maximized = view->pending_tiled_edges();
         }
 
-        int border = theme.get_border_size();
-        int r =
+        double border = theme.get_border_size();
+        double r =
             (std::string(overlay_engine) == "rounded_corners" &&
                 (!maximized || (maximized && maximized_shadows))) ? int(shadow_radius) * 2 : 0;
-        r -= MIN_RESIZE_HANDLE_SIZE - std::min(border, MIN_RESIZE_HANDLE_SIZE);
+        r -= MIN_RESIZE_HANDLE_SIZE - std::min((int)border, MIN_RESIZE_HANDLE_SIZE);
         wf::pointf_t local = at - wf::pointf_t{get_offset()};
         if (auto view = _view.lock())
         {
             wf::geometry_t g = view->get_geometry();
             g.x = g.y = 0;
             g   = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{-r, -r, -r, -r});
-            wf::region_t deco_region{g};
+            wf::regionf_t deco_region{g};
             g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{-border, -border, -border,
                 -theme.get_title_height() - border});
-            wf::region_t view_region{g};
+            wf::regionf_t view_region{g};
             deco_region ^= view_region;
             if (deco_region.contains_pointf(local))
             {
@@ -281,10 +285,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
 
         void schedule_instructions(std::vector<wf::scene::render_instruction_t>& instructions,
-            const wf::render_target_t& target, wf::region_t& damage) override
+            const wf::render_target_t& target, wf::regionf_t& damage) override
         {
-            auto our_region = self->cached_region + self->get_offset();
-            wf::region_t our_damage = damage & our_region;
+            auto our_region = self->cached_region + wf::pointf_t{self->get_offset()};
+            wf::regionf_t our_damage = damage & our_region;
             if (!our_damage.empty())
             {
                 instructions.push_back(wf::scene::render_instruction_t{
@@ -298,7 +302,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         void render(const wf::scene::render_instruction_t& data) override
         {
             auto offset = self->get_offset();
-            wlr_box rectangle{offset.x, offset.y, self->size.width, self->size.height};
+            wf::geometry_t rectangle = wf::construct_box(wf::pointf_t{offset}, self->size);
             bool activated = false;
             bool maximized = false;
             if (auto view = self->_view.lock())
@@ -327,7 +331,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
     wf::geometry_t get_bounding_box() override
     {
-        return wf::construct_box(get_offset(), size);
+        return wf::construct_box(wf::pointf_t{get_offset()}, size);
     }
 
     /* wf::compositor_surface_t implementation */
@@ -641,8 +645,8 @@ wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_stat
     this->shadow_thickness = std::string(overlay_engine) == "rounded_corners" &&
         (!state.tiled_edges || (state.tiled_edges && maximized_shadows)) ? int(shadow_radius) * 2 : 0;
 
-    int thickness = deco->theme.get_border_size() + this->shadow_thickness;
-    int titlebar  = deco->theme.get_title_height() +
+    double thickness = deco->theme.get_border_size() + this->shadow_thickness;
+    double titlebar  = deco->theme.get_title_height() +
         ((state.tiled_edges && ((std::string(titlebar_opt) == "never" ||
             (std::string(titlebar_opt) == "maximized" && !maximized) ||
             (std::string(titlebar_opt) == "windowed" && maximized)) &&
@@ -677,16 +681,16 @@ wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_stat
     if (view->has_data(custom_data_name))
     {
         view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
-            {shadow_thickness, shadow_thickness, shadow_thickness,
-                shadow_thickness +
-                int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
+            {(double)shadow_thickness, (double)shadow_thickness, (double)shadow_thickness,
+                double(shadow_thickness +
+                    (view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
     } else
     {
         view->store_data(std::make_unique<wf_shadow_margin_t>(), custom_data_name);
         view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
-            {shadow_thickness, shadow_thickness, shadow_thickness,
-                shadow_thickness +
-                int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
+            {(double)shadow_thickness, (double)shadow_thickness, (double)shadow_thickness,
+                double(shadow_thickness +
+                    (view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
     }
 
     return wf::decoration_margins_t{
@@ -702,11 +706,11 @@ void simple_decorator_t::update_animation()
     auto margins = get_margins(view->toplevel()->current());
     auto bbox    = deco->get_bounding_box();
 
-    wf::region_t region;
-    region |= wlr_box{bbox.x, bbox.y, bbox.width, margins.top};
-    region |= wlr_box{bbox.x, bbox.y, margins.left, bbox.height};
-    region |= wlr_box{bbox.x, bbox.y + bbox.height - margins.bottom, bbox.width, margins.bottom};
-    region |= wlr_box{bbox.x + bbox.width - margins.right, bbox.y, margins.right, bbox.height};
+    wf::regionf_t region;
+    region |= wf::geometry_t{bbox.x, bbox.y, bbox.width, margins.top};
+    region |= wf::geometry_t{bbox.x, bbox.y, margins.left, bbox.height};
+    region |= wf::geometry_t{bbox.x, bbox.y + bbox.height - margins.bottom, bbox.width, margins.bottom};
+    region |= wf::geometry_t{bbox.x + bbox.width - margins.right, bbox.y, margins.right, bbox.height};
     wf::scene::damage_node(deco, region);
 }
 }
