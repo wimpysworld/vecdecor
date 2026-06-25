@@ -2421,7 +2421,7 @@ void smoke_t::step_effect(const wf::scene::render_instruction_t& data, wf::geome
         return;
     }
 
-    int radius = shadow_radius;
+    double radius = shadow_radius;
     int diffuse_iterations = 2;
 
     wf::gles::run_in_context([&]
@@ -2620,7 +2620,7 @@ void smoke_t::effect_updated()
     create_programs();
     wf::gles::run_in_context([&]
     {
-        recreate_textures(wf::geometry_t{0, 0, saved_width, saved_height});
+        recreate_textures(wf::geometry_t{0, 0, (double)saved_width, (double)saved_height});
     });
 }
 } // namespace pixdecor

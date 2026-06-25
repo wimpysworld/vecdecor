@@ -109,7 +109,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     simple_decoration_node_t(wayfire_toplevel_view view) :
         node_t(false),
         theme{},
-        layout{theme, [=] (wf::geometry_t box) { wf::scene::damage_node(shared_from_this(), box + wf::pointf_t{get_offset()}); }}
+        layout{theme, [=] (wf::geometry_t box)
+        {
+            wf::scene::damage_node(shared_from_this(), box + wf::pointf_t {get_offset()});
+        }}
     {
         this->_view = view->weak_from_this();
         view->connect(&title_set);
@@ -205,7 +208,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 if (item->get_type() == DECORATION_AREA_TITLE)
                 {
                     render_title(data,
-                        item->get_geometry() + wf::pointf_t{offset}, size.width - border * 2, title_border, buttons_width);
+                        item->get_geometry() + wf::pointf_t{offset}, size.width - border * 2, title_border,
+                        buttons_width);
                 } else // button
                 {
                     item->as_button().render(data,
@@ -223,11 +227,11 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             maximized = view->pending_tiled_edges();
         }
 
-        int border = theme.get_border_size();
-        int r =
+        double border = theme.get_border_size();
+        double r =
             (std::string(overlay_engine) == "rounded_corners" &&
                 (!maximized || (maximized && maximized_shadows))) ? int(shadow_radius) * 2 : 0;
-        r -= MIN_RESIZE_HANDLE_SIZE - std::min(border, MIN_RESIZE_HANDLE_SIZE);
+        r -= MIN_RESIZE_HANDLE_SIZE - std::min((int)border, MIN_RESIZE_HANDLE_SIZE);
         wf::pointf_t local = at - wf::pointf_t{get_offset()};
         if (auto view = _view.lock())
         {
@@ -641,8 +645,8 @@ wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_stat
     this->shadow_thickness = std::string(overlay_engine) == "rounded_corners" &&
         (!state.tiled_edges || (state.tiled_edges && maximized_shadows)) ? int(shadow_radius) * 2 : 0;
 
-    int thickness = deco->theme.get_border_size() + this->shadow_thickness;
-    int titlebar  = deco->theme.get_title_height() +
+    double thickness = deco->theme.get_border_size() + this->shadow_thickness;
+    double titlebar  = deco->theme.get_title_height() +
         ((state.tiled_edges && ((std::string(titlebar_opt) == "never" ||
             (std::string(titlebar_opt) == "maximized" && !maximized) ||
             (std::string(titlebar_opt) == "windowed" && maximized)) &&
@@ -677,16 +681,16 @@ wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_stat
     if (view->has_data(custom_data_name))
     {
         view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
-            {shadow_thickness, shadow_thickness, shadow_thickness,
-                shadow_thickness +
-                int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
+            {(double)shadow_thickness, (double)shadow_thickness, (double)shadow_thickness,
+                double(shadow_thickness +
+                    (view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
     } else
     {
         view->store_data(std::make_unique<wf_shadow_margin_t>(), custom_data_name);
         view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
-            {shadow_thickness, shadow_thickness, shadow_thickness,
-                shadow_thickness +
-                int((view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
+            {(double)shadow_thickness, (double)shadow_thickness, (double)shadow_thickness,
+                double(shadow_thickness +
+                    (view->get_geometry().height - shadow_thickness - titlebar) * shade_progress)});
     }
 
     return wf::decoration_margins_t{

@@ -80,8 +80,8 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
         void render(const wf::scene::render_instruction_t& data)
         {
             auto src_box = self->get_children_bounding_box();
-            gl_geometry src_geometry = {(float)src_box.x, (float)src_box.y,
-                (float)src_box.x + src_box.width, (float)src_box.y + src_box.height};
+            gl_geometry src_geometry = {float(src_box.x), float(src_box.y),
+                float(src_box.x + src_box.width), float(src_box.y + src_box.height)};
             auto src_tex = wf::scene::transformer_render_instance_t<transformer_base_node_t>::get_texture(
                 1.0);
             auto shade_region = data.damage;
@@ -102,8 +102,8 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                     {
                         wf::gles::render_target_logic_scissor(data.target, box);
                         OpenGL::render_transformed_texture(wf::gles_texture_t{src_tex},
-                        {src_geometry.x1, src_geometry.y1 - (height - progress_height), src_geometry.x2,
-                            src_geometry.y2 - (height - progress_height)}, {},
+                        {src_geometry.x1, src_geometry.y1 - float(height - progress_height), src_geometry.x2,
+                            src_geometry.y2 - float(height - progress_height)}, {},
                             wf::gles::render_target_orthographic_projection(data.target), glm::vec4(1.0), 0);
                     }
                 });
@@ -175,14 +175,14 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                 {
                     view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
                         {0, 0, 0,
-                            int(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) *
+                            double(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) *
                                 progression.shade)});
                 } else
                 {
                     view->store_data(std::make_unique<wf_shadow_margin_t>(), custom_data_name);
                     view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
                         {0, 0, 0,
-                            int(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) *
+                            double(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) *
                                 progression.shade)});
                 }
             }

@@ -618,8 +618,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             if (std::string(overlay_engine) == "rounded_corners")
             {
                 pending.margins =
-                {int(shadow_radius) * 2, int(shadow_radius) * 2,
-                    int(shadow_radius) * 2, int(shadow_radius) * 2};
+                {double(shadow_radius * 2), double(shadow_radius * 2),
+                    double(shadow_radius * 2), double(shadow_radius * 2)};
                 pending.geometry = wf::expand_geometry_by_margins(pending.geometry, pending.margins);
             } else
             {
