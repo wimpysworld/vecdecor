@@ -90,8 +90,7 @@ enum decoration_layout_action_t
 
 class pixdecor_theme_t;
 /**
- * Manages the layout of the decorations, i.e positioning of the title,
- * buttons, etc.
+ * Manages the layout of the decorations, i.e positioning of the title, buttons, etc.
  *
  * Also dispatches the input events to the appropriate place.
  */
@@ -99,11 +98,10 @@ class pixdecor_layout_t
 {
   public:
     /**
-     * Create a new decoration layout for the given theme.
-     * When the theme changes, the decoration layout needs to be created again.
+     * Create a new decoration layout for the given theme. When the theme changes, the decoration layout needs
+     * to be created again.
      *
-     * @param damage_callback The function to be called when a part of the
-     * layout needs a repaint.
+     * @param damage_callback The function to be called when a part of the layout needs a repaint.
      */
     pixdecor_layout_t(pixdecor_theme_t& theme,
         std::function<void(wlr_box)> damage_callback);
@@ -113,8 +111,7 @@ class pixdecor_layout_t
     void resize(int width, int height);
 
     /**
-     * @return The decoration areas which need to be rendered, in top to bottom
-     *  order.
+     * @return The decoration areas which need to be rendered, in top to bottom order.
      */
     std::vector<nonstd::observer_ptr<decoration_area_t>> get_renderable_areas();
 
@@ -138,18 +135,15 @@ class pixdecor_layout_t
 
     /**
      * Handle press or release event.
-     * @param pressed Whether the event is a press(true) or release(false)
-     *  event.
-     * @return The action which needs to be carried out in response to this
-     *  event.
+     * @param pressed Whether the event is a press(true) or release(false) event.
+     * @return The action which needs to be carried out in response to this event.
      */
     action_response_t handle_press_event(bool pressed = true);
 
     /**
      * Handle axis event.
      * @param delta The delta of the axis event denoting direction
-     * @return The action which needs to be carried out in response to this
-     *  event.
+     * @return The action which needs to be carried out in response to this event.
      */
     action_response_t handle_axis_event(int delta);
 

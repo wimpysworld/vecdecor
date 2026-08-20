@@ -37,15 +37,15 @@ class button_t
     /**
      * Create a new button with the given theme.
      * @param theme  The theme to use.
-     * @param damage_callback   A callback to execute when the button needs a
-     * repaint. Damage won't be reported while render() is being called.
+     * @param damage_callback   A callback to execute when the button needs a repaint. Damage won't be
+     * reported while render() is being called.
      */
     button_t(pixdecor_theme_t& theme,
         std::function<void()> damage_callback);
 
     /**
-     * Set the type of the button. This will affect the displayed icon and
-     * potentially other appearance like colors.
+     * Set the type of the button. This will affect the displayed icon and potentially other appearance like
+     * colors.
      */
     wf::dimensions_t set_button_type(button_type_t type);
 
@@ -53,20 +53,18 @@ class button_t
     button_type_t get_button_type() const;
 
     /**
-     * Set the button hover state.
-     * Affects appearance.
+     * Set the button hover state. Affects appearance.
      */
     void set_hover(bool is_hovered);
 
     /**
-     * Set whether the button is pressed or not.
-     * Affects appearance.
+     * Set whether the button is pressed or not. Affects appearance.
      */
     void set_pressed(bool is_pressed);
 
     /**
-     * Render the button on the given framebuffer at the given coordinates.
-     * Precondition: set_button_type() has been called, otherwise result is no-op
+     * Render the button on the given framebuffer at the given coordinates. Precondition: set_button_type()
+     * has been called, otherwise result is no-op
      *
      * @param buffer The target framebuffer
      * @param geometry The geometry of the button, in logical coordinates

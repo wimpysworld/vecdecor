@@ -143,7 +143,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         OpenGL::render_texture(wf::gles_texture_t{title_texture.tex.get_texture()}, data.target, geometry,
             glm::vec4(1.0f), OpenGL::RENDER_FLAG_CACHED);
 
-        data.pass->custom_gles_subpass(data.target,[&]
+        data.pass->custom_gles_subpass(data.target, [&]
         {
             for (auto& box : data.damage)
             {

@@ -96,14 +96,14 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
             wf::gles::run_in_context([&]
             {
                 wf::gles::bind_render_buffer(data.target);
-                data.pass->custom_gles_subpass(data.target,[&]
+                data.pass->custom_gles_subpass(data.target, [&]
                 {
                     for (const auto& box : shade_region)
                     {
                         wf::gles::render_target_logic_scissor(data.target, wlr_box_from_pixman_box(box));
                         OpenGL::render_transformed_texture(wf::gles_texture_t{src_tex},
-                        {src_geometry.x1, src_geometry.y1 - (height - progress_height), src_geometry.x2,
-                            src_geometry.y2 - (height - progress_height)}, {},
+                            {src_geometry.x1, src_geometry.y1 - (height - progress_height), src_geometry.x2,
+                                src_geometry.y2 - (height - progress_height)}, {},
                             wf::gles::render_target_orthographic_projection(data.target), glm::vec4(1.0), 0);
                     }
                 });
@@ -112,10 +112,10 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                 src_box = self->get_children_bounding_box();
                 src_box.height = self->titlebar_height;
                 shade_region  &= wf::region_t{src_box};
-                //for (const auto& box : shade_region)
-                //{
-                //    target.logic_scissor(wlr_box_from_pixman_box(box));
-                data.pass->custom_gles_subpass(data.target,[&]
+                // for (const auto& box : shade_region)
+                // {
+                // target.logic_scissor(wlr_box_from_pixman_box(box));
+                data.pass->custom_gles_subpass(data.target, [&]
                 {
                     for (const auto& box : shade_region)
                     {
@@ -124,7 +124,6 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                             wf::gles::render_target_orthographic_projection(data.target), glm::vec4(1.0), 0);
                     }
                 });
-
             });
         }
     };

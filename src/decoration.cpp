@@ -41,7 +41,7 @@ int handle_theme_updated(int fd, uint32_t mask, void *data)
         return 0;
     }
 
-    (*((std::function<void(void)>*)data))();
+    (*((std::function<void(void)>*) data))();
 
     return 0;
 }
@@ -692,8 +692,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     }
 
     /**
-     * Uses view_matcher_t to match whether the given view needs to be
-     * ignored for decoration
+     * Uses view_matcher_t to match whether the given view needs to be ignored for decoration
      *
      * @param view The view to match
      * @return Whether the given view should be decorated?

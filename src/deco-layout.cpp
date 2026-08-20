@@ -87,7 +87,7 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
     GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
     gchar *b_layout     = g_settings_get_string(settings, "button-layout");
     gchar *ptr = b_layout;
-    int len = 0;
+    int len    = 0;
     while (ptr <= b_layout + strlen(b_layout) - 1)
     {
         if (*ptr == ',')
@@ -251,7 +251,7 @@ void pixdecor_layout_t::resize(int width, int height)
 
     if (this->theme.get_title_height() > 0)
     {
-        auto button_left_geometry_expanded = create_left_buttons((radius * 2), radius);
+        auto button_left_geometry_expanded  = create_left_buttons((radius * 2), radius);
         auto button_right_geometry_expanded = create_right_buttons(width - (radius * 2), radius);
 
         /* Padding around the buttons, allows move */
@@ -264,8 +264,8 @@ void pixdecor_layout_t::resize(int width, int height)
         wf::geometry_t title_geometry = {
             border + button_left_geometry_expanded.x,
             maximized ? 0 : border / 2 + (radius * 2),
-            /* Up to the button, but subtract the padding to the left of the
-             * title and the padding between title and button */
+            /* Up to the button, but subtract the padding to the left of the title and the padding between
+             * title and button */
             std::max(1, button_right_geometry_expanded.x - border),
             theme.get_title_height() + (maximized ? 0 : border / 2 + 1),
         };
@@ -337,8 +337,7 @@ void pixdecor_layout_t::resize(int width, int height)
 }
 
 /**
- * @return The decoration areas which need to be rendered, in top to bottom
- *  order.
+ * @return The decoration areas which need to be rendered, in top to bottom order.
  */
 std::vector<nonstd::observer_ptr<decoration_area_t>> pixdecor_layout_t::get_renderable_areas()
 {
@@ -413,8 +412,8 @@ pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_motion(
     auto previous_area = find_area_at(current_input);
     auto current_area  = find_area_at({x, y});
 
-    if (previous_area == current_area && is_grabbed && current_area &&
-            (current_area->get_type() & DECORATION_AREA_MOVE_BIT))
+    if ((previous_area == current_area) && is_grabbed && current_area &&
+        (current_area->get_type() & DECORATION_AREA_MOVE_BIT))
     {
         is_grabbed = false;
         return {DECORATION_ACTION_MOVE, 0};
@@ -435,10 +434,8 @@ pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_motion(
 
 /**
  * Handle press or release event.
- * @param pressed Whether the event is a press(true) or release(false)
- *  event.
- * @return The action which needs to be carried out in response to this
- *  event.
+ * @param pressed Whether the event is a press(true) or release(false) event.
+ * @return The action which needs to be carried out in response to this event.
  * */
 pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_press_event(
     bool pressed)

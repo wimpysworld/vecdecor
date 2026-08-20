@@ -2,29 +2,24 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2024 Scott Moreau <oreaus@gmail.com>
- * - Ported weston-smoke to compute shader set
- * Copyright (c) 2024 Ilia Bozhinov <ammen99@gmail.com>
- * - Awesome optimizations
- * Copyright (c) 2024 Andrew Pliatsikas <futurebytestore@gmail.com>
+ * - Ported weston-smoke to compute shader set Copyright (c) 2024 Ilia Bozhinov <ammen99@gmail.com>
+ * - Awesome optimizations Copyright (c) 2024 Andrew Pliatsikas <futurebytestore@gmail.com>
  * - Ported effect shaders to compute
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the
+ * following conditions:
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all copies or substantial
+ * portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+ * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+ * EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+ * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 
@@ -2441,7 +2436,7 @@ void smoke_t::step_effect(const wf::scene::render_instruction_t& data, wf::geome
 
         const wf::geometry_t nonshadow_rect = wf::geometry_t{
             radius* 2,
-            radius* 2,
+            radius * 2,
             rectangle.width - 4 * radius,
             rectangle.height - 4 * radius
         };
@@ -2552,7 +2547,8 @@ void smoke_t::step_effect(const wf::scene::render_instruction_t& data, wf::geome
                 GL_CALL(glUniform1i(5, rectangle.width));
                 GL_CALL(glUniform1i(6, rectangle.height));
                 GL_CALL(glUniform1i(7, radius * 2));
-                GL_CALL(glUniform1f(9, effect_animate ? ((wf::get_current_time() & 0x5FFFFFFF) / 30.0) : 0.0));
+                GL_CALL(glUniform1f(9,
+                    effect_animate ? ((wf::get_current_time() & 0x5FFFFFFF) / 30.0) : 0.0));
                 GL_CALL(glDispatchCompute(rectangle.width / 15, rectangle.height / 15, 1));
                 GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
             }
@@ -2568,6 +2564,7 @@ void smoke_t::step_effect(const wf::scene::render_instruction_t& data, wf::geome
             OpenGL::clear(decor_color, GL_COLOR_BUFFER_BIT);
             GL_CALL(glDeleteFramebuffers(1, &fb));
         }
+
         if ((std::string(overlay_engine) == "rounded_corners") ||
             (std::string(overlay_engine) == "beveled_glass"))
         {
@@ -2586,7 +2583,8 @@ void smoke_t::step_effect(const wf::scene::render_instruction_t& data, wf::geome
                 GL_CALL(glUniform4fv(9, 1, shadow_color_f));
             }
 
-            GL_CALL(glDispatchCompute(round_up_div(rectangle.width, 16), round_up_div(rectangle.height, 16), 1));
+            GL_CALL(glDispatchCompute(round_up_div(rectangle.width, 16), round_up_div(rectangle.height, 16),
+                1));
             GL_CALL(glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT));
         }
 
@@ -2600,7 +2598,7 @@ void smoke_t::render_effect(const wf::scene::render_instruction_t& data, wf::geo
         wf::gles::render_target_orthographic_projection(data.target), glm::vec4{1},
         OpenGL::TEXTURE_TRANSFORM_INVERT_Y | OpenGL::RENDER_FLAG_CACHED);
 
-    data.pass->custom_gles_subpass(data.target,[&]
+    data.pass->custom_gles_subpass(data.target, [&]
     {
         for (auto& box : data.damage)
         {

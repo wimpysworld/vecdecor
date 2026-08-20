@@ -13,8 +13,8 @@ namespace wf
 namespace pixdecor
 {
 /**
- * A  class which manages the outlook of decorations.
- * It is responsible for determining the background colors, sizes, etc.
+ * A  class which manages the outlook of decorations. It is responsible for determining the background colors,
+ * sizes, etc.
  */
 class pixdecor_theme_t
 {
@@ -56,8 +56,8 @@ class pixdecor_theme_t
         wf::geometry_t rectangle, bool active, wf::pointf_t p);
 
     /**
-     * Render the given text on a cairo_surface_t with the given size.
-     * The caller is responsible for freeing the memory afterwards.
+     * Render the given text on a cairo_surface_t with the given size. The caller is responsible for freeing
+     * the memory afterwards.
      */
     cairo_surface_t *render_text(std::string text, int width, int height, int t_width, int border,
         int buttons_width, bool active);
@@ -76,8 +76,7 @@ class pixdecor_theme_t
     smoke_t smoke;
 
     /**
-     * Get the icon for the given button.
-     * The caller is responsible for freeing the memory afterwards.
+     * Get the icon for the given button. The caller is responsible for freeing the memory afterwards.
      *
      * @param button The button type.
      * @param state The button state.
