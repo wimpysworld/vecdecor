@@ -33,7 +33,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
     wayfire_view view;
     wf::output_t *output;
     int titlebar_height;
-    wf::option_wrapper_t<wf::animation_description_t> shade_duration{"pixdecor/shade_duration"};
+    wf::option_wrapper_t<wf::animation_description_t> shade_duration{"vecdecor/shade_duration"};
 
   public:
     bool last_direction;

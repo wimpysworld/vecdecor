@@ -1,4 +1,4 @@
-pixdecor = shared_module('pixdecor',
+vecdecor = shared_module('vecdecor',
         ['decoration.cpp', 'deco-subsurface.cpp', 'deco-button.cpp', 'deco-layout.cpp', 'deco-theme.cpp', 'deco-effects.cpp'],
         dependencies: [wayfire],
         install: true,

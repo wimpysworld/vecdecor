@@ -18,12 +18,12 @@ namespace pixdecor
 class pixdecor_theme_t
 {
   public:
-    wf::option_wrapper_t<std::string> title_font{"pixdecor/title_font"};
-    wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
-    wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
-    wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
-    wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
-    wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
+    wf::option_wrapper_t<std::string> title_font{"vecdecor/title_font"};
+    wf::option_wrapper_t<std::string> overlay_engine{"vecdecor/overlay_engine"};
+    wf::option_wrapper_t<std::string> effect_type{"vecdecor/effect_type"};
+    wf::option_wrapper_t<bool> maximized_borders{"vecdecor/maximized_borders"};
+    wf::option_wrapper_t<bool> maximized_shadows{"vecdecor/maximized_shadows"};
+    wf::option_wrapper_t<int> title_text_align{"vecdecor/title_text_align"};
     /** Create a new theme with the default parameters */
     pixdecor_theme_t();
     ~pixdecor_theme_t();
