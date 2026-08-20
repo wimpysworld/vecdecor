@@ -1,7 +1,7 @@
 {
   description = "Development shell for vecdecor";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/07e1d92cdc0ed416cfa11ff3ca40d17e61cfba7a";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/c4412d5c82d19c01fe28bec717056ec54bcc92a4";
 
   outputs =
     { nixpkgs, ... }:
