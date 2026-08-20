@@ -1,5 +1,5 @@
 project(
-    'pixdecor',
+    'vecdecor',
     'c',
     'cpp',
     version: '0.1.0',

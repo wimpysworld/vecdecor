@@ -1,20 +1,61 @@
-# pixdecor
-![pixdecor](https://github.com/soreau/pixdecor/assets/1450125/af891554-8eeb-4769-b571-fa587afd8350)
+# Vecdecor
 
-A highly configurable decorator plugin for wayfire, pixdecor features antialiased rounded corners with shadows and optional animated effects.
+![Pixdecor window decorations](https://github.com/soreau/pixdecor/assets/1450125/af891554-8eeb-4769-b571-fa587afd8350)
 
-## Installing
+Vecdecor is a configurable decorator plugin for Wayfire. It supports antialiased rounded corners, shadows, and optional animated effects.
 
-Set `--prefix` to the same as the wayfire installation.
+## Install
 
+Set `--prefix` to the prefix of your Wayfire installation.
+
+```console
+meson setup build --prefix=/usr
+ninja -C build
+sudo ninja -C build install
 ```
-$ meson setup build --prefix=/usr
-$ ninja -C build
-# ninja -C build install
+
+The build installs the Wayfire plugin as `libvecdecor.so` and its metadata as `vecdecor.xml`. Restart Wayfire after installation.
+
+## Configure
+
+Disable other decorator plugins. Keep your existing `core.plugins` entries and add `vecdecor`:
+
+```ini
+[core]
+plugins = command move resize vecdecor
 ```
 
-Restart wayfire.
+Put Vecdecor options in the `[vecdecor]` section of `wayfire.ini`. All option names use the `vecdecor/` prefix in Wayfire's option API.
 
-## Running
+```ini
+[vecdecor]
+button_minimize_svg = /path/to/minimize.svg
+button_maximize_svg = /path/to/maximize.svg
+button_restore_svg = /path/to/restore.svg
+button_close_svg = /path/to/close.svg
 
-Disable other decorator plugins and enable pixdecor plugin in core section of `wayfire.ini`.
+button_color = 0.0 0.0 0.0 1.0
+button_inactive_color = 0.4 0.4 0.4 1.0
+button_hover_color = 0.2 0.2 0.2 1.0
+button_pressed_color = 0.8 0.8 0.8 1.0
+```
+
+| Option | Role |
+| --- | --- |
+| `button_minimize_svg` | SVG file for the minimise button |
+| `button_maximize_svg` | SVG file for the maximise button |
+| `button_restore_svg` | SVG file for the restore button |
+| `button_close_svg` | SVG file for the close button |
+| `button_color` | Colour of active buttons |
+| `button_inactive_color` | Colour of inactive buttons |
+| `button_hover_color` | Colour of buttons under the pointer |
+| `button_pressed_color` | Colour of pressed buttons |
+
+The current code defines these options. SVG decoding and state-specific button colours are not connected to rendering yet.
+
+> [!WARNING]
+> Vecdecor removes Pixdecor's PNG button options. It has no compatibility reader, so existing PNG options do not migrate automatically.
+
+## Licence and credit
+
+Vecdecor is a fork of [Pixdecor](https://github.com/soreau/pixdecor) by Scott Moreau. Pixdecor also credits Ilia Bozhinov and Andrew Pliatsikas. Vecdecor keeps Pixdecor's [MIT licence](LICENSE).

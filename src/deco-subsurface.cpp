@@ -35,17 +35,17 @@ namespace wf
 {
 namespace pixdecor
 {
-wf::option_wrapper_t<wf::color_t> effect_color{"pixdecor/effect_color"};
-wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
-wf::option_wrapper_t<std::string> titlebar_opt{"pixdecor/titlebar"};
-wf::option_wrapper_t<int> csd_titlebar_height{"pixdecor/csd_titlebar_height"};
-wf::option_wrapper_t<bool> enable_shade{"pixdecor/enable_shade"};
-wf::option_wrapper_t<std::string> title_font{"pixdecor/title_font"};
-wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
-wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
-wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
-wf::option_wrapper_t<bool> maximized_shadows{"pixdecor/maximized_shadows"};
-wf::option_wrapper_t<int> title_text_align{"pixdecor/title_text_align"};
+wf::option_wrapper_t<wf::color_t> effect_color{"vecdecor/effect_color"};
+wf::option_wrapper_t<int> shadow_radius{"vecdecor/shadow_radius"};
+wf::option_wrapper_t<std::string> titlebar_opt{"vecdecor/titlebar"};
+wf::option_wrapper_t<int> csd_titlebar_height{"vecdecor/csd_titlebar_height"};
+wf::option_wrapper_t<bool> enable_shade{"vecdecor/enable_shade"};
+wf::option_wrapper_t<std::string> title_font{"vecdecor/title_font"};
+wf::option_wrapper_t<std::string> overlay_engine{"vecdecor/overlay_engine"};
+wf::option_wrapper_t<std::string> effect_type{"vecdecor/effect_type"};
+wf::option_wrapper_t<bool> maximized_borders{"vecdecor/maximized_borders"};
+wf::option_wrapper_t<bool> maximized_shadows{"vecdecor/maximized_shadows"};
+wf::option_wrapper_t<int> title_text_align{"vecdecor/title_text_align"};
 
 class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_interaction_t,
     public wf::touch_interaction_t

@@ -77,7 +77,7 @@ class button_t
 
   private:
 
-    wf::option_wrapper_t<int> button_hover_duration{"pixdecor/button_hover_duration"};
+    wf::option_wrapper_t<int> button_hover_duration{"vecdecor/button_hover_duration"};
     button_type_t type;
     wf::owned_texture_t button_texture;
     wf::owned_texture_t button_texture_hovered;

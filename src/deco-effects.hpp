@@ -22,11 +22,11 @@ class smoke_t
 
     int saved_width = -1, saved_height = -1;
 
-    wf::option_wrapper_t<std::string> effect_type{"pixdecor/effect_type"};
-    wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
-    wf::option_wrapper_t<bool> effect_animate{"pixdecor/animate"};
-    wf::option_wrapper_t<int> rounded_corner_radius{"pixdecor/rounded_corner_radius"};
-    wf::option_wrapper_t<wf::color_t> shadow_color{"pixdecor/shadow_color"};
+    wf::option_wrapper_t<std::string> effect_type{"vecdecor/effect_type"};
+    wf::option_wrapper_t<std::string> overlay_engine{"vecdecor/overlay_engine"};
+    wf::option_wrapper_t<bool> effect_animate{"vecdecor/animate"};
+    wf::option_wrapper_t<int> rounded_corner_radius{"vecdecor/rounded_corner_radius"};
+    wf::option_wrapper_t<wf::color_t> shadow_color{"vecdecor/shadow_color"};
 
   public:
     smoke_t();
