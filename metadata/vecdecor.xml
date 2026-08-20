@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <wayfire>
-	<plugin name="pixdecor">
-		<_short>Pix Decoration</_short>
-		<_long>A highly configurable and optionally fancy decorator plugin for wayfire.</_long>
+	<plugin name="vecdecor">
+		<_short>Vecdecor</_short>
+		<_long>A highly configurable and optionally fancy decorator plugin for Wayfire.</_long>
 		<category>Effects</category>
 		<group>
 			<_short>General</_short>
@@ -192,8 +192,23 @@
 		<group>
 			<_short>Buttons</_short>
 			<option name="button_color" type="color">
-				<_short>Button Color</_short>
-				<_long>Color of the minimize, maximize and close buttons.</_long>
+				<_short>Button Colour</_short>
+				<_long>Colour of active buttons.</_long>
+				<default>0.0 0.0 0.0 1.0</default>
+			</option>
+			<option name="button_inactive_color" type="color">
+				<_short>Inactive Button Colour</_short>
+				<_long>Colour of inactive buttons.</_long>
+				<default>0.0 0.0 0.0 1.0</default>
+			</option>
+			<option name="button_hover_color" type="color">
+				<_short>Hover Button Colour</_short>
+				<_long>Colour of buttons under the pointer.</_long>
+				<default>0.0 0.0 0.0 1.0</default>
+			</option>
+			<option name="button_pressed_color" type="color">
+				<_short>Pressed Button Colour</_short>
+				<_long>Colour of pressed buttons.</_long>
 				<default>0.0 0.0 0.0 1.0</default>
 			</option>
 			<option name="button_line_thickness" type="double">
@@ -235,51 +250,27 @@
 				<default>500</default>
 				<min>0</min>
 			</option>
-			<option name="button_minimize_image" type="string">
-				<_short>Button Minimize Image</_short>
-				<_long>The png image to use for the minimize button.</_long>
+			<option name="button_minimize_svg" type="string">
+				<_short>Minimise Button SVG</_short>
+				<_long>The SVG file to use for the minimise button.</_long>
 				<default></default>
 				<hint>file</hint>
 			</option>
-			<option name="button_maximize_image" type="string">
-				<_short>Button Maximize Image</_short>
-				<_long>The png image to use for the maximize button.</_long>
+			<option name="button_maximize_svg" type="string">
+				<_short>Maximise Button SVG</_short>
+				<_long>The SVG file to use for the maximise button.</_long>
 				<default></default>
 				<hint>file</hint>
 			</option>
-			<option name="button_restore_image" type="string">
-				<_short>Button Restore Image</_short>
-				<_long>The png image to use for the restore button.</_long>
+			<option name="button_restore_svg" type="string">
+				<_short>Restore Button SVG</_short>
+				<_long>The SVG file to use for the restore button.</_long>
 				<default></default>
 				<hint>file</hint>
 			</option>
-			<option name="button_close_image" type="string">
-				<_short>Button Close Image</_short>
-				<_long>The png image to use for the close button.</_long>
-				<default></default>
-				<hint>file</hint>
-			</option>
-			<option name="button_minimize_hover_image" type="string">
-				<_short>Button Minimize Hover Image</_short>
-				<_long>The png image to use when hovering the minimize button.</_long>
-				<default></default>
-				<hint>file</hint>
-			</option>
-			<option name="button_maximize_hover_image" type="string">
-				<_short>Button Maximize Hover Image</_short>
-				<_long>The png image to use when hovering the maximize button.</_long>
-				<default></default>
-				<hint>file</hint>
-			</option>
-			<option name="button_restore_hover_image" type="string">
-				<_short>Button Restore Hover Image</_short>
-				<_long>The png image to use when hovering the restore button.</_long>
-				<default></default>
-				<hint>file</hint>
-			</option>
-			<option name="button_close_hover_image" type="string">
-				<_short>Button Close Hover Image</_short>
-				<_long>The png image to use when hovering the close button.</_long>
+			<option name="button_close_svg" type="string">
+				<_short>Close Button SVG</_short>
+				<_long>The SVG file to use for the close button.</_long>
 				<default></default>
 				<hint>file</hint>
 			</option>
@@ -288,7 +279,7 @@
 			<_short>Shade</_short>
 			<option name="enable_shade" type="bool">
 				<_short>Enable Shade Effect</_short>
-				<_long>Use the axis binding or scroll on the titlebar of pixdecor windows to shade windows into their respective titlebars.</_long>
+				<_long>Use the axis binding or scroll on the titlebar of Vecdecor windows to shade windows into their respective titlebars.</_long>
 				<default>true</default>
 			</option>
 			<option name="shade_duration" type="animation">
