@@ -134,8 +134,8 @@ void pixdecor_theme_t::render_background(const wf::scene::render_instruction_t& 
 }
 
 /**
- * Render the given text on a cairo_surface_t with the given size.
- * The caller is responsible for freeing the memory afterwards.
+ * Render the given text on a cairo_surface_t with the given size. The caller is responsible for freeing the
+ * memory afterwards.
  */
 cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
     int width, int height, int t_width, int border, int buttons_width, bool active)
@@ -326,8 +326,9 @@ std::unique_ptr<button_surfaces_t> pixdecor_theme_t::get_button_surface(button_t
 
     if (normal_same_as_hover)
     {
-        button_surfaces->hovered = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, cairo_image_surface_get_width(
-            button_surfaces->normal), cairo_image_surface_get_height(button_surfaces->normal));
+        button_surfaces->hovered = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+            cairo_image_surface_get_width(
+                button_surfaces->normal), cairo_image_surface_get_height(button_surfaces->normal));
         auto cr = cairo_create(button_surfaces->hovered);
         cairo_set_source_surface(cr, button_surfaces->normal, 0, 0);
         cairo_paint_with_alpha(cr, 0.25);

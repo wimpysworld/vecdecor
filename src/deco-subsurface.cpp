@@ -111,7 +111,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         theme{},
         layout{theme, [=] (wf::geometry_t box)
         {
-            wf::scene::damage_node(shared_from_this(), box + wf::pointf_t {get_offset()});
+            wf::scene::damage_node(shared_from_this(), box + wf::pointf_t{get_offset()});
         }}
     {
         this->_view = view->weak_from_this();

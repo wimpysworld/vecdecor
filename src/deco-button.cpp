@@ -48,8 +48,7 @@ void button_t::set_hover(bool is_hovered)
 }
 
 /**
- * Set whether the button is pressed or not.
- * Affects appearance.
+ * Set whether the button is pressed or not. Affects appearance.
  */
 void button_t::set_pressed(bool is_pressed)
 {
@@ -86,7 +85,8 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
     OpenGL::clear_cached();
 
     OpenGL::render_texture(
-        wf::gles_texture_t{button_texture_hovered.get_texture()}, data.target, geometry, {1, 1, 1, 1.0 - this->hover},
+        wf::gles_texture_t{button_texture_hovered.get_texture()}, data.target, geometry,
+        {1, 1, 1, 1.0 - this->hover},
         OpenGL::RENDER_FLAG_CACHED);
     data.pass->custom_gles_subpass(data.target, [&]
     {

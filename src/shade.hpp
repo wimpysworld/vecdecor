@@ -102,8 +102,9 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
                     {
                         wf::gles::render_target_logic_scissor(data.target, box);
                         OpenGL::render_transformed_texture(wf::gles_texture_t{src_tex},
-                        {src_geometry.x1, src_geometry.y1 - float(height - progress_height), src_geometry.x2,
-                            src_geometry.y2 - float(height - progress_height)}, {},
+                            {src_geometry.x1, src_geometry.y1 - float(height - progress_height),
+                                src_geometry.x2,
+                                src_geometry.y2 - float(height - progress_height)}, {},
                             wf::gles::render_target_orthographic_projection(data.target), glm::vec4(1.0), 0);
                     }
                 });

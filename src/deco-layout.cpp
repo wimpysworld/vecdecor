@@ -262,8 +262,8 @@ void pixdecor_layout_t::resize(int width, int height)
         wf::geometry_t title_geometry = {
             border + button_left_geometry_expanded.x,
             maximized ? 0 : border / 2 + (radius * 2),
-            /* Up to the button, but subtract the padding to the left of the
-             * title and the padding between title and button */
+            /* Up to the button, but subtract the padding to the left of the title and the padding between
+             * title and button */
             std::max<double>(1, button_right_geometry_expanded.x - border),
             theme.get_title_height() + (maximized ? 0 : border / 2 + 1),
         };
@@ -338,8 +338,7 @@ void pixdecor_layout_t::resize(int width, int height)
 }
 
 /**
- * @return The decoration areas which need to be rendered, in top to bottom
- *  order.
+ * @return The decoration areas which need to be rendered, in top to bottom order.
  */
 std::vector<nonstd::observer_ptr<decoration_area_t>> pixdecor_layout_t::get_renderable_areas()
 {
@@ -436,10 +435,8 @@ pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_motion(
 
 /**
  * Handle press or release event.
- * @param pressed Whether the event is a press(true) or release(false)
- *  event.
- * @return The action which needs to be carried out in response to this
- *  event.
+ * @param pressed Whether the event is a press(true) or release(false) event.
+ * @return The action which needs to be carried out in response to this event.
  * */
 pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_press_event(
     bool pressed)
