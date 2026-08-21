@@ -57,7 +57,7 @@ msgid "Whether or not to render side and bottom decorations on maximized windows
 msgstr "是否在最大化窗口上渲染侧面和底部装饰。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:31
+#: metadata/vecdecor.xml:26
 msgid "Decoration disabled for specified window types"
 msgstr "为指定的窗口类型禁用装饰"
 
@@ -153,7 +153,7 @@ msgid "Right"
 msgstr "右对齐"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:175
+#: metadata/vecdecor.xml:78
 msgid "Rounded Corner Radius"
 msgstr "圆角半径"
 
