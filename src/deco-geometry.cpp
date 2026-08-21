@@ -274,7 +274,8 @@ bool is_valid(const button_state_t& state)
 bool is_valid(const geometry_input_t& input)
 {
     return valid_font_height(input.font_height) && (input.requested_button_size >= 0) &&
-           (input.requested_title_height >= 0) && std::isfinite(input.output_scale) &&
+           (input.requested_title_height >= 0) && (input.title_height_extension >= 0) &&
+           std::isfinite(input.output_scale) &&
            (input.output_scale >= 0.0) && is_valid(input.svg_proportions);
 }
 
@@ -332,6 +333,11 @@ geometry_result_t resolve_geometry(const geometry_input_t& input)
     if ((input.requested_button_size > 0) || (input.requested_title_height > 0))
     {
         title = std::max(title, static_cast<int>(containment_height));
+    }
+
+    if (!add(title, input.title_height_extension, title))
+    {
+        return automatic_fallback(input);
     }
 
     if (!can_rasterize({button, title}, input.output_scale))

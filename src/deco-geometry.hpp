@@ -88,6 +88,7 @@ struct geometry_input_t
     int font_height = 0;
     int requested_button_size  = 0;
     int requested_title_height = 0;
+    int title_height_extension = 0;
     int button_y_offset = 0;
     double output_scale = 1.0;
     svg_proportions_t svg_proportions;
