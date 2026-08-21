@@ -21,6 +21,9 @@ wf::option_wrapper_t<std::string> button_minimize_svg{"vecdecor/button_minimize_
 wf::option_wrapper_t<std::string> button_maximize_svg{"vecdecor/button_maximize_svg"};
 wf::option_wrapper_t<std::string> button_restore_svg{"vecdecor/button_restore_svg"};
 wf::option_wrapper_t<std::string> button_close_svg{"vecdecor/button_close_svg"};
+wf::option_wrapper_t<int> button_size{"vecdecor/button_size"};
+wf::option_wrapper_t<int> title_height{"vecdecor/title_height"};
+wf::option_wrapper_t<int> button_y_offset{"vecdecor/button_y_offset"};
 wf::option_wrapper_t<wf::color_t> button_color{"vecdecor/button_color"};
 wf::option_wrapper_t<wf::color_t> button_inactive_color{"vecdecor/button_inactive_color"};
 wf::option_wrapper_t<wf::color_t> button_hover_color{"vecdecor/button_hover_color"};
@@ -42,6 +45,7 @@ void pixdecor_theme_t::update_colors(void)
     bg = wf::color_t(bg_color);
     fg_text = wf::color_t(fg_text_color);
     bg_text = wf::color_t(bg_text_color);
+    ++generation;
 }
 
 std::unique_ptr<PangoFontDescription,
@@ -68,20 +72,42 @@ int pixdecor_theme_t::get_font_height_px()
 
 int pixdecor_theme_t::get_title_height()
 {
-    int height = get_font_height_px();
-    height *= 3;
-    height /= 2;
-    height += 8;
-    if (height < MIN_BAR_HEIGHT)
-    {
-        height = MIN_BAR_HEIGHT;
-    }
+    const int height = geometry::resolve_geometry({
+                .font_height = get_font_height_px(),
+                .requested_button_size  = button_size,
+                .requested_title_height = title_height,
+                .button_y_offset = button_y_offset,
+                .output_scale    = 1.0,
+                .svg_proportions = geometry::full_box_svg_proportions(),
+            }).title_height;
 
     return ((std::string(titlebar) == "always" ||
         (std::string(titlebar) == "windowed" && !maximized) ||
         (std::string(titlebar) == "maximized" && maximized)) &&
         (std::string(titlebar) !=
             "never")) ? height + ((maximized && !maximized_borders) ? border_size : 0) : 0;
+}
+
+geometry::logical_bounds_t pixdecor_theme_t::get_button_bounds()
+{
+    return geometry::resolve_geometry({
+                .font_height = get_font_height_px(),
+                .requested_button_size  = button_size,
+                .requested_title_height = title_height,
+                .button_y_offset = button_y_offset,
+                .output_scale    = 1.0,
+                .svg_proportions = geometry::full_box_svg_proportions(),
+            }).button_bounds;
+}
+
+geometry::svg_proportions_t pixdecor_theme_t::get_svg_proportions() const
+{
+    return geometry::resolve_svg_proportions(geometry::full_box_svg_proportions());
+}
+
+std::uint64_t pixdecor_theme_t::get_generation() const
+{
+    return generation;
 }
 
 /** @return The available border for resizing */
@@ -264,8 +290,10 @@ cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
     return surface;
 }
 
-static cairo_surface_t *get_cairo_surface(button_type_t button, int w, int h, int border, float alpha)
+static cairo_surface_t *get_cairo_surface(const geometry::button_cache_key_t& key)
 {
+    const int w  = key.raster_size.width;
+    const int h  = key.raster_size.height;
     auto surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
 
     auto cr = cairo_create(surface);
@@ -280,44 +308,42 @@ static cairo_surface_t *get_cairo_surface(button_type_t button, int w, int h, in
 
     /** Draw the button  */
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+    const float alpha = key.state.interaction == geometry::interaction_state_t::hover ? 0.25 : 1.0;
     cairo_set_source_rgba(cr,
         wf::color_t(button_color).r,
         wf::color_t(button_color).g,
         wf::color_t(button_color).b,
         wf::color_t(button_color).a * alpha);
-    double line_width = button_line_thickness;
-    switch (button)
+    const auto& proportions = key.svg_proportions;
+    const double x = proportions.x * w;
+    const double y = proportions.y * h;
+    const double icon_width  = proportions.width * w;
+    const double icon_height = proportions.height * h;
+    const double line_width  = double(button_line_thickness) * key.output_scale;
+    switch (key.state.kind)
     {
-      case BUTTON_CLOSE:
-        cairo_set_line_width(cr, line_width * border);
-        cairo_move_to(cr, 1.0 * w / 4.0,
-            1.0 * h / 4.0);
-        cairo_line_to(cr, 3.0 * w / 4.0,
-            3.0 * h / 4.0);
-        cairo_move_to(cr, 3.0 * w / 4.0,
-            1.0 * h / 4.0);
-        cairo_line_to(cr, 1.0 * w / 4.0,
-            3.0 * h / 4.0);
+      case geometry::button_kind_t::close:
+        cairo_set_line_width(cr, line_width);
+        cairo_move_to(cr, x + icon_width / 4.0, y + icon_height / 4.0);
+        cairo_line_to(cr, x + 3.0 * icon_width / 4.0, y + 3.0 * icon_height / 4.0);
+        cairo_move_to(cr, x + 3.0 * icon_width / 4.0, y + icon_height / 4.0);
+        cairo_line_to(cr, x + icon_width / 4.0, y + 3.0 * icon_height / 4.0);
         cairo_stroke(cr);
         break;
 
-      case BUTTON_TOGGLE_MAXIMIZE:
-        cairo_set_line_width(cr, line_width * border);
-        cairo_rectangle(cr, w / 4.0, h / 4.0, w / 2.0, h / 2.0);
+      case geometry::button_kind_t::maximize:
+        cairo_set_line_width(cr, line_width);
+        cairo_rectangle(cr, x + icon_width / 4.0, y + icon_height / 4.0,
+            icon_width / 2.0, icon_height / 2.0);
         cairo_stroke(cr);
         break;
 
-      case BUTTON_MINIMIZE:
-        cairo_set_line_width(cr, line_width * border);
-        cairo_move_to(cr, 1.0 * w / 4.0,
-            3.0 * h / 4.0);
-        cairo_line_to(cr, 3.0 * w / 4.0,
-            3.0 * h / 4.0);
+      case geometry::button_kind_t::minimize:
+        cairo_set_line_width(cr, line_width);
+        cairo_move_to(cr, x + icon_width / 4.0, y + 3.0 * icon_height / 4.0);
+        cairo_line_to(cr, x + 3.0 * icon_width / 4.0, y + 3.0 * icon_height / 4.0);
         cairo_stroke(cr);
         break;
-
-      default:
-        assert(false);
     }
 
     cairo_destroy(cr);
@@ -325,34 +351,27 @@ static cairo_surface_t *get_cairo_surface(button_type_t button, int w, int h, in
     return surface;
 }
 
-std::unique_ptr<button_surfaces_t> pixdecor_theme_t::get_button_surface(button_type_t button,
-    const button_state_t& state) const
+cairo_surface_t*pixdecor_theme_t::get_button_surface(const geometry::button_cache_key_t& key) const
 {
-    std::unique_ptr<button_surfaces_t> button_surfaces = std::make_unique<button_surfaces_t>();
     std::string button_svg;
-    switch (button)
+    switch (key.state.kind)
     {
-      case BUTTON_CLOSE:
+      case geometry::button_kind_t::close:
         button_svg = button_close_svg;
         break;
 
-      case BUTTON_TOGGLE_MAXIMIZE:
-        button_svg = this->maximized ? std::string(button_restore_svg) : std::string(button_maximize_svg);
+      case geometry::button_kind_t::maximize:
+        button_svg = key.state.maximize == geometry::maximize_state_t::restore ?
+            std::string(button_restore_svg) : std::string(button_maximize_svg);
         break;
 
-      case BUTTON_MINIMIZE:
+      case geometry::button_kind_t::minimize:
         button_svg = button_minimize_svg;
-        break;
-
-      default:
         break;
     }
 
     (void)button_svg;
-    button_surfaces->normal  = get_cairo_surface(button, state.width, state.height, state.border, 1.0);
-    button_surfaces->hovered = get_cairo_surface(button, state.width, state.height, state.border, 0.25);
-
-    return button_surfaces;
+    return get_cairo_surface(key);
 }
 }
 }

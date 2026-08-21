@@ -29,6 +29,9 @@ Put Vecdecor options in the `[vecdecor]` section of `wayfire.ini`. All option na
 
 ```ini
 [vecdecor]
+title_height = 0
+button_size = 0
+
 button_minimize_svg = /path/to/minimize.svg
 button_maximize_svg = /path/to/maximize.svg
 button_restore_svg = /path/to/restore.svg
@@ -42,6 +45,8 @@ button_pressed_color = 0.8 0.8 0.8 1.0
 
 | Option | Role |
 | --- | --- |
+| `title_height` | Non-negative titlebar height in logical pixels. `0` uses an automatic height derived from the title font. |
+| `button_size` | Non-negative square button size in logical pixels. `0` selects `18` or `26`, based on the title font. |
 | `button_minimize_svg` | SVG file for the minimise button |
 | `button_maximize_svg` | SVG file for the maximise button |
 | `button_restore_svg` | SVG file for the restore button |
@@ -51,7 +56,11 @@ button_pressed_color = 0.8 0.8 0.8 1.0
 | `button_hover_color` | Colour of buttons under the pointer |
 | `button_pressed_color` | Colour of pressed buttons |
 
-The current code defines these options. SVG decoding and state-specific button colours are not connected to rendering yet.
+`title_height` and `button_size` are independent. If either value is positive, Vecdecor expands the titlebar when needed to contain the button after applying `button_y_offset`. Changes to either option recreate the decoration frames, so the new size applies without restarting Wayfire.
+
+The logical geometry stays constant across output scales. Vecdecor rasterises each button for the output scale and keeps the rendered and pointer bounds equal.
+
+Vecdecor does not yet render the configured SVG files or state-specific colours. SVG decoding remains planned for WW-227.
 
 > [!WARNING]
 > This version removes the `overlay_engine`, `effect_type`, `effect_color`, `animate`, `shadow_radius`, `shadow_color`, and `maximized_shadows` options. Remove these keys from `[vecdecor]`, then configure and enable Wayfire's `winshadows` plugin if you need window shadows.

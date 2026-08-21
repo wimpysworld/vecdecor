@@ -323,3 +323,23 @@ msgstr ""
 #. (itstool) path: option/_long
 msgid "Because there is no way to know the client surface titlebar height, this is an option to adjust it."
 msgstr ""
+
+#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:21
+msgid "Titlebar Height"
+msgstr ""
+
+#. (itstool) path: option/_long
+#: metadata/vecdecor.xml:22
+msgid "Sets the titlebar height in logical pixels. A value of 0 selects automatic sizing."
+msgstr ""
+
+#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:93
+msgid "Button Size"
+msgstr ""
+
+#. (itstool) path: option/_long
+#: metadata/vecdecor.xml:94
+msgid "Sets the button size in logical pixels. A value of 0 selects automatic sizing."
+msgstr ""

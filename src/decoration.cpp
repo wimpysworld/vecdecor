@@ -8,6 +8,7 @@
 #include <wayfire/txn/transaction-manager.hpp>
 
 #include "deco-subsurface.hpp"
+#include "deco-options.hpp"
 #include "wayfire/core.hpp"
 #include "wayfire/plugin.hpp"
 #include "wayfire/signal-provider.hpp"
@@ -39,6 +40,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::option_wrapper_t<wf::color_t> button_hover_color{"vecdecor/button_hover_color"};
     wf::option_wrapper_t<wf::color_t> button_pressed_color{"vecdecor/button_pressed_color"};
     wf::option_wrapper_t<double> button_line_thickness{"vecdecor/button_line_thickness"};
+    wf::option_wrapper_t<int> button_size{"vecdecor/button_size"};
+    wf::option_wrapper_t<int> title_height{"vecdecor/title_height"};
     wf::option_wrapper_t<int> left_button_spacing{"vecdecor/left_button_spacing"};
     wf::option_wrapper_t<int> right_button_spacing{"vecdecor/right_button_spacing"};
     wf::option_wrapper_t<int> left_button_x_offset{"vecdecor/left_button_x_offset"};
@@ -366,6 +369,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         });
         title_font.set_callback([=] {recreate_frames();});
         rounded_corner_radius.set_callback([=] {recreate_frames();});
+        register_size_option_callbacks(button_size, title_height, [=] {recreate_frames();});
         maximized_borders.set_callback([=]
         {
             for (auto& view : wf::get_core().get_all_views())
