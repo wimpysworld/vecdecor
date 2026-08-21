@@ -63,7 +63,7 @@ msgid "Whether or not to render side and bottom decorations on maximized windows
 msgstr "Si se deben renderizar o no las decoraciones laterales e inferiores en ventanas maximizadas."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:31
+#: metadata/vecdecor.xml:42
 msgid "Decoration disabled for specified window types"
 msgstr "Decoración desactivada para tipos de ventana especificados"
 
@@ -140,7 +140,7 @@ msgid "Right"
 msgstr "Derecha"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:175
+#: metadata/vecdecor.xml:94
 msgid "Rounded Corner Radius"
 msgstr "Radio de las esquinas redondeadas"
 
