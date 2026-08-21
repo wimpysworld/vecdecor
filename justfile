@@ -30,7 +30,7 @@ test: build
 lint:
     git ls-files -z -- '*.cpp' '*.hpp' | xargs -0 -r uncrustify -c "$WAYFIRE_UNCRUSTIFY_CONFIG" --check
 
-# Run all static checks
+# Run the full CI check suite
 check: eval test lint check-locales install-staged
 
 # Check translation syntax and metadata coverage
