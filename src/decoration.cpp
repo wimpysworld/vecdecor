@@ -453,13 +453,13 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 pending.geometry = wf::shrink_geometry_by_margins(pending.geometry, pending.margins);
             }
 
-            deco->recreate_frame();
             pending.margins = deco->get_margins(pending);
             if (!pending.fullscreen && !pending.tiled_edges)
             {
                 pending.geometry = wf::expand_geometry_by_margins(pending.geometry, pending.margins);
             }
 
+            deco->recreate_frame();
             wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
         }
     }
