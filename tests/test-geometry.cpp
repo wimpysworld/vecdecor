@@ -222,15 +222,11 @@ void test_group_positions()
         left.bounds.height == right.bounds.height,
         "left and right group bounds are symmetric");
 
-    for (std::size_t index = 0; index < left.buttons.size(); ++index)
+    for (const auto& button_bounds : left.buttons)
     {
-        const auto& render_bounds  = left.buttons[index];
-        const auto& pointer_bounds = left.buttons[index];
-        expect(render_bounds == pointer_bounds,
-            "render and pointer input use the same logical button bounds");
-        expect(render_bounds.width == input.button_bounds.width &&
-            render_bounds.height == input.button_bounds.height,
-            "group positioning preserves each button size");
+        expect(button_bounds.width == input.button_bounds.width &&
+            button_bounds.height == input.button_bounds.height,
+            "group positioning preserves each canonical button size");
     }
 
     input.button_count = 0;
