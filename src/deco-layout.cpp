@@ -1,7 +1,11 @@
 #include "deco-layout.hpp"
 #include "deco-theme.hpp"
+#include <algorithm>
+#include <cstdint>
+#include <limits>
+#include <sstream>
+#include <string>
 #include <wayfire/core.hpp>
-#include <wayfire/nonstd/reverse.hpp>
 #include <wlr/xcursor.h>
 #include <wayfire/toplevel.hpp>
 #include <wayfire/util.hpp>
@@ -10,6 +14,84 @@ namespace wf
 {
 namespace pixdecor
 {
+namespace
+{
+struct button_layout_t
+{
+    std::vector<button_type_t> left;
+    std::vector<button_type_t> right;
+};
+
+std::vector<button_type_t> parse_buttons(const std::string& layout)
+{
+    std::stringstream stream(layout);
+    std::vector<button_type_t> buttons;
+    std::string button_name;
+    while (stream >> button_name)
+    {
+        if (button_name == "minimize")
+        {
+            buttons.push_back(BUTTON_MINIMIZE);
+        } else if (button_name == "maximize")
+        {
+            buttons.push_back(BUTTON_TOGGLE_MAXIMIZE);
+        } else if (button_name == "close")
+        {
+            buttons.push_back(BUTTON_CLOSE);
+        }
+    }
+
+    return buttons;
+}
+
+button_layout_t read_button_layout()
+{
+    GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
+    gchar *setting     = g_settings_get_string(settings, "button-layout");
+    std::string layout = setting ? setting : "";
+    g_free(setting);
+    g_object_unref(settings);
+
+    std::replace(layout.begin(), layout.end(), ',', ' ');
+    const auto first_separator = layout.find(':');
+    const auto last_separator  = layout.rfind(':');
+
+    button_layout_t result;
+    result.left  = parse_buttons(layout.substr(0, first_separator));
+    result.right = parse_buttons(last_separator == std::string::npos ?
+        layout : layout.substr(last_separator + 1));
+    return result;
+}
+
+wf::geometry_t to_geometry(const geometry::logical_bounds_t& bounds)
+{
+    return {bounds.x, bounds.y, bounds.width, bounds.height};
+}
+
+wf::geometry_t expanded_move_geometry(const geometry::logical_bounds_t& bounds,
+    int outer_edge, int title_y, int title_height)
+{
+    const int64_t group_right  = static_cast<int64_t>(bounds.x) + bounds.width;
+    const int64_t group_bottom = static_cast<int64_t>(bounds.y) + bounds.height;
+    const int64_t title_bottom = static_cast<int64_t>(title_y) + title_height;
+    const int64_t left   = std::min<int64_t>(bounds.x, outer_edge);
+    const int64_t right  = std::max<int64_t>(group_right, outer_edge);
+    const int64_t top    = std::min<int64_t>(bounds.y, title_y);
+    const int64_t bottom = std::max(group_bottom, title_bottom);
+
+    if (((right - left) > std::numeric_limits<int>::max()) ||
+        ((bottom - top) > std::numeric_limits<int>::max()))
+    {
+        return to_geometry(bounds);
+    }
+
+    return {
+        static_cast<int>(left), static_cast<int>(top),
+        static_cast<int>(right - left), static_cast<int>(bottom - top),
+    };
+}
+}
+
 /**
  * Represents an area of the decoration which reacts to input events.
  */
@@ -30,7 +112,6 @@ decoration_area_t::decoration_area_t(wf::geometry_t g,
 {
     this->type     = DECORATION_AREA_BUTTON;
     this->geometry = g;
-    this->damage_callback = damage_callback;
 
     this->button = std::make_unique<button_t>(theme,
         std::bind(damage_callback, g));
@@ -39,17 +120,6 @@ decoration_area_t::decoration_area_t(wf::geometry_t g,
 wf::geometry_t decoration_area_t::get_geometry() const
 {
     return geometry;
-}
-
-void decoration_area_t::set_geometry(wf::geometry_t g)
-{
-    geometry = g;
-
-    if (this->type == DECORATION_AREA_BUTTON)
-    {
-        this->button = std::make_unique<button_t>(this->button->theme,
-            std::bind(this->damage_callback, g));
-    }
 }
 
 button_t& decoration_area_t::as_button()
@@ -66,9 +136,6 @@ decoration_area_type_t decoration_area_t::get_type() const
 
 pixdecor_layout_t::pixdecor_layout_t(pixdecor_theme_t& th,
     std::function<void(wlr_box)> callback) :
-
-    titlebar_size(th.get_title_height()),
-    border_size(th.get_input_size()),
     theme(th),
     damage_callback(callback)
 {}
@@ -78,202 +145,115 @@ pixdecor_layout_t::~pixdecor_layout_t()
     this->layout_areas.clear();
 }
 
-wf::geometry_t pixdecor_layout_t::create_left_buttons(int corner_inset)
+void pixdecor_layout_t::create_buttons(const std::vector<button_type_t>& buttons,
+    const geometry::button_group_positions_t& positions, bool reverse_order)
 {
-    // read the string from settings; start at the beginning and replace commas with spaces
-    wf::option_wrapper_t<int> button_spacing{"vecdecor/left_button_spacing"};
-    wf::option_wrapper_t<int> button_x_offset{"vecdecor/left_button_x_offset"};
-    wf::option_wrapper_t<int> button_y_offset{"vecdecor/button_y_offset"};
-    GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
-    gchar *b_layout     = g_settings_get_string(settings, "button-layout");
-    gchar *ptr = b_layout;
-    int len    = 0;
-    while (ptr <= b_layout + strlen(b_layout) - 1)
+    if (!positions.valid || (positions.buttons.size() != buttons.size()))
     {
-        if (*ptr == ',')
-        {
-            *ptr = ' ';
-        }
-
-        if (*ptr == ':')
-        {
-            break;
-        }
-
-        ptr++;
-        len++;
+        return;
     }
 
-    std::string layout = std::string(b_layout).substr(0, len);
-    g_free(b_layout);
-    g_object_unref(settings);
-
-    std::stringstream stream((std::string)layout);
-    std::vector<button_type_t> buttons;
-    std::string button_name;
-    while (stream >> button_name)
+    for (std::size_t index = 0; index < buttons.size(); ++index)
     {
-        if (button_name == "minimize")
-        {
-            buttons.push_back(BUTTON_MINIMIZE);
-        }
-
-        if (button_name == "maximize")
-        {
-            buttons.push_back(BUTTON_TOGGLE_MAXIMIZE);
-        }
-
-        if (button_name == "close")
-        {
-            buttons.push_back(BUTTON_CLOSE);
-        }
-    }
-
-    int total_width = 0;
-    int per_button  = 0;
-    int border = theme.get_border_size();
-    wf::geometry_t button_geometry;
-    button_geometry.x = corner_inset + button_x_offset;
-
-    for (auto type : buttons)
-    {
-        auto button_area  = std::make_unique<decoration_area_t>(button_geometry, damage_callback, theme);
-        auto surface_size = button_area->as_button().set_button_type(type);
-        button_geometry.width  = surface_size.width;
-        button_geometry.height = surface_size.height;
-        int button_padding = (theme.get_title_height() - button_geometry.height) / 2 + button_y_offset;
-        button_geometry.y = button_padding + border / 2;
-        per_button = button_geometry.width + (buttons.back() == type ? 0 : button_spacing);
-        button_area->set_geometry(button_geometry);
-        button_area->as_button().set_button_type(type);
+        const auto type_index = reverse_order ? buttons.size() - index - 1 : index;
+        auto button_area = std::make_unique<decoration_area_t>(
+            to_geometry(positions.buttons[index]), damage_callback, theme);
+        button_area->as_button().set_button_type(buttons[type_index]);
         this->layout_areas.push_back(std::move(button_area));
-        button_geometry.x += per_button;
-        total_width += per_button;
     }
-
-    return {
-        buttons.empty() ? 0 : (maximized ? 4 : border), maximized ? 4 : border,
-        total_width, theme.get_title_height()
-    };
-}
-
-wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int corner_inset)
-{
-    // read the string from settings; start at the colon and replace commas with spaces
-    wf::option_wrapper_t<int> button_spacing{"vecdecor/right_button_spacing"};
-    wf::option_wrapper_t<int> button_x_offset{"vecdecor/right_button_x_offset"};
-    wf::option_wrapper_t<int> button_y_offset{"vecdecor/button_y_offset"};
-    GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
-    gchar *b_layout     = g_settings_get_string(settings, "button-layout");
-    gchar *ptr = b_layout + strlen(b_layout) - 1;
-    while (ptr >= b_layout)
-    {
-        if (*ptr == ',')
-        {
-            *ptr = ' ';
-        }
-
-        if (*ptr == ':')
-        {
-            break;
-        }
-
-        ptr--;
-    }
-
-    std::string layout = (*ptr == ':') ? ptr + 1 : std::string(b_layout);
-    g_free(b_layout);
-    g_object_unref(settings);
-
-    std::stringstream stream((std::string)layout);
-    std::vector<button_type_t> buttons;
-    std::string button_name;
-    while (stream >> button_name)
-    {
-        if (button_name == "minimize")
-        {
-            buttons.push_back(BUTTON_MINIMIZE);
-        }
-
-        if (button_name == "maximize")
-        {
-            buttons.push_back(BUTTON_TOGGLE_MAXIMIZE);
-        }
-
-        if (button_name == "close")
-        {
-            buttons.push_back(BUTTON_CLOSE);
-        }
-    }
-
-    int total_width = 0;
-    int per_button  = 0;
-    int border = theme.get_border_size();
-    wf::geometry_t button_geometry;
-    button_geometry.x = width - corner_inset + button_x_offset;
-
-    for (auto type : wf::reverse(buttons))
-    {
-        auto button_area  = std::make_unique<decoration_area_t>(button_geometry, damage_callback, theme);
-        auto surface_size = button_area->as_button().set_button_type(type);
-        button_geometry.width  = surface_size.width;
-        button_geometry.height = surface_size.height;
-        int button_padding = (theme.get_title_height() - button_geometry.height) / 2 + button_y_offset;
-        button_geometry.y = button_padding + border / 2;
-        per_button = button_geometry.width + (buttons.back() == type ? 0 : button_spacing);
-        button_geometry.x -= per_button;
-        button_area->set_geometry(button_geometry);
-        button_area->as_button().set_button_type(type);
-        this->layout_areas.push_back(std::move(button_area));
-        total_width += per_button;
-    }
-
-    total_width -= button_x_offset;
-
-    return {
-        button_geometry.x, maximized ? 4 : border,
-        total_width, theme.get_title_height()
-    };
 }
 
 /** Regenerate layout using the new size */
 void pixdecor_layout_t::resize(int width, int height)
 {
     wf::option_wrapper_t<bool> maximized_borders{"vecdecor/maximized_borders"};
+    wf::option_wrapper_t<int> left_button_spacing{"vecdecor/left_button_spacing"};
+    wf::option_wrapper_t<int> right_button_spacing{"vecdecor/right_button_spacing"};
+    wf::option_wrapper_t<int> left_button_x_offset{"vecdecor/left_button_x_offset"};
+    wf::option_wrapper_t<int> right_button_x_offset{"vecdecor/right_button_x_offset"};
 
+    const int layout_width  = std::max(0, width);
+    const int layout_height = std::max(0, height);
     int border = theme.get_border_size();
     int corner_inset = maximized ? 4 : std::max(border,
-        std::clamp(int(theme.rounded_corner_radius), 0, std::min(width, height) / 2));
+        std::clamp(int(theme.rounded_corner_radius), 0,
+            std::min(layout_width, layout_height) / 2));
 
     this->layout_areas.clear();
 
     if (this->theme.get_title_height() > 0)
     {
-        auto button_left_geometry_expanded  = create_left_buttons(corner_inset);
-        auto button_right_geometry_expanded = create_right_buttons(width, corner_inset);
+        const auto button_layout = read_button_layout();
+        auto button_bounds = theme.get_button_bounds();
+        button_bounds.y += border / 2;
+
+        geometry::button_group_input_t left_input;
+        left_input.button_count  = button_layout.left.size();
+        left_input.button_bounds = button_bounds;
+        left_input.spacing  = left_button_spacing;
+        left_input.x_offset = left_button_x_offset;
+        left_input.corner_inset = corner_inset;
+        left_input.title_width  = layout_width;
+
+        auto right_input = left_input;
+        right_input.button_count = button_layout.right.size();
+        right_input.spacing  = right_button_spacing;
+        right_input.x_offset = right_button_x_offset;
+
+        const auto left_positions  = geometry::resolve_left_group_positions(left_input);
+        const auto right_positions = geometry::resolve_right_group_positions(right_input);
+        create_buttons(button_layout.left, left_positions, false);
+        create_buttons(button_layout.right, right_positions, true);
 
         /* Padding around the buttons, allows move */
-        this->layout_areas.push_back(std::make_unique<decoration_area_t>(
-            DECORATION_AREA_MOVE, button_left_geometry_expanded));
-        this->layout_areas.push_back(std::make_unique<decoration_area_t>(
-            DECORATION_AREA_MOVE, button_right_geometry_expanded));
+        const int group_outer_padding = maximized ? 4 : border;
+        const int group_y = maximized ? 4 : border;
+        if (left_positions.valid && !left_positions.buttons.empty())
+        {
+            auto move_geometry = expanded_move_geometry(left_positions.bounds,
+                group_outer_padding, group_y, theme.get_title_height());
+            this->layout_areas.push_back(std::make_unique<decoration_area_t>(
+                DECORATION_AREA_MOVE, move_geometry));
+        }
+
+        if (right_positions.valid && !right_positions.buttons.empty())
+        {
+            auto move_geometry = expanded_move_geometry(right_positions.bounds,
+                layout_width - group_outer_padding, group_y, theme.get_title_height());
+            this->layout_areas.push_back(std::make_unique<decoration_area_t>(
+                DECORATION_AREA_MOVE, move_geometry));
+        }
 
         /* Titlebar dragging area (for move) */
+        const int64_t title_left = static_cast<int64_t>(border) +
+            ((!left_positions.valid || left_positions.buttons.empty()) ?
+                0 : group_outer_padding);
+        int64_t title_width = static_cast<int64_t>(layout_width) - 2LL * border;
+        if (right_positions.valid && !right_positions.buttons.empty())
+        {
+            title_width = static_cast<int64_t>(right_positions.bounds.x) - border;
+        }
+
+        const int title_x = static_cast<int>(std::clamp<int64_t>(title_left, 0,
+            std::max(0, layout_width - 1)));
+        title_width = std::clamp<int64_t>(title_width, 1,
+            std::max(1, layout_width - title_x));
         wf::geometry_t title_geometry = {
-            border + button_left_geometry_expanded.x,
+            title_x,
             maximized ? 0 : border / 2,
-            /* Up to the button, but subtract the padding to the left of the title and the padding between
-             * title and button */
-            std::max(1, button_right_geometry_expanded.x - border),
+            static_cast<int>(title_width),
             theme.get_title_height() + (maximized ? 0 : border / 2 + 1),
         };
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_TITLE, title_geometry));
 
-        this->cached_titlebar = {
-            border, border,
-            width - 2 * border, height - 2 * border
-        };
+        const int cached_width = static_cast<int>(std::clamp<int64_t>(
+            static_cast<int64_t>(layout_width) - 2LL * border, 0,
+            std::numeric_limits<int>::max()));
+        const int cached_height = static_cast<int>(std::clamp<int64_t>(
+            static_cast<int64_t>(layout_height) - 2LL * border, 0,
+            std::numeric_limits<int>::max()));
+        this->cached_titlebar = {border, border, cached_width, cached_height};
     }
 
     border = MIN_RESIZE_HANDLE_SIZE - theme.get_input_size();
@@ -283,27 +263,27 @@ void pixdecor_layout_t::resize(int width, int height)
     {
         /* Resizing edges - top */
         wf::geometry_t border_geometry =
-        {0, -inverse_border, width + MIN_RESIZE_HANDLE_SIZE, border};
+        {0, -inverse_border, layout_width + MIN_RESIZE_HANDLE_SIZE, border};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_TOP, border_geometry));
 
         /* Resizing edges - bottom */
         border_geometry =
-        {0, height - border + inverse_border,
-            width + MIN_RESIZE_HANDLE_SIZE, border};
+        {0, layout_height - border + inverse_border,
+            layout_width + MIN_RESIZE_HANDLE_SIZE, border};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_BOTTOM, border_geometry));
 
         /* Resizing edges - left */
         border_geometry =
-        {-inverse_border, 0, border, height + MIN_RESIZE_HANDLE_SIZE};
+        {-inverse_border, 0, border, layout_height + MIN_RESIZE_HANDLE_SIZE};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_LEFT, border_geometry));
 
         /* Resizing edges - right */
         border_geometry =
-        {width - border + inverse_border, 0, border,
-            height + MIN_RESIZE_HANDLE_SIZE};
+        {layout_width - border + inverse_border, 0, border,
+            layout_height + MIN_RESIZE_HANDLE_SIZE};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_RIGHT, border_geometry));
     }

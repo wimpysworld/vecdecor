@@ -50,7 +50,6 @@ struct decoration_area_t
 
     /** @return The geometry of the decoration area, relative to the layout */
     wf::geometry_t get_geometry() const;
-    void set_geometry(wf::geometry_t g);
 
     /** @return The area's button, if the area is a button. Otherwise UB */
     button_t& as_button();
@@ -59,7 +58,6 @@ struct decoration_area_t
     decoration_area_type_t get_type() const;
 
   private:
-    std::function<void(wlr_box)> damage_callback;
     decoration_area_type_t type;
     wf::geometry_t geometry;
 
@@ -153,15 +151,13 @@ class pixdecor_layout_t
     void set_maximize(bool state);
 
   private:
-    const int titlebar_size;
-    const int border_size;
     pixdecor_theme_t& theme;
-    bool maximized;
+    bool maximized = false;
 
     std::function<void(wlr_box)> damage_callback;
 
     std::vector<std::unique_ptr<decoration_area_t>> layout_areas;
-    wf::geometry_t cached_titlebar;
+    wf::geometry_t cached_titlebar{};
 
     bool is_grabbed = false;
     /* Position where the grab has started */
@@ -172,9 +168,9 @@ class pixdecor_layout_t
     wf::wl_timer<false> timer;
     bool double_click_at_release = false;
 
-    /** Create buttons in the layout, and return their total geometry */
-    wf::geometry_t create_left_buttons(int corner_inset);
-    wf::geometry_t create_right_buttons(int width, int corner_inset);
+    /** Create buttons with bounds from the logical layout model. */
+    void create_buttons(const std::vector<button_type_t>& buttons,
+        const geometry::button_group_positions_t& positions, bool reverse_order);
 
     /** Calculate resize edges based on @current_input */
     uint32_t calculate_resize_edges() const;

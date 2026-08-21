@@ -17,6 +17,12 @@
 				<_long>Whether or not to render titlebar with title text and buttons.</_long>
 				<default>true</default>
 			</option>
+			<option name="title_height" type="int">
+				<_short>Titlebar Height</_short>
+				<_long>Sets the titlebar height in logical pixels. A value of 0 selects automatic sizing.</_long>
+				<default>0</default>
+				<min>0</min>
+			</option>
 			<option name="maximized_borders" type="bool">
 				<_short>Draw borders on maximized windows</_short>
 				<_long>Whether or not to render side and bottom decorations on maximized windows.</_long>
@@ -83,6 +89,12 @@
 		</group>
 		<group>
 			<_short>Buttons</_short>
+			<option name="button_size" type="int">
+				<_short>Button Size</_short>
+				<_long>Sets the button size in logical pixels. A value of 0 selects automatic sizing.</_long>
+				<default>0</default>
+				<min>0</min>
+			</option>
 			<option name="button_color" type="color">
 				<_short>Button Colour</_short>
 				<_long>Colour of active buttons.</_long>

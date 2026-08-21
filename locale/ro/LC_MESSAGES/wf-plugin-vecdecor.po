@@ -49,326 +49,346 @@ msgstr "Când să se deseneze o bară de titlu cu textul titlului și butoanele.
 
 #. (itstool) path: option/_short
 #: metadata/vecdecor.xml:21
+msgid "Titlebar Height"
+msgstr ""
+
+#. (itstool) path: option/_long
+#: metadata/vecdecor.xml:22
+msgid "Sets the titlebar height in logical pixels. A value of 0 selects automatic sizing."
+msgstr ""
+
+#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:27
 msgid "Draw borders on maximized windows"
 msgstr "Desenează borduri pe ferestrele maximizate"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:22
+#: metadata/vecdecor.xml:28
 msgid "Whether or not to render side and bottom decorations on maximized windows."
 msgstr "Dacă să se deseneze decorațiile laterale și de jos pe ferestrele maximizate sau nu."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:26
+#: metadata/vecdecor.xml:32
 msgid "Decoration disabled for specified window types"
 msgstr "Decorarea dezactivată pentru tipurile specificate de ferestre"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:32
+#: metadata/vecdecor.xml:33
 msgid "Disables window decoration for windows matching the specified criteria."
 msgstr "Dezactivează decorarea ferestrelor care îndeplinesc criteriile specificate."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:36
+#: metadata/vecdecor.xml:37
 msgid "Decoration applied for specified window types"
 msgstr "Decorarea aplicată pentru tipurile specificate de ferestre"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:37
+#: metadata/vecdecor.xml:38
 msgid "Forces window decoration for windows matching the specified criteria."
 msgstr "Forțează decorarea ferestrelor care îndeplinesc criteriile specificate."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:41
+#: metadata/vecdecor.xml:42
 msgid "Title Font"
 msgstr "Fontul titlului"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:42
+#: metadata/vecdecor.xml:43
 #, fuzzy
 msgid "Font to use for the titlebar. Uses the system font by default or if invalid."
 msgstr "Fontul de folosit pentru bara de titlu. Dimensiunea fontului determină înălțimea barei de titlu."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:46
+#: metadata/vecdecor.xml:47
 msgid "Color when focused"
 msgstr "Culoare când este focalizată"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:47
+#: metadata/vecdecor.xml:48
 msgid "Color of the window border when it has focus."
 msgstr "Culoarea marginii ferestrei când aceasta deține focalizarea."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:51
+#: metadata/vecdecor.xml:52
 msgid "Color when not focused"
 msgstr "Culoare când nu este focalizată"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:52
+#: metadata/vecdecor.xml:53
 msgid "Color of the window border when it does not have focus."
 msgstr "Culoarea marginii ferestrei când aceasta nu deține focalizarea."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:56
+#: metadata/vecdecor.xml:57
 msgid "Text color when focused"
 msgstr "Culoarea textului când este focalizată"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:57
+#: metadata/vecdecor.xml:58
 msgid "Color of the window titlebar text when it has focus."
 msgstr "Culoarea textului titlului ferestrei când aceasta deține focalizarea."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:61
+#: metadata/vecdecor.xml:62
 msgid "Text color when not focused"
 msgstr "Culoarea textului când nu este focalizată"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:62
+#: metadata/vecdecor.xml:63
 msgid "Color of the window titlebar text when it does not have focus."
 msgstr "Culoarea textului titlului ferestrei când aceasta nu deține focalizarea."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:66
+#: metadata/vecdecor.xml:67
 msgid "Titlebar Text Alignment"
 msgstr "Alinierea textului titlului"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:67
+#: metadata/vecdecor.xml:68
 msgid "Sets the alignment of the titlebar text."
 msgstr "Stabilește alinierea textului barei de titlu."
 
 #. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:71
+#: metadata/vecdecor.xml:72
 msgid "Left"
 msgstr "Stânga"
 
 #. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:75
+#: metadata/vecdecor.xml:76
 msgid "Center"
 msgstr "Centru"
 
 #. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:79
+#: metadata/vecdecor.xml:80
 msgid "Right"
 msgstr "Dreapta"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:78
+#: metadata/vecdecor.xml:84
 msgid "Rounded Corner Radius"
 msgstr "Raza colțurilor rotunjite"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:176
+#: metadata/vecdecor.xml:85
 msgid "The radius for corners."
 msgstr "Raza de folosit pentru colțuri."
 
 #. (itstool) path: group/_short
-#: metadata/vecdecor.xml:193
+#: metadata/vecdecor.xml:91
 msgid "Buttons"
 msgstr "Butoane"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:195
+#: metadata/vecdecor.xml:93
+msgid "Button Size"
+msgstr ""
+
+#. (itstool) path: option/_long
+#: metadata/vecdecor.xml:94
+msgid "Sets the button size in logical pixels. A value of 0 selects automatic sizing."
+msgstr ""
+
+#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:99
 msgid "Button Colour"
 msgstr "Culoarea butoanelor"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:196
+#: metadata/vecdecor.xml:100
 msgid "Colour of active buttons."
 msgstr "Culoarea butoanelor de minimizare, maximizare și închidere."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:200
+#: metadata/vecdecor.xml:104
 msgid "Inactive Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:201
+#: metadata/vecdecor.xml:105
 msgid "Colour of inactive buttons."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:205
+#: metadata/vecdecor.xml:109
 msgid "Hover Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:206
+#: metadata/vecdecor.xml:110
 msgid "Colour of buttons under the pointer."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:210
+#: metadata/vecdecor.xml:114
 msgid "Pressed Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:211
+#: metadata/vecdecor.xml:115
 msgid "Colour of pressed buttons."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:215
+#: metadata/vecdecor.xml:119
 msgid "Button Line Thickness"
 msgstr "Grosimea liniei butoanelor"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:216
+#: metadata/vecdecor.xml:120
 msgid "The thickness used to draw the minimize, maximize and close button lines."
 msgstr "Grosimea folosită pentru a desena liniile butoanelor de minimizare, maximizare și închidere."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:221
+#: metadata/vecdecor.xml:125
 msgid "Left Button Spacing"
 msgstr "Spațierea butoanelor din stânga"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:222
+#: metadata/vecdecor.xml:126
 msgid "The space between each button on the left."
 msgstr "Spațiul adăugat între butoanele de pe stânga."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:227
+#: metadata/vecdecor.xml:131
 msgid "Right Button Spacing"
 msgstr "Spațierea butoanelor din dreapta"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:228
+#: metadata/vecdecor.xml:132
 msgid "The space between each button on the right."
 msgstr "Spațiul adăugat între butoanele de pe dreapta."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:233
+#: metadata/vecdecor.xml:137
 msgid "Left Button X Offset"
 msgstr "Deviație pe X pentru butoanele din stânga"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:234
+#: metadata/vecdecor.xml:138
 msgid "Use this option to move the buttons on the left to the left or right."
 msgstr "Folosiți această opțiune pentru a muta butoanele de pe stânga mai la stânga sau mai la dreapta."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:238
+#: metadata/vecdecor.xml:142
 msgid "Right Button X Offset"
 msgstr "Deviație pe X pentru butoanele din dreapta"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:239
+#: metadata/vecdecor.xml:143
 msgid "Use this option to move the buttons on the right to the left or right."
 msgstr "Folosiți această opțiune pentru a muta butoanele de pe dreapta mai la stânga sau mai la dreapta."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:243
+#: metadata/vecdecor.xml:147
 msgid "Button Y Offset"
 msgstr "Poziția pe Y a butoanelor"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:244
+#: metadata/vecdecor.xml:148
 msgid "Use this option to move buttons up or down."
 msgstr "Folosiți această opțiune pentru a muta butoanele mai sus sau mai jos."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:248
+#: metadata/vecdecor.xml:152
 msgid "Button Hover Animation Duration"
 msgstr "Durata animației de planare pe butoane"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:249
+#: metadata/vecdecor.xml:153
 msgid "The time the hover animation will last, in milliseconds."
 msgstr "Timpul în milisecunde pe care îl va dura animația când se planează pe butoane."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:254
+#: metadata/vecdecor.xml:158
 msgid "Minimise Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:255
+#: metadata/vecdecor.xml:159
 msgid "The SVG file to use for the minimise button."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:260
+#: metadata/vecdecor.xml:164
 msgid "Maximise Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:261
+#: metadata/vecdecor.xml:165
 msgid "The SVG file to use for the maximise button."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:266
+#: metadata/vecdecor.xml:170
 msgid "Restore Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:267
+#: metadata/vecdecor.xml:171
 msgid "The SVG file to use for the restore button."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:272
+#: metadata/vecdecor.xml:176
 msgid "Close Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:273
+#: metadata/vecdecor.xml:177
 msgid "The SVG file to use for the close button."
 msgstr ""
 
 #. (itstool) path: group/_short
-#: metadata/vecdecor.xml:279
+#: metadata/vecdecor.xml:183
 msgid "Shade"
 msgstr "Restrângere"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:281
+#: metadata/vecdecor.xml:185
 msgid "Enable Shade Effect"
 msgstr "Activează efectul de restrângere"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:282
+#: metadata/vecdecor.xml:186
 msgid "Use the axis binding or scroll on the titlebar of Vecdecor windows to shade windows into their respective titlebars."
 msgstr "Folosiți asocierea de axă sau derulați pe bara de titlu a ferestrelor decorate de Vecdecor pentru a le restrânge în barele de titlu respective."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:286
+#: metadata/vecdecor.xml:190
 msgid "Shade Duration"
 msgstr "Durata restrângerii"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:287
+#: metadata/vecdecor.xml:191
 msgid "The duration of the shade animation in milliseconds."
 msgstr "Durata animației de restrângere, în milisecunde."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:292
+#: metadata/vecdecor.xml:196
 msgid "Shade Modifier"
 msgstr "Modificator de restrângere"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:293
+#: metadata/vecdecor.xml:197
 msgid "When the shade modifier key is held down, you can scroll down and up to shade and unshade the window."
 msgstr "Când tasta modificator pentru restrângere este apăsată, puteți derula în jos și în sus pentru a restrânge fereastra sau a o readuce la starea inițială."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:297
+#: metadata/vecdecor.xml:201
 msgid "Toggle Window Shade"
 msgstr "Comutare restrângere fereastră"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:298
+#: metadata/vecdecor.xml:202
 msgid "Toggles shade for the active window."
 msgstr "Comută restrângerea ferestrei active."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:302
+#: metadata/vecdecor.xml:206
 msgid "CSD Titlebar Height"
 msgstr "Înălțimea barei de titlu CSD"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:303
+#: metadata/vecdecor.xml:207
 msgid "Because there is no way to know the client surface titlebar height, this is an option to adjust it."
 msgstr "Pentru că nu se poate ști dimensiunea barei de titlu furnizată de client, această opțiune o poate regla."
