@@ -63,14 +63,7 @@ msgid "Whether or not to render side and bottom decorations on maximized windows
 msgstr "Si se deben renderizar o no las decoraciones laterales e inferiores en ventanas maximizadas."
 
 #. (itstool) path: option/_short
-msgid "Draw shadows on maximized windows"
-msgstr "Dibujar sombras en ventanas maximizadas"
-
-#. (itstool) path: option/_long
-msgid "Whether or not to allocate space for shadows on maximized windows."
-msgstr "Si se debe asignar o no espacio para sombras en ventanas maximizadas."
-
-#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:31
 msgid "Decoration disabled for specified window types"
 msgstr "Decoración desactivada para tipos de ventana especificados"
 
@@ -147,128 +140,13 @@ msgid "Right"
 msgstr "Derecha"
 
 #. (itstool) path: option/_short
-msgid "Overlay Engine"
-msgstr "Motor de superposición"
-
-#. (itstool) path: option/_long
-msgid "Sets the overlay engine."
-msgstr "Establece el motor de superposición."
-
-#. (itstool) path: desc/_name
-msgid "None"
-msgstr "Ninguno"
-
-#. (itstool) path: desc/_name
-msgid "Rounded Corners"
-msgstr "Esquinas redondeadas"
-
-#. (itstool) path: desc/_name
-msgid "Beveled Glass"
-msgstr "Cristal biselado"
-
-#. (itstool) path: option/_short
-msgid "Effect Type"
-msgstr "Tipo de efecto"
-
-#. (itstool) path: option/_long
-msgid "Sets the effect type."
-msgstr "Establece el tipo de efecto."
-
-#. (itstool) path: desc/_name
-msgid "Smoke"
-msgstr "Humo"
-
-#. (itstool) path: desc/_name
-msgid "Ink"
-msgstr "Tinta"
-
-#. (itstool) path: desc/_name
-msgid "Clouds"
-msgstr "Nubes"
-
-#. (itstool) path: desc/_name
-msgid "Halftone"
-msgstr "Medio tono"
-
-#. (itstool) path: desc/_name
-msgid "Pattern"
-msgstr "Patrón"
-
-#. (itstool) path: desc/_name
-msgid "Lava"
-msgstr "Lava"
-
-#. (itstool) path: desc/_name
-msgid "Hex"
-msgstr "Hex"
-
-#. (itstool) path: desc/_name
-msgid "Zebra"
-msgstr "Cebra"
-
-#. (itstool) path: desc/_name
-msgid "Neural network"
-msgstr "Red neuronal"
-
-#. (itstool) path: desc/_name
-msgid "Hexagon maze"
-msgstr "Laberinto hexagonal"
-
-#. (itstool) path: desc/_name
-msgid "Raymarched truchet"
-msgstr "Truchet raymarched"
-
-#. (itstool) path: desc/_name
-msgid "Neon pattern"
-msgstr "Patrón neón"
-
-#. (itstool) path: desc/_name
-msgid "Neon rings"
-msgstr "Anillos neón"
-
-#. (itstool) path: desc/_name
-msgid "Deco"
-msgstr "Deco"
-
-#. (itstool) path: option/_short
-msgid "Effect Color"
-msgstr "Color del efecto"
-
-#. (itstool) path: option/_long
-msgid "Color of the titlebar background effect."
-msgstr "Color del efecto de fondo de la barra de título."
-
-#. (itstool) path: option/_short
-msgid "Animate Effects"
-msgstr "Animar efectos"
-
-#. (itstool) path: option/_long
-msgid "WARNING: Enabling this option can use lots of system resources. Enables animating and constant repainting of window decorations."
-msgstr "ADVERTENCIA: Habilitar esta opción puede consumir muchos recursos del sistema. Permite animar y repintar constantemente las decoraciones de la ventana."
-
-#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:175
 msgid "Rounded Corner Radius"
 msgstr "Radio de las esquinas redondeadas"
 
 #. (itstool) path: option/_long
 msgid "The radius for corners."
 msgstr "El radio de las esquinas."
-
-#. (itstool) path: option/_short
-msgid "Shadow Radius"
-msgstr "Radio de la sombra"
-
-#. (itstool) path: option/_long
-msgid "The radius for shadows."
-msgstr "El radio de las sombras."
-
-#. (itstool) path: option/_short
-msgid "Shadow Color"
-msgstr "Color de la sombra"
-
-#. (itstool) path: option/_long
-msgid "Color of the drop shadows."
-msgstr "Color de las sombras proyectadas."
 
 #. (itstool) path: group/_short
 msgid "Buttons"

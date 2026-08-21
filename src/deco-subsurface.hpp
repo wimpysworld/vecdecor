@@ -46,15 +46,12 @@ class simple_decorator_t : public wf::custom_data_t
 
   public:
     void update_colors();
-    void effect_updated();
     void recreate_frame();
     void update_decoration_size();
     simple_decorator_t(wayfire_toplevel_view view);
     ~simple_decorator_t();
     wf::decoration_margins_t get_margins(const wf::toplevel_state_t& state);
     int get_titlebar_height();
-    void update_animation();
-    int shadow_thickness;
 };
 }
 }

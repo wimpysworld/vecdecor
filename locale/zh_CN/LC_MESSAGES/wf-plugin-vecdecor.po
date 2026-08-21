@@ -63,14 +63,7 @@ msgid "Whether or not to render side and bottom decorations on maximized windows
 msgstr "是否在最大化窗口上渲染侧面和底部装饰。"
 
 #. (itstool) path: option/_short
-msgid "Draw shadows on maximized windows"
-msgstr "在最大化窗口上绘制阴影"
-
-#. (itstool) path: option/_long
-msgid "Whether or not to allocate space for shadows on maximized windows."
-msgstr "是否在最大化窗口上为阴影分配空间。"
-
-#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:31
 msgid "Decoration disabled for specified window types"
 msgstr "为指定的窗口类型禁用装饰"
 
@@ -147,128 +140,13 @@ msgid "Right"
 msgstr "右对齐"
 
 #. (itstool) path: option/_short
-msgid "Overlay Engine"
-msgstr "覆盖引擎"
-
-#. (itstool) path: option/_long
-msgid "Sets the overlay engine."
-msgstr "设置覆盖引擎。"
-
-#. (itstool) path: desc/_name
-msgid "None"
-msgstr "无"
-
-#. (itstool) path: desc/_name
-msgid "Rounded Corners"
-msgstr "圆角"
-
-#. (itstool) path: desc/_name
-msgid "Beveled Glass"
-msgstr "斜角玻璃"
-
-#. (itstool) path: option/_short
-msgid "Effect Type"
-msgstr "效果类型"
-
-#. (itstool) path: option/_long
-msgid "Sets the effect type."
-msgstr "设置效果类型。"
-
-#. (itstool) path: desc/_name
-msgid "Smoke"
-msgstr "烟雾"
-
-#. (itstool) path: desc/_name
-msgid "Ink"
-msgstr "墨水"
-
-#. (itstool) path: desc/_name
-msgid "Clouds"
-msgstr "云"
-
-#. (itstool) path: desc/_name
-msgid "Halftone"
-msgstr "半色调"
-
-#. (itstool) path: desc/_name
-msgid "Pattern"
-msgstr "图案"
-
-#. (itstool) path: desc/_name
-msgid "Lava"
-msgstr "岩浆"
-
-#. (itstool) path: desc/_name
-msgid "Hex"
-msgstr "六边形"
-
-#. (itstool) path: desc/_name
-msgid "Zebra"
-msgstr "斑马"
-
-#. (itstool) path: desc/_name
-msgid "Neural network"
-msgstr "神经网络"
-
-#. (itstool) path: desc/_name
-msgid "Hexagon maze"
-msgstr "六边形迷宫"
-
-#. (itstool) path: desc/_name
-msgid "Raymarched truchet"
-msgstr "光线追踪Truchet"
-
-#. (itstool) path: desc/_name
-msgid "Neon pattern"
-msgstr "霓虹图案"
-
-#. (itstool) path: desc/_name
-msgid "Neon rings"
-msgstr "霓虹环"
-
-#. (itstool) path: desc/_name
-msgid "Deco"
-msgstr "装饰艺术"
-
-#. (itstool) path: option/_short
-msgid "Effect Color"
-msgstr "效果颜色"
-
-#. (itstool) path: option/_long
-msgid "Color of the titlebar background effect."
-msgstr "标题栏背景效果的颜色。"
-
-#. (itstool) path: option/_short
-msgid "Animate Effects"
-msgstr "动画效果"
-
-#. (itstool) path: option/_long
-msgid "WARNING: Enabling this option can use lots of system resources. Enables animating and constant repainting of window decorations."
-msgstr "警告：启用此选项可能会占用大量系统资源。启用窗口装饰的动画和持续重绘。"
-
-#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:175
 msgid "Rounded Corner Radius"
 msgstr "圆角半径"
 
 #. (itstool) path: option/_long
 msgid "The radius for corners."
 msgstr "角的半径。"
-
-#. (itstool) path: option/_short
-msgid "Shadow Radius"
-msgstr "阴影半径"
-
-#. (itstool) path: option/_long
-msgid "The radius for shadows."
-msgstr "阴影的半径。"
-
-#. (itstool) path: option/_short
-msgid "Shadow Color"
-msgstr "阴影颜色"
-
-#. (itstool) path: option/_long
-msgid "Color of the drop shadows."
-msgstr "投影的颜色。"
 
 #. (itstool) path: group/_short
 msgid "Buttons"
