@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2025-09-15 14:25+0300\n"
+"POT-Creation-Date: 2026-08-21 10:07+0100\n"
 "PO-Revision-Date: 2025-09-15 14:29+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,10 +16,8 @@ msgid "Vecdecor"
 msgstr "Vecdecor"
 
 #. (itstool) path: plugin/_long
-msgid ""
-"A highly configurable and optionally fancy decorator plugin for wayfire."
-msgstr ""
-"Un decorator foarte configurabil și opțional extravagant pentru wayfire."
+msgid "A highly configurable and optionally fancy decorator plugin for Wayfire."
+msgstr "Un decorator foarte configurabil și opțional extravagant pentru wayfire."
 
 #. (itstool) path: group/_short
 msgid "General"
@@ -62,11 +60,8 @@ msgid "Draw borders on maximized windows"
 msgstr "Desenează borduri pe ferestrele maximizate"
 
 #. (itstool) path: option/_long
-msgid ""
-"Whether or not to render side and bottom decorations on maximized windows."
-msgstr ""
-"Dacă să se deseneze decorațiile laterale și de jos pe ferestrele maximizate "
-"sau nu."
+msgid "Whether or not to render side and bottom decorations on maximized windows."
+msgstr "Dacă să se deseneze decorațiile laterale și de jos pe ferestrele maximizate sau nu."
 
 #. (itstool) path: option/_short
 msgid "Draw shadows on maximized windows"
@@ -82,8 +77,7 @@ msgstr "Decorarea dezactivată pentru tipurile specificate de ferestre"
 
 #. (itstool) path: option/_long
 msgid "Disables window decoration for windows matching the specified criteria."
-msgstr ""
-"Dezactivează decorarea ferestrelor care îndeplinesc criteriile specificate."
+msgstr "Dezactivează decorarea ferestrelor care îndeplinesc criteriile specificate."
 
 #. (itstool) path: option/_short
 msgid "Decoration applied for specified window types"
@@ -91,19 +85,15 @@ msgstr "Decorarea aplicată pentru tipurile specificate de ferestre"
 
 #. (itstool) path: option/_long
 msgid "Forces window decoration for windows matching the specified criteria."
-msgstr ""
-"Forțează decorarea ferestrelor care îndeplinesc criteriile specificate."
+msgstr "Forțează decorarea ferestrelor care îndeplinesc criteriile specificate."
 
 #. (itstool) path: option/_short
 msgid "Title Font"
 msgstr "Fontul titlului"
 
 #. (itstool) path: option/_long
-msgid ""
-"Font to use for the titlebar. The font size determines the titlebar height."
-msgstr ""
-"Fontul de folosit pentru bara de titlu. Dimensiunea fontului determină "
-"înălțimea barei de titlu."
+msgid "Font to use for the titlebar. The font size determines the titlebar height."
+msgstr "Fontul de folosit pentru bara de titlu. Dimensiunea fontului determină înălțimea barei de titlu."
 
 #. (itstool) path: option/_short
 msgid "Color when focused"
@@ -135,8 +125,7 @@ msgstr "Culoarea textului când nu este focalizată"
 
 #. (itstool) path: option/_long
 msgid "Color of the window titlebar text when it does not have focus."
-msgstr ""
-"Culoarea textului titlului ferestrei când aceasta nu deține focalizarea."
+msgstr "Culoarea textului titlului ferestrei când aceasta nu deține focalizarea."
 
 #. (itstool) path: option/_short
 msgid "Titlebar Text Alignment"
@@ -255,13 +244,8 @@ msgid "Animate Effects"
 msgstr "Animare efecte"
 
 #. (itstool) path: option/_long
-msgid ""
-"WARNING: Enabling this option can use lots of system resources. Enables "
-"animating and constant repainting of window decorations."
-msgstr ""
-"AVERTISMENT: Activarea acestei opțiuni poate folosi foarte multe resurse ale "
-"sistemului. Activează animarea și redesenarea constantă a decorațiilor de "
-"fereastră."
+msgid "WARNING: Enabling this option can use lots of system resources. Enables animating and constant repainting of window decorations."
+msgstr "AVERTISMENT: Activarea acestei opțiuni poate folosi foarte multe resurse ale sistemului. Activează animarea și redesenarea constantă a decorațiilor de fereastră."
 
 #. (itstool) path: option/_short
 msgid "Rounded Corner Radius"
@@ -296,34 +280,48 @@ msgid "Button Layout"
 msgstr "Aranjament butoane"
 
 #. (itstool) path: option/_long
-msgid ""
-"The layout of the 'minimize', 'maximize' and 'close' buttons. Use a comma to "
-"separate button strings and a colon to denote the seperation between left "
-"and right buttons."
-msgstr ""
-"Aranjamentul butoanelor „minimize” (minimizare), „maximize” (maximizare) și "
-"„close” (închidere). Folosiți câte o virgulă pentru a separa numele "
-"butoanelor și două puncte (:) pentru a marca separarea dintre butoanele de "
-"pe stânga și cele de pe dreapta."
+msgid "The layout of the 'minimize', 'maximize' and 'close' buttons. Use a comma to separate button strings and a colon to denote the seperation between left and right buttons."
+msgstr "Aranjamentul butoanelor „minimize” (minimizare), „maximize” (maximizare) și „close” (închidere). Folosiți câte o virgulă pentru a separa numele butoanelor și două puncte (:) pentru a marca separarea dintre butoanele de pe stânga și cele de pe dreapta."
 
 #. (itstool) path: option/_short
-msgid "Button Color"
+msgid "Button Colour"
 msgstr "Culoarea butoanelor"
 
 #. (itstool) path: option/_long
-msgid "Color of the minimize, maximize and close buttons."
+msgid "Colour of active buttons."
 msgstr "Culoarea butoanelor de minimizare, maximizare și închidere."
+
+#. (itstool) path: option/_short
+msgid "Inactive Button Colour"
+msgstr ""
+
+#. (itstool) path: option/_long
+msgid "Colour of inactive buttons."
+msgstr ""
+
+#. (itstool) path: option/_short
+msgid "Hover Button Colour"
+msgstr ""
+
+#. (itstool) path: option/_long
+msgid "Colour of buttons under the pointer."
+msgstr ""
+
+#. (itstool) path: option/_short
+msgid "Pressed Button Colour"
+msgstr ""
+
+#. (itstool) path: option/_long
+msgid "Colour of pressed buttons."
+msgstr ""
 
 #. (itstool) path: option/_short
 msgid "Button Line Thickness"
 msgstr "Grosimea liniei butoanelor"
 
 #. (itstool) path: option/_long
-msgid ""
-"The thickness used to draw the minimize, maximize and close button lines."
-msgstr ""
-"Grosimea folosită pentru a desena liniile butoanelor de minimizare, "
-"maximizare și închidere."
+msgid "The thickness used to draw the minimize, maximize and close button lines."
+msgstr "Grosimea folosită pentru a desena liniile butoanelor de minimizare, maximizare și închidere."
 
 #. (itstool) path: option/_short
 msgid "Left Button Spacing"
@@ -347,9 +345,7 @@ msgstr "Deviație pe X pentru butoanele din stânga"
 
 #. (itstool) path: option/_long
 msgid "Use this option to move the buttons on the left to the left or right."
-msgstr ""
-"Folosiți această opțiune pentru a muta butoanele de pe stânga mai la stânga "
-"sau mai la dreapta."
+msgstr "Folosiți această opțiune pentru a muta butoanele de pe stânga mai la stânga sau mai la dreapta."
 
 #. (itstool) path: option/_short
 msgid "Right Button X Offset"
@@ -357,9 +353,7 @@ msgstr "Deviație pe X pentru butoanele din dreapta"
 
 #. (itstool) path: option/_long
 msgid "Use this option to move the buttons on the right to the left or right."
-msgstr ""
-"Folosiți această opțiune pentru a muta butoanele de pe dreapta mai la stânga "
-"sau mai la dreapta."
+msgstr "Folosiți această opțiune pentru a muta butoanele de pe dreapta mai la stânga sau mai la dreapta."
 
 #. (itstool) path: option/_short
 msgid "Button Y Offset"
@@ -375,83 +369,39 @@ msgstr "Durata animației de planare pe butoane"
 
 #. (itstool) path: option/_long
 msgid "The time the hover animation will last, in milliseconds."
+msgstr "Timpul în milisecunde pe care îl va dura animația când se planează pe butoane."
+
+#. (itstool) path: option/_short
+msgid "Minimise Button SVG"
 msgstr ""
-"Timpul în milisecunde pe care îl va dura animația când se planează pe "
-"butoane."
-
-#. (itstool) path: option/_short
-msgid "Button Minimize Image"
-msgstr "Imaginea butonului de minimizare"
 
 #. (itstool) path: option/_long
-msgid "The png image to use for the minimize button."
-msgstr "Imaginea PNG care să fie folosită pentru butonul de minimizare."
-
-#. (itstool) path: option/_short
-msgid "Button Maximize Image"
-msgstr "Imaginea butonului de maximizare"
-
-#. (itstool) path: option/_long
-msgid "The png image to use for the maximize button."
-msgstr "Imaginea PNG care să fie folosită pentru butonul de maximizare."
-
-#. (itstool) path: option/_short
-msgid "Button Restore Image"
-msgstr "Imaginea butonului de "
-
-#. (itstool) path: option/_long
-msgid "The png image to use for the restore button."
+msgid "The SVG file to use for the minimise button."
 msgstr ""
-"Imaginea PNG care să fie folosită pentru butonul de restaurare "
-"(demaximizare)."
 
 #. (itstool) path: option/_short
-msgid "Button Close Image"
-msgstr "Imaginea butonului de închidere"
-
-#. (itstool) path: option/_long
-msgid "The png image to use for the close button."
-msgstr "Imaginea PNG care să fie folosită pentru butonul de închidere."
-
-#. (itstool) path: option/_short
-msgid "Button Minimize Hover Image"
-msgstr "Imaginea butonului de minimizare la planare"
-
-#. (itstool) path: option/_long
-msgid "The png image to use when hovering the minimize button."
+msgid "Maximise Button SVG"
 msgstr ""
-"Imaginea PNG care să fie folosită când se planează peste butonul de "
-"minimizare."
-
-#. (itstool) path: option/_short
-msgid "Button Maximize Hover Image"
-msgstr "Imaginea butonului de maximizare la planare"
 
 #. (itstool) path: option/_long
-msgid "The png image to use when hovering the maximize button."
+msgid "The SVG file to use for the maximise button."
 msgstr ""
-"Imaginea PNG care să fie folosită când se planează peste butonul de "
-"maximizare."
 
 #. (itstool) path: option/_short
-msgid "Button Restore Hover Image"
-msgstr "Imaginea butonului de restaurare la planare"
+msgid "Restore Button SVG"
+msgstr ""
 
 #. (itstool) path: option/_long
-msgid "The png image to use when hovering the restore button."
+msgid "The SVG file to use for the restore button."
 msgstr ""
-"Imaginea PNG care să fie folosită când se planează peste butonul de "
-"restaurare (demaximizare)."
 
 #. (itstool) path: option/_short
-msgid "Button Close Hover Image"
-msgstr "Imaginea butonului de închidere la planare"
+msgid "Close Button SVG"
+msgstr ""
 
 #. (itstool) path: option/_long
-msgid "The png image to use when hovering the close button."
+msgid "The SVG file to use for the close button."
 msgstr ""
-"Imaginea PNG care să fie folosită când se planează peste butonul de "
-"închidere."
 
 #. (itstool) path: group/_short
 msgid "Shade"
@@ -462,12 +412,8 @@ msgid "Enable Shade Effect"
 msgstr "Activează efectul de restrângere"
 
 #. (itstool) path: option/_long
-msgid ""
-"Use the axis binding or scroll on the titlebar of vecdecor windows to shade "
-"windows into their respective titlebars."
-msgstr ""
-"Folosiți asocierea de axă sau derulați pe bara de titlu a ferestrelor "
-"decorate de vecdecor pentru a le restrânge în barele de titlu respective."
+msgid "Use the axis binding or scroll on the titlebar of Vecdecor windows to shade windows into their respective titlebars."
+msgstr "Folosiți asocierea de axă sau derulați pe bara de titlu a ferestrelor decorate de Vecdecor pentru a le restrânge în barele de titlu respective."
 
 #. (itstool) path: option/_short
 msgid "Shade Duration"
@@ -482,12 +428,8 @@ msgid "Shade Modifier"
 msgstr "Modificator de restrângere"
 
 #. (itstool) path: option/_long
-msgid ""
-"When the shade modifier key is held down, you can scroll down and up to "
-"shade and unshade the window."
-msgstr ""
-"Când tasta modificator pentru restrângere este apăsată, puteți derula în jos "
-"și în sus pentru a restrânge fereastra sau a o readuce la starea inițială."
+msgid "When the shade modifier key is held down, you can scroll down and up to shade and unshade the window."
+msgstr "Când tasta modificator pentru restrângere este apăsată, puteți derula în jos și în sus pentru a restrânge fereastra sau a o readuce la starea inițială."
 
 #. (itstool) path: option/_short
 msgid "Toggle Window Shade"
@@ -502,9 +444,5 @@ msgid "CSD Titlebar Height"
 msgstr "Înălțimea barei de titlu CSD"
 
 #. (itstool) path: option/_long
-msgid ""
-"Because there is no way to know the client surface titlebar height, this is "
-"an option to adjust it."
-msgstr ""
-"Pentru că nu se poate ști dimensiunea barei de titlu furnizată de client, "
-"această opțiune o poate regla."
+msgid "Because there is no way to know the client surface titlebar height, this is an option to adjust it."
+msgstr "Pentru că nu se poate ști dimensiunea barei de titlu furnizată de client, această opțiune o poate regla."
