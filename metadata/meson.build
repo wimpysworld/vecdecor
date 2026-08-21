@@ -1,1 +1,1 @@
-install_data( 'pixdecor.xml', install_dir: wayfire.get_variable( pkgconfig: 'metadatadir' ) )
+install_data( 'vecdecor.xml', install_dir: wayfire.get_variable( pkgconfig: 'metadatadir' ) )

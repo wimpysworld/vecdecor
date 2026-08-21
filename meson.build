@@ -1,5 +1,5 @@
 project(
-    'pixdecor',
+    'vecdecor',
     'c',
     'cpp',
     version: '0.1.0',
@@ -20,4 +20,3 @@ wayfire = dependency('wayfire', version: '>=0.9.0')
 
 subdir('src')
 subdir('metadata')
-

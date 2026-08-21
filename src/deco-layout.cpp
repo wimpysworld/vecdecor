@@ -81,9 +81,9 @@ pixdecor_layout_t::~pixdecor_layout_t()
 wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
 {
     // read the string from settings; start at the beginning and replace commas with spaces
-    wf::option_wrapper_t<int> button_spacing{"pixdecor/left_button_spacing"};
-    wf::option_wrapper_t<int> button_x_offset{"pixdecor/left_button_x_offset"};
-    wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
+    wf::option_wrapper_t<int> button_spacing{"vecdecor/left_button_spacing"};
+    wf::option_wrapper_t<int> button_x_offset{"vecdecor/left_button_x_offset"};
+    wf::option_wrapper_t<int> button_y_offset{"vecdecor/button_y_offset"};
     GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
     gchar *b_layout     = g_settings_get_string(settings, "button-layout");
     gchar *ptr = b_layout;
@@ -160,9 +160,9 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
 wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
 {
     // read the string from settings; start at the colon and replace commas with spaces
-    wf::option_wrapper_t<int> button_spacing{"pixdecor/right_button_spacing"};
-    wf::option_wrapper_t<int> button_x_offset{"pixdecor/right_button_x_offset"};
-    wf::option_wrapper_t<int> button_y_offset{"pixdecor/button_y_offset"};
+    wf::option_wrapper_t<int> button_spacing{"vecdecor/right_button_spacing"};
+    wf::option_wrapper_t<int> button_x_offset{"vecdecor/right_button_x_offset"};
+    wf::option_wrapper_t<int> button_y_offset{"vecdecor/button_y_offset"};
     GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
     gchar *b_layout     = g_settings_get_string(settings, "button-layout");
     gchar *ptr = b_layout + strlen(b_layout) - 1;
@@ -239,9 +239,9 @@ wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
 /** Regenerate layout using the new size */
 void pixdecor_layout_t::resize(int width, int height)
 {
-    wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
-    wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
-    wf::option_wrapper_t<bool> maximized_borders{"pixdecor/maximized_borders"};
+    wf::option_wrapper_t<int> shadow_radius{"vecdecor/shadow_radius"};
+    wf::option_wrapper_t<std::string> overlay_engine{"vecdecor/overlay_engine"};
+    wf::option_wrapper_t<bool> maximized_borders{"vecdecor/maximized_borders"};
     bool rounded_corners = std::string(overlay_engine) == "rounded_corners";
 
     int border = theme.get_border_size();
@@ -585,8 +585,8 @@ nonstd::observer_ptr<decoration_area_t> pixdecor_layout_t::find_area_at(
 /** Calculate resize edges based on @current_input */
 uint32_t pixdecor_layout_t::calculate_resize_edges() const
 {
-    wf::option_wrapper_t<int> shadow_radius{"pixdecor/shadow_radius"};
-    wf::option_wrapper_t<std::string> overlay_engine{"pixdecor/overlay_engine"};
+    wf::option_wrapper_t<int> shadow_radius{"vecdecor/shadow_radius"};
+    wf::option_wrapper_t<std::string> overlay_engine{"vecdecor/overlay_engine"};
     int radius     = (std::string(overlay_engine) == "rounded_corners") ? int(shadow_radius) : 0;
     uint32_t edges = 0;
     for (auto& area : layout_areas)
