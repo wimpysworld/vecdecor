@@ -174,6 +174,12 @@ void test_invalid_inputs_and_view_boxes()
     expect(result.used_automatic_fallback && (result.output_scale == 1.0),
         "a negative runtime scale uses scale 1");
 
+    input = valid_geometry_input();
+    input.output_scale = 0.0;
+    result = geometry::resolve_geometry(input);
+    expect(result.used_automatic_fallback && (result.output_scale == 1.0),
+        "a zero runtime scale uses scale 1");
+
     const geometry::svg_proportions_t invalid_boxes[] = {
         {-0.1, 0.0, 1.0, 1.0},
         {0.0, 0.0, 0.0, 1.0},
@@ -420,6 +426,11 @@ void test_scale_and_cache_contracts()
     const auto invalid_scale = geometry::resolve_cache_key(changed);
     expect(invalid_scale.output_scale == 1.0 && invalid_scale.raster_size == base.raster_size,
         "an invalid runtime cache scale uses the safe scale");
+
+    changed.output_scale = 0.0;
+    const auto zero_scale = geometry::resolve_cache_key(changed);
+    expect(zero_scale.output_scale == 1.0 && zero_scale.raster_size == base.raster_size,
+        "a zero runtime cache scale uses the safe scale");
 
     changed = base_input;
     changed.state.kind = static_cast<geometry::button_kind_t>(-1);
