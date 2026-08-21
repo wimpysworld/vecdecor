@@ -98,7 +98,10 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
 
     geometry::cache_key_input_t key_input;
     key_input.state = state;
-    key_input.logical_size     = {button_geometry.width, button_geometry.height};
+    key_input.logical_size = {
+        static_cast<int>(button_geometry.width),
+        static_cast<int>(button_geometry.height),
+    };
     key_input.svg_proportions  = theme.get_svg_proportions();
     key_input.output_scale     = data.target.scale;
     key_input.theme_generation = theme.get_generation();
