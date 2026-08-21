@@ -369,7 +369,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         });
         title_font.set_callback([=] {recreate_frames();});
         rounded_corner_radius.set_callback([=] {recreate_frames();});
-        register_size_option_callbacks(button_size, title_height, [=] {recreate_frames();});
+        register_size_option_callbacks(button_size, title_height, [=] {recreate_decorations();});
         maximized_borders.set_callback([=]
         {
             for (auto& view : wf::get_core().get_all_views())
