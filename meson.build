@@ -20,3 +20,4 @@ wayfire = dependency('wayfire', version: '>=0.9.0')
 
 subdir('src')
 subdir('metadata')
+subdir('locale')
