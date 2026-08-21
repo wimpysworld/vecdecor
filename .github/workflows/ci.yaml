@@ -45,7 +45,7 @@ jobs:
 
   CI:
     name: CI
-    if: ${{ always() }}
+    if: ${{ !cancelled() }}
     needs:
       - checks
     runs-on: ubuntu-latest
