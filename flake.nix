@@ -27,6 +27,7 @@
             inputsFrom = [ pkgs.wayfire ];
 
             packages = with pkgs; [
+              gettext
               just
               meson
               ninja
