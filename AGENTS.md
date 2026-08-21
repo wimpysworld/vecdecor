@@ -15,3 +15,10 @@
 - Build and test `wayfire-0.10` against Wayfire 0.10.1.
 - When Felkor moves to Wayfire 0.11, develop shared features on `main`.
 - After that move, keep `wayfire-0.10` maintenance-only and cherry-pick only critical fixes from `main` with `git cherry-pick -x <commit>`.
+
+## Prior art
+
+- Study [Windecor](https://gitlab.com/wayfireplugins/windecor) for typed layout, input regions, and decoration state.
+- Study [Firedecor](https://github.com/mntmn/Firedecor) and [Cosmodecor](https://github.com/CosmicFusion/cosmodecor) for scene nodes, geometry, vector rendering, and caching.
+- Reimplement useful ideas within Vecdecor's retained Pixdecor history.
+- Do not copy code, assets, metadata, or documentation from Firedecor or Cosmodecor because neither project has clear retained licence provenance.
