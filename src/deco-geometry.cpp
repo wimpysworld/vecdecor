@@ -118,7 +118,7 @@ bool valid_font_height(int font_height)
 
 bool resolve_raster_dimension(int logical, double scale, int& raster)
 {
-    if ((logical < 0) || !std::isfinite(scale) || (scale < 0.0))
+    if ((logical < 0) || !std::isfinite(scale) || (scale <= 0.0))
     {
         return false;
     }
@@ -151,7 +151,7 @@ geometry_result_t automatic_fallback(const geometry_input_t& input)
 {
     geometry_input_t fallback;
     fallback.font_height  = valid_font_height(input.font_height) ? input.font_height : 0;
-    fallback.output_scale = std::isfinite(input.output_scale) && (input.output_scale >= 0.0) ?
+    fallback.output_scale = std::isfinite(input.output_scale) && (input.output_scale > 0.0) ?
         input.output_scale : 1.0;
 
     const int button = resolve_automatic_button_size(fallback.font_height);
@@ -276,7 +276,7 @@ bool is_valid(const geometry_input_t& input)
     return valid_font_height(input.font_height) && (input.requested_button_size >= 0) &&
            (input.requested_title_height >= 0) && (input.title_height_extension >= 0) &&
            std::isfinite(input.output_scale) &&
-           (input.output_scale >= 0.0) && is_valid(input.svg_proportions);
+           (input.output_scale > 0.0) && is_valid(input.svg_proportions);
 }
 
 bool is_valid(const button_group_input_t& input)
@@ -292,7 +292,7 @@ bool is_valid(const cache_key_input_t& input)
 {
     return is_valid(input.state) && is_valid(input.logical_size) &&
            is_valid(input.svg_proportions) &&
-           std::isfinite(input.output_scale) && (input.output_scale >= 0.0) &&
+           std::isfinite(input.output_scale) && (input.output_scale > 0.0) &&
            can_rasterize(input.logical_size, input.output_scale);
 }
 
@@ -503,7 +503,7 @@ button_cache_key_t resolve_cache_key(const cache_key_input_t& input)
 
     logical_size_t logical_size = is_valid(input.logical_size) ?
         input.logical_size : AUTOMATIC_FALLBACK_SIZE;
-    double output_scale = std::isfinite(input.output_scale) && (input.output_scale >= 0.0) ?
+    double output_scale = std::isfinite(input.output_scale) && (input.output_scale > 0.0) ?
         input.output_scale : 1.0;
     if (!can_rasterize(logical_size, output_scale))
     {
