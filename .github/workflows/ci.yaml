@@ -14,10 +14,9 @@ jobs:
         repository: WayfireWM/wayfire
         path: wayfire
     - run: cd wayfire && git submodule update --init --recursive && meson setup build --prefix=/usr && ninja -v -Cbuild && ninja -v -Cbuild install && cd ..
-    - name: Pixdecor
+    - name: Vecdecor
       uses: actions/checkout@v2
       with:
-        repository: soreau/pixdecor
         path: pixdecor
     - run: cd pixdecor && meson setup build --prefix=/usr && ninja -v -C build && ninja -v -C build install && cd ..
   test_code_style:
