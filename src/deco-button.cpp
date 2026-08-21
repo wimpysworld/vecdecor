@@ -2,7 +2,6 @@
 #include "deco-theme.hpp"
 #include <wayfire/opengl.hpp>
 #include <wayfire/plugins/common/cairo-util.hpp>
-#include <stdlib.h>
 
 #define NORMAL   1.0
 #define HOVERED  0.0
@@ -15,14 +14,14 @@ button_t::button_t(pixdecor_theme_t& t, std::function<void()> damage) :
     theme(t), damage_callback(damage)
 {}
 
-wf::dimensions_t button_t::set_button_type(button_type_t type)
+geometry::logical_bounds_t button_t::set_button_type(button_type_t type)
 {
-    this->type = type;
+    this->type     = type;
+    this->type_set = true;
     this->hover.animate(NORMAL, NORMAL);
-    auto size = update_texture();
     add_idle_damage();
 
-    return size;
+    return theme.get_button_bounds();
 }
 
 button_type_t button_t::get_button_type() const
@@ -64,15 +63,57 @@ void button_t::set_pressed(bool is_pressed)
     add_idle_damage();
 }
 
-void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_t geometry)
+void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_t button_geometry,
+    bool active, bool maximized)
 {
+    if (!type_set || (button_geometry.width <= 0) || (button_geometry.height <= 0))
+    {
+        return;
+    }
+
     if (this->hover.running())
     {
         add_idle_damage();
     }
 
-    OpenGL::render_texture(
-        wf::gles_texture_t{button_texture.get_texture()}, data.target, geometry, {1, 1, 1, this->hover},
+    geometry::button_state_t state;
+    switch (type)
+    {
+      case BUTTON_CLOSE:
+        state.kind = geometry::button_kind_t::close;
+        break;
+
+      case BUTTON_TOGGLE_MAXIMIZE:
+        state.kind = geometry::button_kind_t::maximize;
+        break;
+
+      case BUTTON_MINIMIZE:
+        state.kind = geometry::button_kind_t::minimize;
+        break;
+    }
+
+    state.focus    = active ? geometry::focus_state_t::active : geometry::focus_state_t::inactive;
+    state.maximize = maximized ? geometry::maximize_state_t::restore :
+        geometry::maximize_state_t::maximize;
+
+    geometry::cache_key_input_t key_input;
+    key_input.state = state;
+    key_input.logical_size     = {button_geometry.width, button_geometry.height};
+    key_input.svg_proportions  = theme.get_svg_proportions();
+    key_input.output_scale     = data.target.scale;
+    key_input.theme_generation = theme.get_generation();
+
+    key_input.state.interaction = is_pressed ? geometry::interaction_state_t::pressed :
+        geometry::interaction_state_t::normal;
+    const auto normal_key = geometry::resolve_cache_key(key_input);
+    update_texture(normal_key, button_texture, button_texture_key);
+
+    auto hovered_key = normal_key;
+    hovered_key.state.interaction = geometry::interaction_state_t::hover;
+    update_texture(hovered_key, button_texture_hovered, button_texture_hovered_key);
+
+    OpenGL::render_texture(wf::gles_texture_t{button_texture.get_texture()}, data.target, button_geometry,
+        {1, 1, 1, this->hover},
         OpenGL::RENDER_FLAG_CACHED);
     data.pass->custom_gles_subpass(data.target, [&]
     {
@@ -84,8 +125,8 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
     });
     OpenGL::clear_cached();
 
-    OpenGL::render_texture(
-        wf::gles_texture_t{button_texture_hovered.get_texture()}, data.target, geometry,
+    OpenGL::render_texture(wf::gles_texture_t{button_texture_hovered.get_texture()}, data.target,
+        button_geometry,
         {1, 1, 1, 1.0 - this->hover},
         OpenGL::RENDER_FLAG_CACHED);
     data.pass->custom_gles_subpass(data.target, [&]
@@ -99,31 +140,23 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
     OpenGL::clear_cached();
 }
 
-wf::dimensions_t button_t::update_texture()
+void button_t::update_texture(const geometry::button_cache_key_t& key,
+    wf::owned_texture_t& texture,
+    std::optional<geometry::button_cache_key_t>& texture_key)
 {
-    pixdecor_theme_t::button_state_t state = {
-        .width  = 1.0 * (theme.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
-        .height = 1.0 * (theme.get_font_height_px() >= LARGE_ICON_THRESHOLD ? 26 : 18),
-        .border = 1.0,
-    };
+    if (texture_key && (*texture_key == key))
+    {
+        return;
+    }
 
-    auto surfaces = theme.get_button_surface(type, state);
-    wf::dimensions_t size_normal{cairo_image_surface_get_width(surfaces->normal),
-        cairo_image_surface_get_height(surfaces->normal)};
-    // wf::dimensions_t size_hovered{cairo_image_surface_get_width(surfaces->hovered),
-    // cairo_image_surface_get_height(surfaces->hovered)};
-
+    auto surface = theme.get_button_surface(key);
     wf::gles::run_in_context([&]
     {
-        this->button_texture = owned_texture_t{surfaces->normal};
-        this->button_texture_hovered = owned_texture_t{surfaces->hovered};
+        texture = owned_texture_t{surface};
     });
 
-    cairo_surface_destroy(surfaces->normal);
-    cairo_surface_destroy(surfaces->hovered);
-    surfaces.reset();
-
-    return size_normal;
+    cairo_surface_destroy(surface);
+    texture_key = key;
 }
 
 void button_t::add_idle_damage()

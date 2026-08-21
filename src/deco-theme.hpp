@@ -1,10 +1,16 @@
 #pragma once
+#include "deco-geometry.hpp"
+
+#include <cairo.h>
+#include <cstdint>
+#include <gio/gio.h>
+#include <pango/pangocairo.h>
+#include <string>
+#include <wayfire/plugins/common/cairo-util.hpp>
 #include <wayfire/render-manager.hpp>
-#include "deco-button.hpp"
+#include <wayfire/scene-render.hpp>
 
 #define MIN_RESIZE_HANDLE_SIZE 5
-#define LARGE_ICON_THRESHOLD 20
-#define MIN_BAR_HEIGHT 20
 
 namespace wf
 {
@@ -29,6 +35,12 @@ class pixdecor_theme_t
     int get_font_height_px();
     /** @return The available height for displaying the title */
     int get_title_height();
+    /** @return The logical bounds for a button in the titlebar */
+    geometry::logical_bounds_t get_button_bounds();
+    /** @return The proportions for the button icon view box */
+    geometry::svg_proportions_t get_svg_proportions() const;
+    /** @return The current theme generation */
+    std::uint64_t get_generation() const;
     /** @return The available border for rendering */
     int get_border_size() const;
     /** @return The available border for resizing */
@@ -56,24 +68,12 @@ class pixdecor_theme_t
     cairo_surface_t *render_text(std::string text, int width, int height, int t_width, int border,
         int buttons_width, bool active);
 
-    struct button_state_t
-    {
-        /** Button width */
-        double width;
-        /** Button height */
-        double height;
-        /** Button outline size */
-        double border;
-    };
-
     /**
      * Get the icon for the given button. The caller is responsible for freeing the memory afterwards.
      *
-     * @param button The button type.
-     * @param state The button state.
+     * @param key The resolved button texture cache key.
      */
-    std::unique_ptr<button_surfaces_t> get_button_surface(button_type_t button,
-        const button_state_t& state) const;
+    cairo_surface_t *get_button_surface(const geometry::button_cache_key_t& key) const;
 
     void set_maximize(bool state);
 
@@ -95,8 +95,8 @@ class pixdecor_theme_t
     wf::color_t bg;
     wf::color_t fg_text;
     wf::color_t bg_text;
-    bool maximized;
-    std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> font_description;
+    bool maximized = false;
+    std::uint64_t generation = 0;
     background_cache_key_t background_cache_key;
     wf::owned_texture_t background_texture;
     bool background_texture_valid = false;
