@@ -501,8 +501,20 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 continue;
             }
 
-            remove_decoration(toplevel);
-            adjust_new_decorations(toplevel);
+            auto deco     = toplevel->toplevel()->get_data<simple_decorator_t>();
+            auto& pending = toplevel->toplevel()->pending();
+            if (!pending.fullscreen && !pending.tiled_edges)
+            {
+                pending.geometry = wf::shrink_geometry_by_margins(pending.geometry, pending.margins);
+            }
+
+            deco->recreate_frame();
+            pending.margins = deco->get_margins(pending);
+            if (!pending.fullscreen && !pending.tiled_edges)
+            {
+                pending.geometry = wf::expand_geometry_by_margins(pending.geometry, pending.margins);
+            }
+
             wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
         }
     }
