@@ -78,7 +78,7 @@ pixdecor_layout_t::~pixdecor_layout_t()
     this->layout_areas.clear();
 }
 
-wf::geometry_t pixdecor_layout_t::create_left_buttons()
+wf::geometry_t pixdecor_layout_t::create_left_buttons(int corner_inset)
 {
     // read the string from settings; start at the beginning and replace commas with spaces
     wf::option_wrapper_t<int> button_spacing{"vecdecor/left_button_spacing"};
@@ -133,7 +133,7 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons()
     int per_button  = 0;
     int border = theme.get_border_size();
     wf::geometry_t button_geometry;
-    button_geometry.x = (maximized ? 4 : border) + button_x_offset;
+    button_geometry.x = corner_inset + button_x_offset;
 
     for (auto type : buttons)
     {
@@ -157,7 +157,7 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons()
     };
 }
 
-wf::geometry_t pixdecor_layout_t::create_right_buttons(int width)
+wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int corner_inset)
 {
     // read the string from settings; start at the colon and replace commas with spaces
     wf::option_wrapper_t<int> button_spacing{"vecdecor/right_button_spacing"};
@@ -210,7 +210,7 @@ wf::geometry_t pixdecor_layout_t::create_right_buttons(int width)
     int per_button  = 0;
     int border = theme.get_border_size();
     wf::geometry_t button_geometry;
-    button_geometry.x = (width - (maximized ? 4 : border)) + button_x_offset;
+    button_geometry.x = width - corner_inset + button_x_offset;
 
     for (auto type : wf::reverse(buttons))
     {
@@ -242,13 +242,15 @@ void pixdecor_layout_t::resize(int width, int height)
     wf::option_wrapper_t<bool> maximized_borders{"vecdecor/maximized_borders"};
 
     int border = theme.get_border_size();
+    int corner_inset = maximized ? 4 : std::max(border,
+        std::clamp(int(theme.rounded_corner_radius), 0, std::min(width, height) / 2));
 
     this->layout_areas.clear();
 
     if (this->theme.get_title_height() > 0)
     {
-        auto button_left_geometry_expanded  = create_left_buttons();
-        auto button_right_geometry_expanded = create_right_buttons(width);
+        auto button_left_geometry_expanded  = create_left_buttons(corner_inset);
+        auto button_right_geometry_expanded = create_right_buttons(width, corner_inset);
 
         /* Padding around the buttons, allows move */
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
