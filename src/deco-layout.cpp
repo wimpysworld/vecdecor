@@ -240,12 +240,14 @@ void pixdecor_layout_t::resize(int width, int height)
             std::max(0, layout_width - 1)));
         title_width = std::clamp<int64_t>(title_width, 1,
             std::max(1, layout_width - title_x));
+        const int64_t title_area_height = static_cast<int64_t>(theme.get_title_height()) +
+            (maximized ? 0 : static_cast<int64_t>(border) / 2 + 1);
         wf::geometry_t title_geometry = {
             static_cast<double>(title_x),
             static_cast<double>(maximized ? 0 : border / 2),
             static_cast<double>(title_width),
-            static_cast<double>(theme.get_title_height() +
-                (maximized ? 0 : border / 2 + 1)),
+            static_cast<double>(std::clamp<int64_t>(title_area_height, 1,
+                std::numeric_limits<int>::max())),
         };
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_TITLE, title_geometry));
