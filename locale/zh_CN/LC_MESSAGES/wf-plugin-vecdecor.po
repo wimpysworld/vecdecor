@@ -11,8 +11,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 #. (itstool) path: plugin/_short
 
-msgid "Pix Decoration"
-msgstr "像素装饰"
+msgid "Vecdecor"
+msgstr "Vecdecor"
 
 #. (itstool) path: plugin/_long
 msgid ""
@@ -428,9 +428,9 @@ msgstr "启用卷影效果"
 
 #. (itstool) path: option/_long
 msgid ""
-"Use the axis binding or scroll on the titlebar of pixdecor windows to shade "
+"Use the axis binding or scroll on the titlebar of vecdecor windows to shade "
 "windows into their respective titlebars."
-msgstr "使用轴绑定或在像素装饰窗口的标题栏上滚动，以将窗口卷影到其各自的标题栏中。"
+msgstr "使用轴绑定或在 Vecdecor 窗口的标题栏上滚动，以将窗口卷影到其各自的标题栏中。"
 
 #. (itstool) path: option/_short
 msgid "Shade Duration"

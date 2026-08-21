@@ -11,8 +11,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. (itstool) path: plugin/_short
-msgid "Pix Decoration"
-msgstr "Decoración Pix"
+msgid "Vecdecor"
+msgstr "Vecdecor"
 
 #. (itstool) path: plugin/_long
 msgid ""
