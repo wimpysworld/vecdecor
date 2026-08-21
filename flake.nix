@@ -21,6 +21,11 @@
             substitute ${pkgs.wayfire}/lib/pkgconfig/wayfire.pc $out/lib/pkgconfig/wayfire.pc \
               --replace-fail 'metadatadir=''${prefix}/share/wayfire/metadata' 'metadatadir=/usr/share/wayfire/metadata'
           '';
+          wayfireUncrustifyConfig = pkgs.runCommand "wayfire-uncrustify.ini" { } ''
+            substitute ${pkgs.wayfire.src}/uncrustify.ini $out \
+              --replace-fail sp_before_tr_emb_cmt sp_before_tr_cmt \
+              --replace-fail sp_num_before_tr_emb_cmt sp_num_before_tr_cmt
+          '';
         in
         {
           default = pkgs.mkShell {
@@ -36,7 +41,7 @@
               wayfire
             ];
 
-            WAYFIRE_UNCRUSTIFY_CONFIG = "${pkgs.wayfire.src}/uncrustify.ini";
+            WAYFIRE_UNCRUSTIFY_CONFIG = wayfireUncrustifyConfig;
 
             shellHook = ''
               export PKG_CONFIG_PATH="${wayfirePkgConfig}/lib/pkgconfig:''${PKG_CONFIG_PATH:-}"
