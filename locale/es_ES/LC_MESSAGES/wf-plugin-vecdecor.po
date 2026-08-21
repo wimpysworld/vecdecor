@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-09-27 07:28-0600\n"
+"POT-Creation-Date: 2026-08-21 10:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -15,10 +15,8 @@ msgid "Vecdecor"
 msgstr "Vecdecor"
 
 #. (itstool) path: plugin/_long
-msgid ""
-"A highly configurable and optionally fancy decorator plugin for wayfire."
-msgstr ""
-"Un complemento decorador altamente configurable y opcionalmente elegante para wayfire."
+msgid "A highly configurable and optionally fancy decorator plugin for Wayfire."
+msgstr "Un complemento decorador altamente configurable y opcionalmente elegante para wayfire."
 
 #. (itstool) path: group/_short
 msgid "General"
@@ -61,10 +59,8 @@ msgid "Draw borders on maximized windows"
 msgstr "Dibujar bordes en ventanas maximizadas"
 
 #. (itstool) path: option/_long
-msgid ""
-"Whether or not to render side and bottom decorations on maximized windows."
-msgstr ""
-"Si se deben renderizar o no las decoraciones laterales e inferiores en ventanas maximizadas."
+msgid "Whether or not to render side and bottom decorations on maximized windows."
+msgstr "Si se deben renderizar o no las decoraciones laterales e inferiores en ventanas maximizadas."
 
 #. (itstool) path: option/_short
 msgid "Draw shadows on maximized windows"
@@ -95,10 +91,8 @@ msgid "Title Font"
 msgstr "Fuente del título"
 
 #. (itstool) path: option/_long
-msgid ""
-"Font to use for the titlebar. The font size determines the titlebar height."
-msgstr ""
-"Fuente a usar para la barra de título. El tamaño de la fuente determina la altura de la barra de título."
+msgid "Font to use for the titlebar. The font size determines the titlebar height."
+msgstr "Fuente a usar para la barra de título. El tamaño de la fuente determina la altura de la barra de título."
 
 #. (itstool) path: option/_short
 msgid "Color when focused"
@@ -249,12 +243,8 @@ msgid "Animate Effects"
 msgstr "Animar efectos"
 
 #. (itstool) path: option/_long
-msgid ""
-"WARNING: Enabling this option can use lots of system resources. Enables "
-"animating and constant repainting of window decorations."
-msgstr ""
-"ADVERTENCIA: Habilitar esta opción puede consumir muchos recursos del sistema. "
-"Permite animar y repintar constantemente las decoraciones de la ventana."
+msgid "WARNING: Enabling this option can use lots of system resources. Enables animating and constant repainting of window decorations."
+msgstr "ADVERTENCIA: Habilitar esta opción puede consumir muchos recursos del sistema. Permite animar y repintar constantemente las decoraciones de la ventana."
 
 #. (itstool) path: option/_short
 msgid "Rounded Corner Radius"
@@ -289,32 +279,48 @@ msgid "Button Layout"
 msgstr "Disposición de los botones"
 
 #. (itstool) path: option/_long
-msgid ""
-"The layout of the 'minimize', 'maximize' and 'close' buttons. Use a comma to "
-"separate button strings and a colon to denote the seperation between left "
-"and right buttons."
-msgstr ""
-"La disposición de los botones 'minimizar', 'maximizar' y 'cerrar'. Use una coma para "
-"separar las cadenas de botones y dos puntos para denotar la separación entre "
-"los botones de la izquierda y la derecha."
+msgid "The layout of the 'minimize', 'maximize' and 'close' buttons. Use a comma to separate button strings and a colon to denote the seperation between left and right buttons."
+msgstr "La disposición de los botones 'minimizar', 'maximizar' y 'cerrar'. Use una coma para separar las cadenas de botones y dos puntos para denotar la separación entre los botones de la izquierda y la derecha."
 
 #. (itstool) path: option/_short
-msgid "Button Color"
+msgid "Button Colour"
 msgstr "Color del botón"
 
 #. (itstool) path: option/_long
-msgid "Color of the minimize, maximize and close buttons."
+msgid "Colour of active buttons."
 msgstr "Color de los botones minimizar, maximizar y cerrar."
+
+#. (itstool) path: option/_short
+msgid "Inactive Button Colour"
+msgstr ""
+
+#. (itstool) path: option/_long
+msgid "Colour of inactive buttons."
+msgstr ""
+
+#. (itstool) path: option/_short
+msgid "Hover Button Colour"
+msgstr ""
+
+#. (itstool) path: option/_long
+msgid "Colour of buttons under the pointer."
+msgstr ""
+
+#. (itstool) path: option/_short
+msgid "Pressed Button Colour"
+msgstr ""
+
+#. (itstool) path: option/_long
+msgid "Colour of pressed buttons."
+msgstr ""
 
 #. (itstool) path: option/_short
 msgid "Button Line Thickness"
 msgstr "Grosor de la línea del botón"
 
 #. (itstool) path: option/_long
-msgid ""
-"The thickness used to draw the minimize, maximize and close button lines."
-msgstr ""
-"El grosor utilizado para dibujar las líneas de los botones minimizar, maximizar y cerrar."
+msgid "The thickness used to draw the minimize, maximize and close button lines."
+msgstr "El grosor utilizado para dibujar las líneas de los botones minimizar, maximizar y cerrar."
 
 #. (itstool) path: option/_short
 msgid "Left Button Spacing"
@@ -365,49 +371,77 @@ msgid "The time the hover animation will last, in milliseconds."
 msgstr "El tiempo que durará la animación al pasar el ratón, en milisegundos."
 
 #. (itstool) path: option/_short
-msgid "Button Minimize Image"
-msgstr "Imagen del botón minimizar"
+msgid "Minimise Button SVG"
+msgstr ""
 
 #. (itstool) path: option/_long
-msgid "The png image to use for the minimize button."
-msgstr "La imagen png a usar para el botón minimizar."
+msgid "The SVG file to use for the minimise button."
+msgstr ""
 
 #. (itstool) path: option/_short
-msgid "Button Maximize Image"
-msgstr "Imagen del botón maximizar"
+msgid "Maximise Button SVG"
+msgstr ""
 
 #. (itstool) path: option/_long
-msgid "The png image to use for the maximize button."
-msgstr "La imagen png a usar para el botón maximizar."
+msgid "The SVG file to use for the maximise button."
+msgstr ""
 
 #. (itstool) path: option/_short
-msgid "Button Restore Image"
-msgstr "Imagen del botón restaurar"
+msgid "Restore Button SVG"
+msgstr ""
 
 #. (itstool) path: option/_long
-msgid "The png image to use for the restore button."
-msgstr "La imagen png a usar para el botón restaurar."
+msgid "The SVG file to use for the restore button."
+msgstr ""
 
 #. (itstool) path: option/_short
-msgid "Button Close Image"
-msgstr "Imagen del botón cerrar"
+msgid "Close Button SVG"
+msgstr ""
 
 #. (itstool) path: option/_long
-msgid "The png image to use for the close button."
-msgstr "La imagen png a usar para el botón cerrar."
+msgid "The SVG file to use for the close button."
+msgstr ""
+
+#. (itstool) path: group/_short
+msgid "Shade"
+msgstr ""
 
 #. (itstool) path: option/_short
-msgid "Button Minimize Hover Image"
-msgstr "Imagen al pasar el ratón por el botón minimizar"
+msgid "Enable Shade Effect"
+msgstr ""
 
 #. (itstool) path: option/_long
-msgid "The png image to use when hovering the minimize button."
-msgstr "La imagen png a usar cuando se pasa el ratón por el botón minimizar."
+msgid "Use the axis binding or scroll on the titlebar of Vecdecor windows to shade windows into their respective titlebars."
+msgstr ""
 
 #. (itstool) path: option/_short
-msgid "Button Maximize Hover Image"
-msgstr "Imagen al pasar el ratón por el botón maximizar"
+msgid "Shade Duration"
+msgstr ""
 
-#. (itstool) path: o
-msgid "The png image to use when hovering the maximize button."
-msgstr "La imagen png a usar cuando se pasa el ratón por el botón maximizar."
+#. (itstool) path: option/_long
+msgid "The duration of the shade animation in milliseconds."
+msgstr ""
+
+#. (itstool) path: option/_short
+msgid "Shade Modifier"
+msgstr ""
+
+#. (itstool) path: option/_long
+msgid "When the shade modifier key is held down, you can scroll down and up to shade and unshade the window."
+msgstr ""
+
+#. (itstool) path: option/_short
+msgid "Toggle Window Shade"
+msgstr ""
+
+#. (itstool) path: option/_long
+msgid "Toggles shade for the active window."
+msgstr ""
+
+#. (itstool) path: option/_short
+msgid "CSD Titlebar Height"
+msgstr ""
+
+#. (itstool) path: option/_long
+msgid "Because there is no way to know the client surface titlebar height, this is an option to adjust it."
+msgstr ""

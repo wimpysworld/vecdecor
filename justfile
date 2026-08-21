@@ -31,7 +31,31 @@ lint:
     git ls-files -z -- '*.cpp' '*.hpp' | xargs -0 -r uncrustify -c "$WAYFIRE_UNCRUSTIFY_CONFIG" --check
 
 # Run all static checks
-check: eval test lint install-staged
+check: eval test lint check-locales install-staged
+
+# Check translation syntax and metadata coverage
+check-locales:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    expected=$(mktemp)
+    trap 'rm -f -- "$expected"' EXIT
+    awk '/<_[[:alnum:]_]+>.*<\/_[[:alnum:]_]+>/ {
+        sub(/^.*<_[^>]+>/, "")
+        sub(/<\/_[^>]+>.*$/, "")
+        print
+    }' metadata/vecdecor.xml | LC_ALL=C sort -u > "$expected"
+    for catalogue in locale/*/LC_MESSAGES/wf-plugin-vecdecor.po; do
+        msgfmt --check --output-file=/dev/null "$catalogue"
+        if ! diff -u "$expected" <(
+            msgattrib --no-obsolete --no-wrap "$catalogue" |
+                sed -n 's/^msgid "\(.*\)"$/\1/p' |
+                sed '/^$/d' |
+                LC_ALL=C sort -u
+        ); then
+            echo "Translation catalogue does not match metadata: $catalogue" >&2
+            exit 1
+        fi
+    done
 
 # Install into a local staging directory
 install-staged: build
