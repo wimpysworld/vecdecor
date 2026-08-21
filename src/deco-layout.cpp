@@ -56,7 +56,7 @@ button_layout_t read_button_layout()
     button_layout_t result;
     result.left  = parse_buttons(layout.substr(0, first_separator));
     result.right = parse_buttons(last_separator == std::string::npos ?
-        layout : layout.substr(last_separator + 1));
+        std::string{} : layout.substr(last_separator + 1));
     return result;
 }
 
