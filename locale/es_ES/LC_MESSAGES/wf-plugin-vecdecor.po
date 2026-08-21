@@ -48,326 +48,346 @@ msgstr "Cuándo renderizar una barra de título con el texto del título y los b
 
 #. (itstool) path: option/_short
 #: metadata/vecdecor.xml:21
+msgid "Titlebar Height"
+msgstr ""
+
+#. (itstool) path: option/_long
+#: metadata/vecdecor.xml:22
+msgid "Sets the titlebar height in logical pixels. A value of 0 selects automatic sizing."
+msgstr ""
+
+#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:27
 msgid "Draw borders on maximized windows"
 msgstr "Dibujar bordes en ventanas maximizadas"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:22
+#: metadata/vecdecor.xml:28
 msgid "Whether or not to render side and bottom decorations on maximized windows."
 msgstr "Si se deben renderizar o no las decoraciones laterales e inferiores en ventanas maximizadas."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:26
+#: metadata/vecdecor.xml:32
 msgid "Decoration disabled for specified window types"
 msgstr "Decoración desactivada para tipos de ventana especificados"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:32
+#: metadata/vecdecor.xml:33
 msgid "Disables window decoration for windows matching the specified criteria."
 msgstr "Desactiva la decoración de ventana para las ventanas que coinciden con los criterios especificados."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:36
+#: metadata/vecdecor.xml:37
 msgid "Decoration applied for specified window types"
 msgstr "Decoración aplicada para tipos de ventana especificados"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:37
+#: metadata/vecdecor.xml:38
 msgid "Forces window decoration for windows matching the specified criteria."
 msgstr "Fuerza la decoración de ventana para las ventanas que coinciden con los criterios especificados."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:41
+#: metadata/vecdecor.xml:42
 msgid "Title Font"
 msgstr "Fuente del título"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:42
+#: metadata/vecdecor.xml:43
 #, fuzzy
 msgid "Font to use for the titlebar. Uses the system font by default or if invalid."
 msgstr "Fuente a usar para la barra de título. El tamaño de la fuente determina la altura de la barra de título."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:46
+#: metadata/vecdecor.xml:47
 msgid "Color when focused"
 msgstr "Color cuando está enfocado"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:47
+#: metadata/vecdecor.xml:48
 msgid "Color of the window border when it has focus."
 msgstr "Color del borde de la ventana cuando está enfocada."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:51
+#: metadata/vecdecor.xml:52
 msgid "Color when not focused"
 msgstr "Color cuando no está enfocado"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:52
+#: metadata/vecdecor.xml:53
 msgid "Color of the window border when it does not have focus."
 msgstr "Color del borde de la ventana cuando no está enfocada."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:56
+#: metadata/vecdecor.xml:57
 msgid "Text color when focused"
 msgstr "Color del texto cuando está enfocado"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:57
+#: metadata/vecdecor.xml:58
 msgid "Color of the window titlebar text when it has focus."
 msgstr "Color del texto de la barra de título de la ventana cuando está enfocada."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:61
+#: metadata/vecdecor.xml:62
 msgid "Text color when not focused"
 msgstr "Color del texto cuando no está enfocado"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:62
+#: metadata/vecdecor.xml:63
 msgid "Color of the window titlebar text when it does not have focus."
 msgstr "Color del texto de la barra de título de la ventana cuando no está enfocada."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:66
+#: metadata/vecdecor.xml:67
 msgid "Titlebar Text Alignment"
 msgstr "Alineación del texto de la barra de título"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:67
+#: metadata/vecdecor.xml:68
 msgid "Sets the alignment of the titlebar text."
 msgstr "Establece la alineación del texto de la barra de título."
 
 #. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:71
+#: metadata/vecdecor.xml:72
 msgid "Left"
 msgstr "Izquierda"
 
 #. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:75
+#: metadata/vecdecor.xml:76
 msgid "Center"
 msgstr "Centro"
 
 #. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:79
+#: metadata/vecdecor.xml:80
 msgid "Right"
 msgstr "Derecha"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:78
+#: metadata/vecdecor.xml:84
 msgid "Rounded Corner Radius"
 msgstr "Radio de las esquinas redondeadas"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:176
+#: metadata/vecdecor.xml:85
 msgid "The radius for corners."
 msgstr "El radio de las esquinas."
 
 #. (itstool) path: group/_short
-#: metadata/vecdecor.xml:193
+#: metadata/vecdecor.xml:91
 msgid "Buttons"
 msgstr "Botones"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:195
+#: metadata/vecdecor.xml:93
+msgid "Button Size"
+msgstr ""
+
+#. (itstool) path: option/_long
+#: metadata/vecdecor.xml:94
+msgid "Sets the button size in logical pixels. A value of 0 selects automatic sizing."
+msgstr ""
+
+#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:99
 msgid "Button Colour"
 msgstr "Color del botón"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:196
+#: metadata/vecdecor.xml:100
 msgid "Colour of active buttons."
 msgstr "Color de los botones minimizar, maximizar y cerrar."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:200
+#: metadata/vecdecor.xml:104
 msgid "Inactive Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:201
+#: metadata/vecdecor.xml:105
 msgid "Colour of inactive buttons."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:205
+#: metadata/vecdecor.xml:109
 msgid "Hover Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:206
+#: metadata/vecdecor.xml:110
 msgid "Colour of buttons under the pointer."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:210
+#: metadata/vecdecor.xml:114
 msgid "Pressed Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:211
+#: metadata/vecdecor.xml:115
 msgid "Colour of pressed buttons."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:215
+#: metadata/vecdecor.xml:119
 msgid "Button Line Thickness"
 msgstr "Grosor de la línea del botón"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:216
+#: metadata/vecdecor.xml:120
 msgid "The thickness used to draw the minimize, maximize and close button lines."
 msgstr "El grosor utilizado para dibujar las líneas de los botones minimizar, maximizar y cerrar."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:221
+#: metadata/vecdecor.xml:125
 msgid "Left Button Spacing"
 msgstr "Espaciado del botón izquierdo"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:222
+#: metadata/vecdecor.xml:126
 msgid "The space between each button on the left."
 msgstr "El espacio entre cada botón de la izquierda."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:227
+#: metadata/vecdecor.xml:131
 msgid "Right Button Spacing"
 msgstr "Espaciado del botón derecho"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:228
+#: metadata/vecdecor.xml:132
 msgid "The space between each button on the right."
 msgstr "El espacio entre cada botón de la derecha."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:233
+#: metadata/vecdecor.xml:137
 msgid "Left Button X Offset"
 msgstr "Desplazamiento X del botón izquierdo"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:234
+#: metadata/vecdecor.xml:138
 msgid "Use this option to move the buttons on the left to the left or right."
 msgstr "Use esta opción para mover los botones de la izquierda hacia la izquierda o la derecha."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:238
+#: metadata/vecdecor.xml:142
 msgid "Right Button X Offset"
 msgstr "Desplazamiento X del botón derecho"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:239
+#: metadata/vecdecor.xml:143
 msgid "Use this option to move the buttons on the right to the left or right."
 msgstr "Use esta opción para mover los botones de la derecha hacia la izquierda o la derecha."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:243
+#: metadata/vecdecor.xml:147
 msgid "Button Y Offset"
 msgstr "Desplazamiento Y del botón"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:244
+#: metadata/vecdecor.xml:148
 msgid "Use this option to move buttons up or down."
 msgstr "Use esta opción para mover los botones hacia arriba o hacia abajo."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:248
+#: metadata/vecdecor.xml:152
 msgid "Button Hover Animation Duration"
 msgstr "Duración de la animación al pasar el ratón por el botón"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:249
+#: metadata/vecdecor.xml:153
 msgid "The time the hover animation will last, in milliseconds."
 msgstr "El tiempo que durará la animación al pasar el ratón, en milisegundos."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:254
+#: metadata/vecdecor.xml:158
 msgid "Minimise Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:255
+#: metadata/vecdecor.xml:159
 msgid "The SVG file to use for the minimise button."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:260
+#: metadata/vecdecor.xml:164
 msgid "Maximise Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:261
+#: metadata/vecdecor.xml:165
 msgid "The SVG file to use for the maximise button."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:266
+#: metadata/vecdecor.xml:170
 msgid "Restore Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:267
+#: metadata/vecdecor.xml:171
 msgid "The SVG file to use for the restore button."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:272
+#: metadata/vecdecor.xml:176
 msgid "Close Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:273
+#: metadata/vecdecor.xml:177
 msgid "The SVG file to use for the close button."
 msgstr ""
 
 #. (itstool) path: group/_short
-#: metadata/vecdecor.xml:279
+#: metadata/vecdecor.xml:183
 msgid "Shade"
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:281
+#: metadata/vecdecor.xml:185
 msgid "Enable Shade Effect"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:282
+#: metadata/vecdecor.xml:186
 msgid "Use the axis binding or scroll on the titlebar of Vecdecor windows to shade windows into their respective titlebars."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:286
+#: metadata/vecdecor.xml:190
 msgid "Shade Duration"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:287
+#: metadata/vecdecor.xml:191
 msgid "The duration of the shade animation in milliseconds."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:292
+#: metadata/vecdecor.xml:196
 msgid "Shade Modifier"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:293
+#: metadata/vecdecor.xml:197
 msgid "When the shade modifier key is held down, you can scroll down and up to shade and unshade the window."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:297
+#: metadata/vecdecor.xml:201
 msgid "Toggle Window Shade"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:298
+#: metadata/vecdecor.xml:202
 msgid "Toggles shade for the active window."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:302
+#: metadata/vecdecor.xml:206
 msgid "CSD Titlebar Height"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:303
+#: metadata/vecdecor.xml:207
 msgid "Because there is no way to know the client surface titlebar height, this is an option to adjust it."
 msgstr ""

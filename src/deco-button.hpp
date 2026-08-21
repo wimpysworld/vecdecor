@@ -1,16 +1,15 @@
 #pragma once
 
-#include <string>
+#include "deco-geometry.hpp"
+
+#include <functional>
+#include <optional>
 #include <wayfire/util.hpp>
 #include <wayfire/opengl.hpp>
 #include <wayfire/render-manager.hpp>
 #include <wayfire/util/duration.hpp>
 #include <wayfire/scene-render.hpp>
 #include <wayfire/plugins/common/cairo-util.hpp>
-
-#include <cairo.h>
-#include <pango/pango.h>
-#include <pango/pangocairo.h>
 
 namespace wf
 {
@@ -23,12 +22,6 @@ enum button_type_t
     BUTTON_CLOSE,
     BUTTON_TOGGLE_MAXIMIZE,
     BUTTON_MINIMIZE,
-};
-
-struct button_surfaces_t
-{
-    cairo_surface_t *normal;
-    cairo_surface_t *hovered;
 };
 
 class button_t
@@ -47,7 +40,7 @@ class button_t
      * Set the type of the button. This will affect the displayed icon and potentially other appearance like
      * colors.
      */
-    wf::dimensions_t set_button_type(button_type_t type);
+    geometry::logical_bounds_t set_button_type(button_type_t type);
 
     /** @return The type of the button */
     button_type_t get_button_type() const;
@@ -66,11 +59,13 @@ class button_t
      * Render the button on the given framebuffer at the given coordinates. Precondition: set_button_type()
      * has been called, otherwise result is no-op
      *
-     * @param buffer The target framebuffer
-     * @param geometry The geometry of the button, in logical coordinates
-     * @param scissor The scissor rectangle to render.
+     * @param data The render instruction.
+     * @param button_geometry The button bounds in logical coordinates.
+     * @param active Whether the view has focus.
+     * @param maximized Whether the button selects restore.
      */
-    void render(const wf::scene::render_instruction_t& data, wf::geometry_t geometry);
+    void render(const wf::scene::render_instruction_t& data, wf::geometry_t button_geometry,
+        bool active, bool maximized);
 
     pixdecor_theme_t& theme;
     std::function<void()> damage_callback;
@@ -81,8 +76,9 @@ class button_t
     button_type_t type;
     wf::owned_texture_t button_texture;
     wf::owned_texture_t button_texture_hovered;
-    bool active = false;
-    wf::geometry_t geometry;
+    std::optional<geometry::button_cache_key_t> button_texture_key;
+    std::optional<geometry::button_cache_key_t> button_texture_hovered_key;
+    bool type_set = false;
 
     /* Whether the button is currently being hovered */
     bool is_hovered = false;
@@ -98,7 +94,9 @@ class button_t
     /**
      * Redraw the button surface and store it as a texture
      */
-    wf::dimensions_t update_texture();
+    void update_texture(const geometry::button_cache_key_t& key,
+        wf::owned_texture_t& texture,
+        std::optional<geometry::button_cache_key_t>& texture_key);
 };
 }
 }

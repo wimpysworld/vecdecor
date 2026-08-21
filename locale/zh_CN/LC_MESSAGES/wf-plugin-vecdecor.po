@@ -48,326 +48,346 @@ msgstr "何时渲染带标题文本和按钮的标题栏。"
 
 #. (itstool) path: option/_short
 #: metadata/vecdecor.xml:21
+msgid "Titlebar Height"
+msgstr ""
+
+#. (itstool) path: option/_long
+#: metadata/vecdecor.xml:22
+msgid "Sets the titlebar height in logical pixels. A value of 0 selects automatic sizing."
+msgstr ""
+
+#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:27
 msgid "Draw borders on maximized windows"
 msgstr "在最大化窗口上绘制边框"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:22
+#: metadata/vecdecor.xml:28
 msgid "Whether or not to render side and bottom decorations on maximized windows."
 msgstr "是否在最大化窗口上渲染侧面和底部装饰。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:26
+#: metadata/vecdecor.xml:32
 msgid "Decoration disabled for specified window types"
 msgstr "为指定的窗口类型禁用装饰"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:32
+#: metadata/vecdecor.xml:33
 msgid "Disables window decoration for windows matching the specified criteria."
 msgstr "为符合指定条件的窗口禁用窗口装饰。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:36
+#: metadata/vecdecor.xml:37
 msgid "Decoration applied for specified window types"
 msgstr "为指定的窗口类型应用装饰"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:37
+#: metadata/vecdecor.xml:38
 msgid "Forces window decoration for windows matching the specified criteria."
 msgstr "强制为符合指定条件的窗口进行窗口装饰。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:41
+#: metadata/vecdecor.xml:42
 msgid "Title Font"
 msgstr "标题字体"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:42
+#: metadata/vecdecor.xml:43
 #, fuzzy
 msgid "Font to use for the titlebar. Uses the system font by default or if invalid."
 msgstr "用于标题栏的字体。字体大小决定标题栏高度。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:46
+#: metadata/vecdecor.xml:47
 msgid "Color when focused"
 msgstr "聚焦时的颜色"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:47
+#: metadata/vecdecor.xml:48
 msgid "Color of the window border when it has focus."
 msgstr "窗口聚焦时的边框颜色。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:51
+#: metadata/vecdecor.xml:52
 msgid "Color when not focused"
 msgstr "未聚焦时的颜色"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:52
+#: metadata/vecdecor.xml:53
 msgid "Color of the window border when it does not have focus."
 msgstr "窗口未聚焦时的边框颜色。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:56
+#: metadata/vecdecor.xml:57
 msgid "Text color when focused"
 msgstr "聚焦时的文本颜色"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:57
+#: metadata/vecdecor.xml:58
 msgid "Color of the window titlebar text when it has focus."
 msgstr "窗口聚焦时的标题栏文本颜色。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:61
+#: metadata/vecdecor.xml:62
 msgid "Text color when not focused"
 msgstr "未聚焦时的文本颜色"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:62
+#: metadata/vecdecor.xml:63
 msgid "Color of the window titlebar text when it does not have focus."
 msgstr "窗口未聚焦时的标题栏文本颜色。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:66
+#: metadata/vecdecor.xml:67
 msgid "Titlebar Text Alignment"
 msgstr "标题栏文本对齐方式"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:67
+#: metadata/vecdecor.xml:68
 msgid "Sets the alignment of the titlebar text."
 msgstr "设置标题栏文本的对齐方式。"
 
 #. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:71
+#: metadata/vecdecor.xml:72
 msgid "Left"
 msgstr "左对齐"
 
 #. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:75
+#: metadata/vecdecor.xml:76
 msgid "Center"
 msgstr "居中"
 
 #. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:79
+#: metadata/vecdecor.xml:80
 msgid "Right"
 msgstr "右对齐"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:78
+#: metadata/vecdecor.xml:84
 msgid "Rounded Corner Radius"
 msgstr "圆角半径"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:176
+#: metadata/vecdecor.xml:85
 msgid "The radius for corners."
 msgstr "角的半径。"
 
 #. (itstool) path: group/_short
-#: metadata/vecdecor.xml:193
+#: metadata/vecdecor.xml:91
 msgid "Buttons"
 msgstr "按钮"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:195
+#: metadata/vecdecor.xml:93
+msgid "Button Size"
+msgstr ""
+
+#. (itstool) path: option/_long
+#: metadata/vecdecor.xml:94
+msgid "Sets the button size in logical pixels. A value of 0 selects automatic sizing."
+msgstr ""
+
+#. (itstool) path: option/_short
+#: metadata/vecdecor.xml:99
 msgid "Button Colour"
 msgstr "按钮颜色"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:196
+#: metadata/vecdecor.xml:100
 msgid "Colour of active buttons."
 msgstr "最小化、最大化和关闭按钮的颜色。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:200
+#: metadata/vecdecor.xml:104
 msgid "Inactive Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:201
+#: metadata/vecdecor.xml:105
 msgid "Colour of inactive buttons."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:205
+#: metadata/vecdecor.xml:109
 msgid "Hover Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:206
+#: metadata/vecdecor.xml:110
 msgid "Colour of buttons under the pointer."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:210
+#: metadata/vecdecor.xml:114
 msgid "Pressed Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:211
+#: metadata/vecdecor.xml:115
 msgid "Colour of pressed buttons."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:215
+#: metadata/vecdecor.xml:119
 msgid "Button Line Thickness"
 msgstr "按钮线条粗细"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:216
+#: metadata/vecdecor.xml:120
 msgid "The thickness used to draw the minimize, maximize and close button lines."
 msgstr "用于绘制最小化、最大化和关闭按钮线条的粗细。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:221
+#: metadata/vecdecor.xml:125
 msgid "Left Button Spacing"
 msgstr "左按钮间距"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:222
+#: metadata/vecdecor.xml:126
 msgid "The space between each button on the left."
 msgstr "左侧每个按钮之间的间距。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:227
+#: metadata/vecdecor.xml:131
 msgid "Right Button Spacing"
 msgstr "右按钮间距"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:228
+#: metadata/vecdecor.xml:132
 msgid "The space between each button on the right."
 msgstr "右侧每个按钮之间的间距。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:233
+#: metadata/vecdecor.xml:137
 msgid "Left Button X Offset"
 msgstr "左按钮X偏移量"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:234
+#: metadata/vecdecor.xml:138
 msgid "Use this option to move the buttons on the left to the left or right."
 msgstr "使用此选项可将左侧按钮向左或向右移动。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:238
+#: metadata/vecdecor.xml:142
 msgid "Right Button X Offset"
 msgstr "右按钮X偏移量"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:239
+#: metadata/vecdecor.xml:143
 msgid "Use this option to move the buttons on the right to the left or right."
 msgstr "使用此选项可将右侧按钮向左或向右移动。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:243
+#: metadata/vecdecor.xml:147
 msgid "Button Y Offset"
 msgstr "按钮Y偏移量"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:244
+#: metadata/vecdecor.xml:148
 msgid "Use this option to move buttons up or down."
 msgstr "使用此选项可将按钮向上或向下移动。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:248
+#: metadata/vecdecor.xml:152
 msgid "Button Hover Animation Duration"
 msgstr "按钮悬停动画持续时间"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:249
+#: metadata/vecdecor.xml:153
 msgid "The time the hover animation will last, in milliseconds."
 msgstr "悬停动画的持续时间，以毫秒为单位。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:254
+#: metadata/vecdecor.xml:158
 msgid "Minimise Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:255
+#: metadata/vecdecor.xml:159
 msgid "The SVG file to use for the minimise button."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:260
+#: metadata/vecdecor.xml:164
 msgid "Maximise Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:261
+#: metadata/vecdecor.xml:165
 msgid "The SVG file to use for the maximise button."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:266
+#: metadata/vecdecor.xml:170
 msgid "Restore Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:267
+#: metadata/vecdecor.xml:171
 msgid "The SVG file to use for the restore button."
 msgstr ""
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:272
+#: metadata/vecdecor.xml:176
 msgid "Close Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:273
+#: metadata/vecdecor.xml:177
 msgid "The SVG file to use for the close button."
 msgstr ""
 
 #. (itstool) path: group/_short
-#: metadata/vecdecor.xml:279
+#: metadata/vecdecor.xml:183
 msgid "Shade"
 msgstr "卷影"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:281
+#: metadata/vecdecor.xml:185
 msgid "Enable Shade Effect"
 msgstr "启用卷影效果"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:282
+#: metadata/vecdecor.xml:186
 msgid "Use the axis binding or scroll on the titlebar of Vecdecor windows to shade windows into their respective titlebars."
 msgstr "使用轴绑定或在 Vecdecor 窗口的标题栏上滚动，以将窗口卷影到其各自的标题栏中。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:286
+#: metadata/vecdecor.xml:190
 msgid "Shade Duration"
 msgstr "卷影持续时间"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:287
+#: metadata/vecdecor.xml:191
 msgid "The duration of the shade animation in milliseconds."
 msgstr "卷影动画的持续时间，以毫秒为单位。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:292
+#: metadata/vecdecor.xml:196
 msgid "Shade Modifier"
 msgstr "卷影修饰键"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:293
+#: metadata/vecdecor.xml:197
 msgid "When the shade modifier key is held down, you can scroll down and up to shade and unshade the window."
 msgstr "按住卷影修饰键时，可以向下和向上滚动以卷影和展开窗口。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:297
+#: metadata/vecdecor.xml:201
 msgid "Toggle Window Shade"
 msgstr "切换窗口卷影"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:298
+#: metadata/vecdecor.xml:202
 msgid "Toggles shade for the active window."
 msgstr "切换活动窗口的卷影状态。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:302
+#: metadata/vecdecor.xml:206
 msgid "CSD Titlebar Height"
 msgstr "CSD 标题栏高度"
 
 #. (itstool) path: option/_long
-#: metadata/vecdecor.xml:303
+#: metadata/vecdecor.xml:207
 msgid "Because there is no way to know the client surface titlebar height, this is an option to adjust it."
 msgstr "由于无法知道客户端表面标题栏的高度，此选项用于调整该高度。"
