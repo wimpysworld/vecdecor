@@ -1,40 +1,58 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - wayfire-0.10
+  pull_request:
+    branches:
+      - main
+      - wayfire-0.10
+
+permissions: {}
+
 jobs:
-  test_musl_gcc:
-    name: "Test with with GCC/musl/libstdc++/BFD on Alpine Linux"
+  checks:
+    name: ${{ matrix.task }}
     runs-on: ubuntu-latest
-    container: alpine:edge
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        task:
+          - eval
+          - lint
+          - check-locales
+          - test
+          - install-staged
     steps:
-    - run: apk --no-cache add git gcc g++ binutils pkgconf meson ninja cmake musl-dev wayland-dev wayland-protocols libinput-dev libevdev-dev libxkbcommon-dev pixman-dev glm-dev libdrm-dev mesa-dev cairo-dev pango-dev eudev-dev libxml2-dev libseat-dev libdisplay-info-dev hwdata-dev
-    - name: Wayfire
-      uses: actions/checkout@v2
-      with:
-        repository: WayfireWM/wayfire
-        path: wayfire
-    - run: cd wayfire && git submodule update --init --recursive && meson setup build --prefix=/usr && ninja -v -Cbuild && ninja -v -Cbuild install && cd ..
-    - name: Vecdecor
-      uses: actions/checkout@v2
-      with:
-        path: pixdecor
-    - run: cd pixdecor && meson setup build --prefix=/usr && ninja -v -C build && ninja -v -C build install && cd ..
-  test_code_style:
-    name: "Check code style with uncrustify"
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install Determinate Nix
+        uses: DeterminateSystems/determinate-nix-action@668647a33843b1f280cb2ef4c41736f86b29f826
+      - name: Use the FlakeHub cache
+        uses: DeterminateSystems/flakehub-cache-action@9ad836c31b7e8f416874ca582bf19b71cee755d0
+      - name: Run ${{ matrix.task }}
+        env:
+          TASK: ${{ matrix.task }}
+        run: nix develop . --command just "$TASK"
+
+  CI:
+    name: CI
+    if: ${{ always() }}
+    needs:
+      - checks
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
     steps:
-    - run: sudo apt-get update
-    - run: sudo apt-get install -y git cmake gcc make
-    - name: Build Uncrustify
-      uses: actions/checkout@v2
-      with:
-        repository: ammen99/uncrustify
-        path: uncrustify
-    - run: cd uncrustify && mkdir build && cd build && cmake .. && make && cd ../..
-    - name: Run Uncrustify Check
-      uses: actions/checkout@v2
-      with:
-        path: pixdecor
-    - run: cd pixdecor && wget https://raw.githubusercontent.com/WayfireWM/wayfire/master/uncrustify.ini
-    - run: cd pixdecor && git ls-files | grep "hpp$\|cpp$" | xargs ../uncrustify/build/uncrustify -c uncrustify.ini --no-backup --replace
-    - run: cd pixdecor && git diff --exit-code
+      - name: Confirm that all checks passed
+        env:
+          CHECKS_RESULT: ${{ needs.checks.result }}
+        run: test "$CHECKS_RESULT" = success
