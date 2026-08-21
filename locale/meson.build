@@ -16,4 +16,3 @@ foreach po_file : po_files
     run_command('msgfmt', po_file, '-o', mo_path, check : true)
     install_data(mo_path, install_dir : install_path)
 endforeach
-

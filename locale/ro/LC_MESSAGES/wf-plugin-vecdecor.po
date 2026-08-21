@@ -12,8 +12,8 @@ msgstr ""
 "X-Generator: Poedit 3.7\n"
 
 #. (itstool) path: plugin/_short
-msgid "Pix Decoration"
-msgstr "Decorație Pix"
+msgid "Vecdecor"
+msgstr "Vecdecor"
 
 #. (itstool) path: plugin/_long
 msgid ""
@@ -463,11 +463,11 @@ msgstr "Activează efectul de restrângere"
 
 #. (itstool) path: option/_long
 msgid ""
-"Use the axis binding or scroll on the titlebar of pixdecor windows to shade "
+"Use the axis binding or scroll on the titlebar of vecdecor windows to shade "
 "windows into their respective titlebars."
 msgstr ""
 "Folosiți asocierea de axă sau derulați pe bara de titlu a ferestrelor "
-"decorate de pixdecor pentru a le restrânge în barele de titlu respective."
+"decorate de vecdecor pentru a le restrânge în barele de titlu respective."
 
 #. (itstool) path: option/_short
 msgid "Shade Duration"
