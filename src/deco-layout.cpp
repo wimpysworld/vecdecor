@@ -2,7 +2,7 @@
 #include "deco-theme.hpp"
 #include <wayfire/core.hpp>
 #include <wayfire/nonstd/reverse.hpp>
-#include <wayfire/nonstd/wlroots-full.hpp>
+#include <wlr/xcursor.h>
 #include <wayfire/toplevel.hpp>
 #include <wayfire/util.hpp>
 
@@ -78,7 +78,7 @@ pixdecor_layout_t::~pixdecor_layout_t()
     this->layout_areas.clear();
 }
 
-wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
+wf::geometry_t pixdecor_layout_t::create_left_buttons()
 {
     // read the string from settings; start at the beginning and replace commas with spaces
     wf::option_wrapper_t<int> button_spacing{"vecdecor/left_button_spacing"};
@@ -133,7 +133,7 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
     int per_button  = 0;
     int border = theme.get_border_size();
     wf::geometry_t button_geometry;
-    button_geometry.x = radius * 2 + (maximized ? 4 : border) + button_x_offset;
+    button_geometry.x = (maximized ? 4 : border) + button_x_offset;
 
     for (auto type : buttons)
     {
@@ -142,7 +142,7 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
         button_geometry.width  = surface_size.width;
         button_geometry.height = surface_size.height;
         int button_padding = (theme.get_title_height() - button_geometry.height) / 2 + button_y_offset;
-        button_geometry.y = button_padding + border / 2 + (radius * 2);
+        button_geometry.y = button_padding + border / 2;
         per_button = button_geometry.width + (buttons.back() == type ? 0 : button_spacing);
         button_area->set_geometry(button_geometry);
         button_area->as_button().set_button_type(type);
@@ -152,12 +152,12 @@ wf::geometry_t pixdecor_layout_t::create_left_buttons(int width, int radius)
     }
 
     return {
-        buttons.empty() ? 0 : (maximized ? 4 : border), maximized ? 4 : border + (radius * 2),
+        buttons.empty() ? 0 : (maximized ? 4 : border), maximized ? 4 : border,
         total_width, theme.get_title_height()
     };
 }
 
-wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
+wf::geometry_t pixdecor_layout_t::create_right_buttons(int width)
 {
     // read the string from settings; start at the colon and replace commas with spaces
     wf::option_wrapper_t<int> button_spacing{"vecdecor/right_button_spacing"};
@@ -219,7 +219,7 @@ wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
         button_geometry.width  = surface_size.width;
         button_geometry.height = surface_size.height;
         int button_padding = (theme.get_title_height() - button_geometry.height) / 2 + button_y_offset;
-        button_geometry.y = button_padding + border / 2 + (radius * 2);
+        button_geometry.y = button_padding + border / 2;
         per_button = button_geometry.width + (buttons.back() == type ? 0 : button_spacing);
         button_geometry.x -= per_button;
         button_area->set_geometry(button_geometry);
@@ -231,7 +231,7 @@ wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
     total_width -= button_x_offset;
 
     return {
-        button_geometry.x, maximized ? 4 : border + (radius * 2),
+        button_geometry.x, maximized ? 4 : border,
         total_width, theme.get_title_height()
     };
 }
@@ -239,20 +239,16 @@ wf::geometry_t pixdecor_layout_t::create_right_buttons(int width, int radius)
 /** Regenerate layout using the new size */
 void pixdecor_layout_t::resize(int width, int height)
 {
-    wf::option_wrapper_t<int> shadow_radius{"vecdecor/shadow_radius"};
-    wf::option_wrapper_t<std::string> overlay_engine{"vecdecor/overlay_engine"};
     wf::option_wrapper_t<bool> maximized_borders{"vecdecor/maximized_borders"};
-    bool rounded_corners = std::string(overlay_engine) == "rounded_corners";
 
     int border = theme.get_border_size();
-    int radius = (rounded_corners && !maximized) ? int(shadow_radius) : 0;
 
     this->layout_areas.clear();
 
     if (this->theme.get_title_height() > 0)
     {
-        auto button_left_geometry_expanded  = create_left_buttons((radius * 2), radius);
-        auto button_right_geometry_expanded = create_right_buttons(width - (radius * 2), radius);
+        auto button_left_geometry_expanded  = create_left_buttons();
+        auto button_right_geometry_expanded = create_right_buttons(width);
 
         /* Padding around the buttons, allows move */
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
@@ -263,7 +259,7 @@ void pixdecor_layout_t::resize(int width, int height)
         /* Titlebar dragging area (for move) */
         wf::geometry_t title_geometry = {
             border + button_left_geometry_expanded.x,
-            maximized ? 0 : border / 2 + (radius * 2),
+            maximized ? 0 : border / 2,
             /* Up to the button, but subtract the padding to the left of the title and the padding between
              * title and button */
             std::max(1, button_right_geometry_expanded.x - border),
@@ -285,54 +281,29 @@ void pixdecor_layout_t::resize(int width, int height)
     {
         /* Resizing edges - top */
         wf::geometry_t border_geometry =
-        {0 + (radius * 2), -inverse_border + (radius * 2),
-            width - (radius * 4) + MIN_RESIZE_HANDLE_SIZE, border};
+        {0, -inverse_border, width + MIN_RESIZE_HANDLE_SIZE, border};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_TOP, border_geometry));
 
         /* Resizing edges - bottom */
         border_geometry =
-        {0 + (radius * 2), (height - border + inverse_border) - (radius * 2),
-            width - (radius * 4) + MIN_RESIZE_HANDLE_SIZE, border};
+        {0, height - border + inverse_border,
+            width + MIN_RESIZE_HANDLE_SIZE, border};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_BOTTOM, border_geometry));
 
         /* Resizing edges - left */
         border_geometry =
-        {-inverse_border + (radius * 2), 0 + (radius * 2), border,
-            height - (radius * 4) + MIN_RESIZE_HANDLE_SIZE};
+        {-inverse_border, 0, border, height + MIN_RESIZE_HANDLE_SIZE};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_LEFT, border_geometry));
 
         /* Resizing edges - right */
         border_geometry =
-        {(width - border + inverse_border) - (radius * 2), 0 + (radius * 2), border,
-            height - (radius * 4) + MIN_RESIZE_HANDLE_SIZE};
+        {width - border + inverse_border, 0, border,
+            height + MIN_RESIZE_HANDLE_SIZE};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_RIGHT, border_geometry));
-
-        if (rounded_corners)
-        {
-            /* Shadow - top */
-            border_geometry = {0, 0, width, radius* 2};
-            this->layout_areas.push_back(std::make_unique<decoration_area_t>(
-                DECORATION_AREA_SHADOW, border_geometry));
-
-            /* Shadow - bottom */
-            border_geometry = {0, height - radius * 2, width, radius* 2};
-            this->layout_areas.push_back(std::make_unique<decoration_area_t>(
-                DECORATION_AREA_SHADOW, border_geometry));
-
-            /* Shadow - left */
-            border_geometry = {0, radius* 2, radius* 2, height - radius * 4};
-            this->layout_areas.push_back(std::make_unique<decoration_area_t>(
-                DECORATION_AREA_SHADOW, border_geometry));
-
-            /* Shadow - right */
-            border_geometry = {width - radius * 2, radius* 2, radius* 2, height - radius * 4};
-            this->layout_areas.push_back(std::make_unique<decoration_area_t>(
-                DECORATION_AREA_SHADOW, border_geometry));
-        }
     }
 }
 
@@ -585,9 +556,6 @@ nonstd::observer_ptr<decoration_area_t> pixdecor_layout_t::find_area_at(
 /** Calculate resize edges based on @current_input */
 uint32_t pixdecor_layout_t::calculate_resize_edges() const
 {
-    wf::option_wrapper_t<int> shadow_radius{"vecdecor/shadow_radius"};
-    wf::option_wrapper_t<std::string> overlay_engine{"vecdecor/overlay_engine"};
-    int radius     = (std::string(overlay_engine) == "rounded_corners") ? int(shadow_radius) : 0;
     uint32_t edges = 0;
     for (auto& area : layout_areas)
     {
@@ -609,11 +577,6 @@ uint32_t pixdecor_layout_t::calculate_resize_edges() const
             {
                 g = wf::expand_geometry_by_margins(g, wf::decoration_margins_t{b, b, 0, 0});
             }
-        }
-
-        if (((b - radius * 2) > MIN_RESIZE_HANDLE_SIZE) && (area->get_type() == DECORATION_AREA_RESIZE_TOP))
-        {
-            g.height /= 2;
         }
 
         if (g & this->current_input)

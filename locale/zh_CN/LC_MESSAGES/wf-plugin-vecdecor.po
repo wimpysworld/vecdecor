@@ -57,16 +57,6 @@ msgid "Whether or not to render side and bottom decorations on maximized windows
 msgstr "是否在最大化窗口上渲染侧面和底部装饰。"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:26
-msgid "Draw shadows on maximized windows"
-msgstr "在最大化窗口上绘制阴影"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:27
-msgid "Whether or not to allocate space for shadows on maximized windows."
-msgstr "是否在最大化窗口上为阴影分配空间。"
-
-#. (itstool) path: option/_short
 #: metadata/vecdecor.xml:31
 msgid "Decoration disabled for specified window types"
 msgstr "为指定的窗口类型禁用装饰"
@@ -163,131 +153,6 @@ msgid "Right"
 msgstr "右对齐"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:83
-msgid "Overlay Engine"
-msgstr "覆盖引擎"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:84
-msgid "Sets the overlay engine."
-msgstr "设置覆盖引擎。"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:88 metadata/vecdecor.xml:105
-msgid "None"
-msgstr "无"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:92
-msgid "Rounded Corners"
-msgstr "圆角"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:96
-msgid "Beveled Glass"
-msgstr "斜角玻璃"
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:100
-msgid "Effect Type"
-msgstr "效果类型"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:101
-msgid "Sets the effect type."
-msgstr "设置效果类型。"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:109
-msgid "Smoke"
-msgstr "烟雾"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:113
-msgid "Ink"
-msgstr "墨水"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:117
-msgid "Clouds"
-msgstr "云"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:121
-msgid "Halftone"
-msgstr "半色调"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:125
-msgid "Pattern"
-msgstr "图案"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:129
-msgid "Lava"
-msgstr "岩浆"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:133
-msgid "Hex"
-msgstr "六边形"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:137
-msgid "Zebra"
-msgstr "斑马"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:141
-msgid "Neural network"
-msgstr "神经网络"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:145
-msgid "Hexagon maze"
-msgstr "六边形迷宫"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:149
-msgid "Raymarched truchet"
-msgstr "光线追踪Truchet"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:153
-msgid "Neon pattern"
-msgstr "霓虹图案"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:157
-msgid "Neon rings"
-msgstr "霓虹环"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:161
-msgid "Deco"
-msgstr "装饰艺术"
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:165
-msgid "Effect Color"
-msgstr "效果颜色"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:166
-msgid "Color of the titlebar background effect."
-msgstr "标题栏背景效果的颜色。"
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:170
-msgid "Animate Effects"
-msgstr "动画效果"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:171
-msgid "WARNING: Enabling this option can use lots of system resources. Enables animating and constant repainting of window decorations."
-msgstr "警告：启用此选项可能会占用大量系统资源。启用窗口装饰的动画和持续重绘。"
-
-#. (itstool) path: option/_short
 #: metadata/vecdecor.xml:175
 msgid "Rounded Corner Radius"
 msgstr "圆角半径"
@@ -296,26 +161,6 @@ msgstr "圆角半径"
 #: metadata/vecdecor.xml:176
 msgid "The radius for corners."
 msgstr "角的半径。"
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:181
-msgid "Shadow Radius"
-msgstr "阴影半径"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:182
-msgid "The radius for shadows."
-msgstr "阴影的半径。"
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:187
-msgid "Shadow Color"
-msgstr "阴影颜色"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:188
-msgid "Color of the drop shadows."
-msgstr "投影的颜色。"
 
 #. (itstool) path: group/_short
 #: metadata/vecdecor.xml:193
