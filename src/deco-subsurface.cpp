@@ -474,7 +474,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             view->damage();
             size = dims;
             layout.resize(size.width, size.height);
-            if (!view->toplevel()->current().fullscreen)
+            if (!view->toplevel()->pending().fullscreen)
             {
                 this->cached_region = layout.calculate_region();
             }
