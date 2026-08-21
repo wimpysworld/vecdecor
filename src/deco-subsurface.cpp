@@ -139,11 +139,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
         data.pass->custom_gles_subpass(data.target, [&]
         {
-            for (auto& box : data.damage)
+            wf::gles::for_each_scissor_rect(data.target, data.damage, [&]
             {
-                wf::gles::render_target_logic_scissor(data.target, box);
                 OpenGL::draw_cached();
-            }
+            });
         });
 
         OpenGL::clear_cached();
