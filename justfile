@@ -13,9 +13,9 @@ setup:
     #!/usr/bin/env bash
     set -euo pipefail
     if [ -d build ]; then
-        meson setup build --prefix=/usr --reconfigure
+        meson setup build --prefix=/usr --buildtype=debugoptimized --reconfigure
     else
-        meson setup build --prefix=/usr
+        meson setup build --prefix=/usr --buildtype=debugoptimized
     fi
 
 # Build the plugin
