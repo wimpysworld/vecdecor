@@ -97,6 +97,7 @@ class pixdecor_theme_t
     wf::color_t bg_text;
     bool maximized = false;
     std::uint64_t generation = 0;
+    std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> font_description;
     background_cache_key_t background_cache_key;
     wf::owned_texture_t background_texture;
     bool background_texture_valid = false;

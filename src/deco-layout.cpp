@@ -62,7 +62,12 @@ button_layout_t read_button_layout()
 
 wf::geometry_t to_geometry(const geometry::logical_bounds_t& bounds)
 {
-    return {bounds.x, bounds.y, bounds.width, bounds.height};
+    return {
+        static_cast<double>(bounds.x),
+        static_cast<double>(bounds.y),
+        static_cast<double>(bounds.width),
+        static_cast<double>(bounds.height),
+    };
 }
 
 wf::geometry_t expanded_move_geometry(const geometry::logical_bounds_t& bounds,
@@ -83,8 +88,8 @@ wf::geometry_t expanded_move_geometry(const geometry::logical_bounds_t& bounds,
     }
 
     return {
-        static_cast<int>(left), static_cast<int>(top),
-        static_cast<int>(right - left), static_cast<int>(bottom - top),
+        static_cast<double>(left), static_cast<double>(top),
+        static_cast<double>(right - left), static_cast<double>(bottom - top),
     };
 }
 }
@@ -132,7 +137,7 @@ decoration_area_type_t decoration_area_t::get_type() const
 }
 
 pixdecor_layout_t::pixdecor_layout_t(pixdecor_theme_t& th,
-    std::function<void(wlr_box)> callback) :
+    std::function<void(wf::geometry_t)> callback) :
     theme(th),
     damage_callback(callback)
 {}
@@ -236,10 +241,11 @@ void pixdecor_layout_t::resize(int width, int height)
         title_width = std::clamp<int64_t>(title_width, 1,
             std::max(1, layout_width - title_x));
         wf::geometry_t title_geometry = {
-            title_x,
-            maximized ? 0 : border / 2,
-            static_cast<int>(title_width),
-            theme.get_title_height() + (maximized ? 0 : border / 2 + 1),
+            static_cast<double>(title_x),
+            static_cast<double>(maximized ? 0 : border / 2),
+            static_cast<double>(title_width),
+            static_cast<double>(theme.get_title_height() +
+                (maximized ? 0 : border / 2 + 1)),
         };
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_TITLE, title_geometry));
@@ -250,7 +256,12 @@ void pixdecor_layout_t::resize(int width, int height)
         const int cached_height = static_cast<int>(std::clamp<int64_t>(
             static_cast<int64_t>(layout_height) - 2LL * border, 0,
             std::numeric_limits<int>::max()));
-        this->cached_titlebar = {border, border, cached_width, cached_height};
+        this->cached_titlebar = {
+            static_cast<double>(border),
+            static_cast<double>(border),
+            static_cast<double>(cached_width),
+            static_cast<double>(cached_height),
+        };
     }
 
     border = MIN_RESIZE_HANDLE_SIZE - theme.get_input_size();
@@ -258,29 +269,32 @@ void pixdecor_layout_t::resize(int width, int height)
 
     if (!maximized || maximized_borders)
     {
+        double w = layout_width;
+        double h = layout_height;
+
         /* Resizing edges - top */
         wf::geometry_t border_geometry =
-        {0, -inverse_border, layout_width + MIN_RESIZE_HANDLE_SIZE, border};
+        {0, -double(inverse_border), w + MIN_RESIZE_HANDLE_SIZE, static_cast<double>(border)};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_TOP, border_geometry));
 
         /* Resizing edges - bottom */
         border_geometry =
-        {0, layout_height - border + inverse_border,
-            layout_width + MIN_RESIZE_HANDLE_SIZE, border};
+        {0, h - border + inverse_border,
+            w + MIN_RESIZE_HANDLE_SIZE, static_cast<double>(border)};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_BOTTOM, border_geometry));
 
         /* Resizing edges - left */
         border_geometry =
-        {-inverse_border, 0, border, layout_height + MIN_RESIZE_HANDLE_SIZE};
+        {-double(inverse_border), 0, static_cast<double>(border), h + MIN_RESIZE_HANDLE_SIZE};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_LEFT, border_geometry));
 
         /* Resizing edges - right */
         border_geometry =
-        {layout_width - border + inverse_border, 0, border,
-            layout_height + MIN_RESIZE_HANDLE_SIZE};
+        {w - border + inverse_border, 0, static_cast<double>(border),
+            h + MIN_RESIZE_HANDLE_SIZE};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_RIGHT, border_geometry));
     }
