@@ -157,12 +157,13 @@ int pixdecor_theme_t::get_title_height()
                 .font_height = get_font_height_px(),
                 .requested_button_size  = button_size,
                 .requested_title_height = title_height,
+                .title_height_extension = (maximized && !maximized_borders) ? border_size : 0,
                 .button_y_offset = button_y_offset,
                 .output_scale    = 1.0,
                 .svg_proportions = geometry::full_box_svg_proportions(),
             }).title_height;
 
-    return titlebar ? height + ((maximized && !maximized_borders) ? border_size : 0) : 0;
+    return titlebar ? height : 0;
 }
 
 geometry::logical_bounds_t pixdecor_theme_t::get_button_bounds()
@@ -171,6 +172,7 @@ geometry::logical_bounds_t pixdecor_theme_t::get_button_bounds()
                 .font_height = get_font_height_px(),
                 .requested_button_size  = button_size,
                 .requested_title_height = title_height,
+                .title_height_extension = (maximized && !maximized_borders) ? border_size : 0,
                 .button_y_offset = button_y_offset,
                 .output_scale    = 1.0,
                 .svg_proportions = geometry::full_box_svg_proportions(),
