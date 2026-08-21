@@ -2,7 +2,7 @@
 
 ![Pixdecor window decorations](https://github.com/soreau/pixdecor/assets/1450125/af891554-8eeb-4769-b571-fa587afd8350)
 
-Vecdecor is a configurable decorator plugin for Wayfire. It supports antialiased rounded corners, shadows, and optional animated effects.
+Vecdecor is a configurable decorator plugin for Wayfire. It renders rounded corners on floating windows and square corners on tiled or maximised windows. It no longer provides titlebar background effects or built-in window shadows. Use Wayfire's external `winshadows` plugin for shadows.
 
 ## Install
 
@@ -54,7 +54,9 @@ button_pressed_color = 0.8 0.8 0.8 1.0
 The current code defines these options. SVG decoding and state-specific button colours are not connected to rendering yet.
 
 > [!WARNING]
-> Vecdecor removes Pixdecor's PNG button options. It has no compatibility reader, so existing PNG options do not migrate automatically.
+> This version removes the `overlay_engine`, `effect_type`, `effect_color`, `animate`, `shadow_radius`, `shadow_color`, and `maximized_shadows` options. Remove these keys from `[vecdecor]`, then configure and enable Wayfire's `winshadows` plugin if you need window shadows.
+>
+> Vecdecor also removes Pixdecor's PNG button options. It has no compatibility reader, so existing PNG options do not migrate automatically.
 
 ## Licence and credit
 

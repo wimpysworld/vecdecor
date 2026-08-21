@@ -1,7 +1,6 @@
 #pragma once
 #include <wayfire/render-manager.hpp>
 #include "deco-button.hpp"
-#include "deco-effects.hpp"
 
 #define MIN_RESIZE_HANDLE_SIZE 5
 #define LARGE_ICON_THRESHOLD 20
@@ -19,10 +18,8 @@ class pixdecor_theme_t
 {
   public:
     wf::option_wrapper_t<std::string> title_font{"vecdecor/title_font"};
-    wf::option_wrapper_t<std::string> overlay_engine{"vecdecor/overlay_engine"};
-    wf::option_wrapper_t<std::string> effect_type{"vecdecor/effect_type"};
+    wf::option_wrapper_t<int> rounded_corner_radius{"vecdecor/rounded_corner_radius"};
     wf::option_wrapper_t<bool> maximized_borders{"vecdecor/maximized_borders"};
-    wf::option_wrapper_t<bool> maximized_shadows{"vecdecor/maximized_shadows"};
     wf::option_wrapper_t<int> title_text_align{"vecdecor/title_text_align"};
     /** Create a new theme with the default parameters */
     pixdecor_theme_t();
@@ -45,13 +42,12 @@ class pixdecor_theme_t
     /**
      * Fill the given rectangle with the background color(s).
      *
-     * @param fb The target framebuffer, must have been bound already.
      * @param rectangle The rectangle to redraw.
-     * @param scissor The GL scissor rectangle to use.
      * @param active Whether to use active or inactive colors
+     * @param tiled Whether the view has any tiled edges
      */
     void render_background(const wf::scene::render_instruction_t& data,
-        wf::geometry_t rectangle, bool active, wf::pointf_t p);
+        wf::geometry_t rectangle, bool active, bool tiled);
 
     /**
      * Render the given text on a cairo_surface_t with the given size. The caller is responsible for freeing
@@ -70,9 +66,6 @@ class pixdecor_theme_t
         double border;
     };
 
-    /** background effects */
-    smoke_t smoke;
-
     /**
      * Get the icon for the given button. The caller is responsible for freeing the memory afterwards.
      *
@@ -86,12 +79,27 @@ class pixdecor_theme_t
 
   private:
 
+    struct background_cache_key_t
+    {
+        wf::dimensions_t dimensions = {0, 0};
+        bool active = false;
+        wf::color_t color;
+        int radius = 0;
+        bool tiled = false;
+    };
+
+    bool background_key_matches(const background_cache_key_t& key) const;
+    void update_background_texture(const background_cache_key_t& key);
+
     wf::color_t fg;
     wf::color_t bg;
     wf::color_t fg_text;
     wf::color_t bg_text;
     bool maximized;
     std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> font_description;
+    background_cache_key_t background_cache_key;
+    wf::owned_texture_t background_texture;
+    bool background_texture_valid = false;
 };
 }
 }

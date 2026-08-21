@@ -1,6 +1,8 @@
 #include "deco-theme.hpp"
 #include <wayfire/core.hpp>
 #include <wayfire/opengl.hpp>
+#include <algorithm>
+#include <cmath>
 #include <map>
 #include <mutex>
 #include <stdlib.h>
@@ -107,29 +109,103 @@ void pixdecor_theme_t::set_maximize(bool state)
 /**
  * Fill the given rectangle with the background color(s).
  *
- * @param fb The target framebuffer, must have been bound already
  * @param rectangle The rectangle to redraw.
- * @param scissor The GL scissor rectangle to use.
  * @param active Whether to use active or inactive colors
  */
 void pixdecor_theme_t::render_background(const wf::scene::render_instruction_t& data,
-    wf::geometry_t rectangle, bool active, wf::pointf_t p)
+    wf::geometry_t rectangle, bool active, bool tiled)
 {
-    if ((std::string(effect_type) == "none") && (std::string(overlay_engine) == "none"))
+    background_cache_key_t key;
+    key.dimensions = {
+        int(std::round(rectangle.width * data.target.scale)),
+        int(std::round(rectangle.height * data.target.scale)),
+    };
+    key.active = active;
+    key.color  = get_decor_color(active);
+    key.radius = std::clamp(
+        int(std::round(int(rounded_corner_radius) * data.target.scale)), 0,
+        std::min(key.dimensions.width, key.dimensions.height) / 2);
+    key.tiled = tiled;
+
+    if ((key.dimensions.width <= 0) || (key.dimensions.height <= 0))
     {
-        data.pass->custom_gles_subpass(data.target, [&]
+        return;
+    }
+
+    // Avoid repeated Cairo drawing and texture uploads while the background properties stay unchanged.
+    if (!background_key_matches(key))
+    {
+        update_background_texture(key);
+    }
+
+    OpenGL::render_texture(wf::gles_texture_t{background_texture.get_texture()}, data.target, rectangle,
+        glm::vec4(1.0f), OpenGL::RENDER_FLAG_CACHED);
+
+    data.pass->custom_gles_subpass(data.target, [&]
+    {
+        for (auto& box : data.damage)
         {
-            for (auto& box : data.damage)
-            {
-                wf::gles::render_target_logic_scissor(data.target, box);
-                OpenGL::render_rectangle(rectangle, get_decor_color(active),
-                    wf::gles::render_target_orthographic_projection(data.target));
-            }
-        });
+            wf::gles::render_target_logic_scissor(data.target, box);
+            OpenGL::draw_cached();
+        }
+    });
+
+    OpenGL::clear_cached();
+}
+
+bool pixdecor_theme_t::background_key_matches(const background_cache_key_t& key) const
+{
+    return background_texture_valid &&
+           (background_cache_key.dimensions.width == key.dimensions.width) &&
+           (background_cache_key.dimensions.height == key.dimensions.height) &&
+           (background_cache_key.active == key.active) &&
+           (background_cache_key.color.r == key.color.r) &&
+           (background_cache_key.color.g == key.color.g) &&
+           (background_cache_key.color.b == key.color.b) &&
+           (background_cache_key.color.a == key.color.a) &&
+           (background_cache_key.radius == key.radius) &&
+           (background_cache_key.tiled == key.tiled);
+}
+
+void pixdecor_theme_t::update_background_texture(const background_cache_key_t& key)
+{
+    auto surface = cairo_image_surface_create(
+        CAIRO_FORMAT_ARGB32, key.dimensions.width, key.dimensions.height);
+    auto cr = cairo_create(surface);
+
+    cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+    cairo_paint(cr);
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+    cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
+
+    if (key.tiled || (key.radius == 0))
+    {
+        cairo_rectangle(cr, 0, 0, key.dimensions.width, key.dimensions.height);
     } else
     {
-        smoke.render_effect(data, rectangle);
+        constexpr double PI = 3.14159265358979323846;
+        double radius = key.radius;
+        double width  = key.dimensions.width;
+        double height = key.dimensions.height;
+
+        cairo_new_sub_path(cr);
+        cairo_arc(cr, width - radius, radius, radius, -PI / 2.0, 0);
+        cairo_arc(cr, width - radius, height - radius, radius, 0, PI / 2.0);
+        cairo_arc(cr, radius, height - radius, radius, PI / 2.0, PI);
+        cairo_arc(cr, radius, radius, radius, PI, 3.0 * PI / 2.0);
+        cairo_close_path(cr);
     }
+
+    cairo_set_source_rgba(cr, key.color.r, key.color.g, key.color.b, key.color.a);
+    cairo_fill(cr);
+    cairo_surface_flush(surface);
+
+    background_texture   = wf::owned_texture_t{surface};
+    background_cache_key = key;
+    background_texture_valid = true;
+
+    cairo_destroy(cr);
+    cairo_surface_destroy(surface);
 }
 
 /**

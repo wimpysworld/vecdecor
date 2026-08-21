@@ -2,6 +2,7 @@
 
 #include <wayfire/output.hpp>
 #include <wayfire/opengl.hpp>
+#include <wayfire/render-manager.hpp>
 #include <wayfire/core.hpp>
 #include <wayfire/view-transform.hpp>
 #include <wayfire/signal-definitions.hpp>
@@ -36,7 +37,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
     wf::option_wrapper_t<wf::animation_description_t> shade_duration{"vecdecor/shade_duration"};
 
   public:
-    bool last_direction;
+    bool last_direction = false;
     shade_animation_t progression{shade_duration};
     class simple_node_render_instance_t : public wf::scene::transformer_render_instance_t<transformer_base_node_t>
     {
@@ -256,7 +257,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
     {
         if (deco)
         {
-            return deco->shadow_thickness;
+            return 0;
         } else
         {
             if (auto toplevel = wf::toplevel_cast(view))
