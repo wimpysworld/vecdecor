@@ -389,20 +389,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             }
         });
         title_font.set_callback([=] {recreate_frames();});
-        rounded_corner_radius.set_callback([=]
-        {
-            for (auto& view : wf::get_core().get_all_views())
-            {
-                auto toplevel = wf::toplevel_cast(view);
-                if (!toplevel || !toplevel->toplevel()->get_data<simple_decorator_t>())
-                {
-                    continue;
-                }
-
-                view->damage();
-                wf::get_core().tx_manager->schedule_object(toplevel->toplevel());
-            }
-        });
+        rounded_corner_radius.set_callback([=] {recreate_frames();});
         maximized_borders.set_callback([=]
         {
             for (auto& view : wf::get_core().get_all_views())
