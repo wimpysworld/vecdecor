@@ -119,6 +119,13 @@ void test_positive_inputs_and_containment()
         "automatic button sizing works with an independent title request");
     expect(result.title_height == 44,
         "the independent title request remains unchanged");
+
+    input.title_height_extension = 5;
+    result = geometry::resolve_geometry(input);
+    expect(result.title_height == 49,
+        "the title height includes its runtime extension");
+    expect(result.button_bounds == geometry::logical_bounds_t{0, 15, 18, 18},
+        "the button remains centred in the extended title height");
 }
 
 void test_invalid_inputs_and_view_boxes()
@@ -136,6 +143,12 @@ void test_invalid_inputs_and_view_boxes()
     result = geometry::resolve_geometry(input);
     expect(result.used_automatic_fallback,
         "a negative title request uses the automatic fallback");
+
+    input = valid_geometry_input();
+    input.title_height_extension = -1;
+    result = geometry::resolve_geometry(input);
+    expect(result.used_automatic_fallback,
+        "a negative title height extension uses the automatic fallback");
 
     input = valid_geometry_input();
     input.font_height = -1;
