@@ -231,7 +231,7 @@ void pixdecor_layout_t::resize(int width, int height)
         int64_t title_width = static_cast<int64_t>(layout_width) - 2LL * border;
         if (right_positions.valid && !right_positions.buttons.empty())
         {
-            title_width = static_cast<int64_t>(right_positions.bounds.x) - border;
+            title_width = static_cast<int64_t>(right_positions.bounds.x) - title_left;
         }
 
         const int title_x = static_cast<int>(std::clamp<int64_t>(title_left, 0,
