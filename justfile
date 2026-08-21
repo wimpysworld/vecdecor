@@ -28,7 +28,15 @@ test: build
 
 # Check C++ formatting with the Wayfire configuration
 lint:
-    git ls-files -z -- '*.cpp' '*.hpp' | xargs -0 -r uncrustify -c "$WAYFIRE_UNCRUSTIFY_CONFIG" --check
+    #!/usr/bin/env bash
+    set -euo pipefail
+    git ls-files -z --cached --others --exclude-standard --deduplicate -- '*.cpp' '*.hpp' |
+        while IFS= read -r -d '' path; do
+            if [[ -f "$path" ]]; then
+                printf './%s\0' "$path"
+            fi
+        done |
+        xargs -0 -r uncrustify -c "$WAYFIRE_UNCRUSTIFY_CONFIG" --check
 
 # Run the full CI check suite
 check: eval test lint check-locales install-staged

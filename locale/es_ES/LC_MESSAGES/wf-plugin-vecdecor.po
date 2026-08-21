@@ -57,16 +57,6 @@ msgid "Whether or not to render side and bottom decorations on maximized windows
 msgstr "Si se deben renderizar o no las decoraciones laterales e inferiores en ventanas maximizadas."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:26
-msgid "Draw shadows on maximized windows"
-msgstr "Dibujar sombras en ventanas maximizadas"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:27
-msgid "Whether or not to allocate space for shadows on maximized windows."
-msgstr "Si se debe asignar o no espacio para sombras en ventanas maximizadas."
-
-#. (itstool) path: option/_short
 #: metadata/vecdecor.xml:31
 msgid "Decoration disabled for specified window types"
 msgstr "Decoración desactivada para tipos de ventana especificados"
@@ -163,131 +153,6 @@ msgid "Right"
 msgstr "Derecha"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:83
-msgid "Overlay Engine"
-msgstr "Motor de superposición"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:84
-msgid "Sets the overlay engine."
-msgstr "Establece el motor de superposición."
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:88 metadata/vecdecor.xml:105
-msgid "None"
-msgstr "Ninguno"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:92
-msgid "Rounded Corners"
-msgstr "Esquinas redondeadas"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:96
-msgid "Beveled Glass"
-msgstr "Cristal biselado"
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:100
-msgid "Effect Type"
-msgstr "Tipo de efecto"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:101
-msgid "Sets the effect type."
-msgstr "Establece el tipo de efecto."
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:109
-msgid "Smoke"
-msgstr "Humo"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:113
-msgid "Ink"
-msgstr "Tinta"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:117
-msgid "Clouds"
-msgstr "Nubes"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:121
-msgid "Halftone"
-msgstr "Medio tono"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:125
-msgid "Pattern"
-msgstr "Patrón"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:129
-msgid "Lava"
-msgstr "Lava"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:133
-msgid "Hex"
-msgstr "Hex"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:137
-msgid "Zebra"
-msgstr "Cebra"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:141
-msgid "Neural network"
-msgstr "Red neuronal"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:145
-msgid "Hexagon maze"
-msgstr "Laberinto hexagonal"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:149
-msgid "Raymarched truchet"
-msgstr "Truchet raymarched"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:153
-msgid "Neon pattern"
-msgstr "Patrón neón"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:157
-msgid "Neon rings"
-msgstr "Anillos neón"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:161
-msgid "Deco"
-msgstr "Deco"
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:165
-msgid "Effect Color"
-msgstr "Color del efecto"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:166
-msgid "Color of the titlebar background effect."
-msgstr "Color del efecto de fondo de la barra de título."
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:170
-msgid "Animate Effects"
-msgstr "Animar efectos"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:171
-msgid "WARNING: Enabling this option can use lots of system resources. Enables animating and constant repainting of window decorations."
-msgstr "ADVERTENCIA: Habilitar esta opción puede consumir muchos recursos del sistema. Permite animar y repintar constantemente las decoraciones de la ventana."
-
-#. (itstool) path: option/_short
 #: metadata/vecdecor.xml:175
 msgid "Rounded Corner Radius"
 msgstr "Radio de las esquinas redondeadas"
@@ -296,26 +161,6 @@ msgstr "Radio de las esquinas redondeadas"
 #: metadata/vecdecor.xml:176
 msgid "The radius for corners."
 msgstr "El radio de las esquinas."
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:181
-msgid "Shadow Radius"
-msgstr "Radio de la sombra"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:182
-msgid "The radius for shadows."
-msgstr "El radio de las sombras."
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:187
-msgid "Shadow Color"
-msgstr "Color de la sombra"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:188
-msgid "Color of the drop shadows."
-msgstr "Color de las sombras proyectadas."
 
 #. (itstool) path: group/_short
 #: metadata/vecdecor.xml:193

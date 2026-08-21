@@ -58,16 +58,6 @@ msgid "Whether or not to render side and bottom decorations on maximized windows
 msgstr "Dacă să se deseneze decorațiile laterale și de jos pe ferestrele maximizate sau nu."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:26
-msgid "Draw shadows on maximized windows"
-msgstr "Desenează umbre pe ferestrele maximizate"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:27
-msgid "Whether or not to allocate space for shadows on maximized windows."
-msgstr "Dacă să se aloce spațiu pentru umbre pe ferestrele maximizate sau nu."
-
-#. (itstool) path: option/_short
 #: metadata/vecdecor.xml:31
 msgid "Decoration disabled for specified window types"
 msgstr "Decorarea dezactivată pentru tipurile specificate de ferestre"
@@ -164,131 +154,6 @@ msgid "Right"
 msgstr "Dreapta"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:83
-msgid "Overlay Engine"
-msgstr "Motor de suprapunere"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:84
-msgid "Sets the overlay engine."
-msgstr "Alege motorul de suprapunere."
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:88 metadata/vecdecor.xml:105
-msgid "None"
-msgstr "Niciuna"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:92
-msgid "Rounded Corners"
-msgstr "Colțuri rotunjite"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:96
-msgid "Beveled Glass"
-msgstr "Sticlă teșită"
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:100
-msgid "Effect Type"
-msgstr "Tipul efectului"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:101
-msgid "Sets the effect type."
-msgstr "Stabilește tipul efectului."
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:109
-msgid "Smoke"
-msgstr "Fum"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:113
-msgid "Ink"
-msgstr "Cerneală"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:117
-msgid "Clouds"
-msgstr "Nori"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:121
-msgid "Halftone"
-msgstr "Semitonuri"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:125
-msgid "Pattern"
-msgstr "Model"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:129
-msgid "Lava"
-msgstr "Lavă"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:133
-msgid "Hex"
-msgstr "Hexagonal"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:137
-msgid "Zebra"
-msgstr "Zebră"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:141
-msgid "Neural network"
-msgstr "Rețea neuronală"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:145
-msgid "Hexagon maze"
-msgstr "Labirint hexagonal"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:149
-msgid "Raymarched truchet"
-msgstr "Truchetă cu simularea luminii"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:153
-msgid "Neon pattern"
-msgstr "Model neon"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:157
-msgid "Neon rings"
-msgstr "Inele neon"
-
-#. (itstool) path: desc/_name
-#: metadata/vecdecor.xml:161
-msgid "Deco"
-msgstr "Decorativ"
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:165
-msgid "Effect Color"
-msgstr "Culoarea efectului"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:166
-msgid "Color of the titlebar background effect."
-msgstr "Culoarea efectului fundalului barei de titlu."
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:170
-msgid "Animate Effects"
-msgstr "Animare efecte"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:171
-msgid "WARNING: Enabling this option can use lots of system resources. Enables animating and constant repainting of window decorations."
-msgstr "AVERTISMENT: Activarea acestei opțiuni poate folosi foarte multe resurse ale sistemului. Activează animarea și redesenarea constantă a decorațiilor de fereastră."
-
-#. (itstool) path: option/_short
 #: metadata/vecdecor.xml:175
 msgid "Rounded Corner Radius"
 msgstr "Raza colțurilor rotunjite"
@@ -297,26 +162,6 @@ msgstr "Raza colțurilor rotunjite"
 #: metadata/vecdecor.xml:176
 msgid "The radius for corners."
 msgstr "Raza de folosit pentru colțuri."
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:181
-msgid "Shadow Radius"
-msgstr "Raza umbrei"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:182
-msgid "The radius for shadows."
-msgstr "Raza de folosit pentru umbre."
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:187
-msgid "Shadow Color"
-msgstr "Culoarea umbrei"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:188
-msgid "Color of the drop shadows."
-msgstr "Culoarea umbrelor."
 
 #. (itstool) path: group/_short
 #: metadata/vecdecor.xml:193
