@@ -456,8 +456,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         update_decoration_size();
         if (auto view = _view.lock())
         {
-            auto size = wf::dimensions(view->get_pending_geometry());
-            layout.resize(size.width, size.height);
+            resize(wf::dimensions(view->get_pending_geometry()));
             wf::get_core().tx_manager->schedule_object(view->toplevel());
         }
     }
