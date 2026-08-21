@@ -64,7 +64,7 @@ msgid "Whether or not to render side and bottom decorations on maximized windows
 msgstr "Dacă să se deseneze decorațiile laterale și de jos pe ferestrele maximizate sau nu."
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:31
+#: metadata/vecdecor.xml:42
 msgid "Decoration disabled for specified window types"
 msgstr "Decorarea dezactivată pentru tipurile specificate de ferestre"
 
@@ -141,7 +141,7 @@ msgid "Right"
 msgstr "Dreapta"
 
 #. (itstool) path: option/_short
-#: metadata/vecdecor.xml:175
+#: metadata/vecdecor.xml:94
 msgid "Rounded Corner Radius"
 msgstr "Raza colțurilor rotunjite"
 
