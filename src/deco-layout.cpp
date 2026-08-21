@@ -279,29 +279,32 @@ void pixdecor_layout_t::resize(int width, int height)
 
     if (!maximized || maximized_borders)
     {
+        double w = width;
+        double h = height;
+
         /* Resizing edges - top */
         wf::geometry_t border_geometry =
-        {0, -inverse_border, width + MIN_RESIZE_HANDLE_SIZE, border};
+        {0, -double(inverse_border), w + MIN_RESIZE_HANDLE_SIZE, border};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_TOP, border_geometry));
 
         /* Resizing edges - bottom */
         border_geometry =
-        {0, height - border + inverse_border,
-            width + MIN_RESIZE_HANDLE_SIZE, border};
+        {0, h - border + inverse_border,
+            w + MIN_RESIZE_HANDLE_SIZE, border};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_BOTTOM, border_geometry));
 
         /* Resizing edges - left */
         border_geometry =
-        {-inverse_border, 0, border, height + MIN_RESIZE_HANDLE_SIZE};
+        {-double(inverse_border), 0, border, h + MIN_RESIZE_HANDLE_SIZE};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_LEFT, border_geometry));
 
         /* Resizing edges - right */
         border_geometry =
-        {width - border + inverse_border, 0, border,
-            height + MIN_RESIZE_HANDLE_SIZE};
+        {w - border + inverse_border, 0, border,
+            h + MIN_RESIZE_HANDLE_SIZE};
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_RIGHT, border_geometry));
     }
