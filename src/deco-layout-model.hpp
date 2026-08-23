@@ -154,6 +154,7 @@ class layout_input_model_t
     const layout_target_t *current_target = nullptr;
     const layout_target_t *grab_target    = nullptr;
     bool grabbed = false;
+    bool double_click_pending    = false;
     bool double_click_at_release = false;
 
     const layout_target_t *find_target(int x, int y) const;
