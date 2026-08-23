@@ -199,7 +199,7 @@ msgstr "Grosimea liniei butoanelor"
 
 #. (itstool) path: option/_long
 msgid "The line thickness for procedural fallback controls. SVG controls define their own line thickness."
-msgstr ""
+msgstr "Grosimea liniei pentru controalele de rezervă generate procedural. Controalele SVG își definesc propria grosime a liniei."
 
 #. (itstool) path: option/_short
 msgid "Left Button Spacing"

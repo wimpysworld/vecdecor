@@ -198,7 +198,7 @@ msgstr "按钮线条粗细"
 
 #. (itstool) path: option/_long
 msgid "The line thickness for procedural fallback controls. SVG controls define their own line thickness."
-msgstr ""
+msgstr "程序化后备控件的线条粗细。SVG 控件会自行定义线条粗细。"
 
 #. (itstool) path: option/_short
 msgid "Left Button Spacing"
