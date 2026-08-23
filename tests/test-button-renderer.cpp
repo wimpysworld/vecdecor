@@ -229,20 +229,75 @@ void verify_configured_fallback_thickness()
         "The configured line thickness did not change the procedural fallback width");
 }
 
-std::string make_malformed_svg()
+std::string make_svg_fixture(const std::string& kind, const std::string& contents)
 {
     std::array<char, 64> path{};
-    const std::string pattern = "/tmp/vecdecor-malformed-svg-XXXXXX";
+    const std::string pattern = "/tmp/vecdecor-" + kind + "-svg-XXXXXX";
+    require(pattern.size() < path.size(), "The SVG fixture path is too long");
     std::copy(pattern.begin(), pattern.end(), path.begin());
     const int descriptor = mkstemp(path.data());
-    require(descriptor >= 0, "Could not create the malformed SVG fixture");
+    require(descriptor >= 0, "Could not create the SVG fixture");
     close(descriptor);
 
     std::ofstream output(path.data());
-    output << "<svg><path";
+    output << contents;
     output.close();
-    require(output.good(), "Could not write the malformed SVG fixture");
+    require(output.good(), "Could not write the SVG fixture");
     return path.data();
+}
+
+std::string make_malformed_svg()
+{
+    return make_svg_fixture("malformed", "<svg><path");
+}
+
+void verify_blank_svg_fallbacks()
+{
+    constexpr std::array<const char*, 3> blank_svgs = {
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>"
+        "<symbol id='glyph'><path d='M2 2h12v12H2z'/></symbol></svg>",
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>"
+        "<defs><path id='glyph' d='M2 2h12v12H2z'/></defs></svg>",
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>"
+        "<path d='M100 100h12v12h-12z'/></svg>",
+    };
+    constexpr std::array<button_state_t, 4> states = {{
+        {button_kind_t::minimize},
+        {button_kind_t::maximize, focus_state_t::inactive,
+            interaction_state_t::normal, maximize_state_t::maximize},
+        {button_kind_t::maximize, focus_state_t::inactive,
+            interaction_state_t::normal, maximize_state_t::restore},
+        {button_kind_t::close},
+    }};
+
+    button_cache_key_t key;
+    key.colour = {1.0, 1.0, 1.0, 1.0};
+    key.logical_size    = {64, 64};
+    key.raster_size     = {64, 64};
+    key.svg_proportions = full_box_svg_proportions();
+    key.line_thickness  = DEFAULT_BUTTON_LINE_THICKNESS;
+    const loaded_button_asset_t fallback;
+
+    for (const auto *contents : blank_svgs)
+    {
+        const auto path  = make_svg_fixture("blank", contents);
+        const auto blank = load_svg_button_asset(path, button_asset_t::close, 1);
+        require(blank.valid_svg, "A parseable blank SVG was rejected during loading");
+
+        for (const auto& state : states)
+        {
+            key.state = state;
+            const auto expected = rasterize_button_asset(fallback, key);
+            const auto actual   = rasterize_button_asset(blank, key);
+            require(expected && actual, "A blank SVG fallback did not rasterise");
+            require(visible_pixels(actual.get()) > 0,
+                "A parseable blank SVG produced a transparent control");
+            require(surface_digest(actual.get()) == surface_digest(expected.get()),
+                "A parseable blank SVG used the wrong procedural fallback");
+        }
+
+        unlink(path.c_str());
+    }
 }
 
 void verify_full_matrix(button_renderer_t& renderer, const button_prepare_config_t& config)
@@ -303,6 +358,7 @@ int main(int argc, char **argv)
         }
 
         verify_configured_fallback_thickness();
+        verify_blank_svg_fallbacks();
         lifecycle_t lifecycle;
 
         button_renderer_dependencies_t dependencies;
