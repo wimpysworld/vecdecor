@@ -117,7 +117,7 @@
 			</option>
 			<option name="button_line_thickness" type="double">
 				<_short>Button Line Thickness</_short>
-				<_long>The thickness used to draw the minimize, maximize and close button lines.</_long>
+				<_long>The line thickness for procedural fallback controls. SVG controls define their own line thickness.</_long>
 				<default>0.7</default>
 				<min>0.0</min>
 			</option>
