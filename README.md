@@ -67,7 +67,7 @@ A configured SVG path overrides all four states of its control. Vecdecor treats 
 The bundled controls use the Catppuccin Mocha palette. Active minimise circles use `#f9e2af`, maximise and restore circles use `#a6e3a1`, and close circles use `#f38ba8`. Inactive circles use `#45475a`. Active glyphs use `#cdd6f4`, inactive glyphs use `#878892`, and hover backgrounds use `#313244`.
 
 > [!WARNING]
-> This version removes the `overlay_engine`, `effect_type`, `effect_color`, `animate`, `shadow_radius`, `shadow_color`, and `maximized_shadows` options. Remove these keys from `[vecdecor]`, then configure and enable Wayfire's `winshadows` plugin if you need window shadows.
+> This version removes the `overlay_engine`, `effect_type`, `effect_color`, `animate`, `beveled_glass`, and `beveled_glass_overlay` options. It also removes `shadow_radius`, `shadow_color`, and `maximized_shadows`. Remove these keys from `[vecdecor]`. Enable Wayfire's external `winshadows` plugin if you need window shadows.
 >
 > Vecdecor also removes Pixdecor's PNG button options. It has no compatibility reader, so existing PNG options do not migrate automatically.
 

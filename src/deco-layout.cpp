@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
-#include <sstream>
 #include <string>
+#include <utility>
 #include <wayfire/core.hpp>
 #include <wlr/xcursor.h>
 #include <wayfire/toplevel.hpp>
@@ -16,34 +16,6 @@ namespace pixdecor
 {
 namespace
 {
-struct button_layout_t
-{
-    std::vector<button_type_t> left;
-    std::vector<button_type_t> right;
-};
-
-std::vector<button_type_t> parse_buttons(const std::string& layout)
-{
-    std::stringstream stream(layout);
-    std::vector<button_type_t> buttons;
-    std::string button_name;
-    while (stream >> button_name)
-    {
-        if (button_name == "minimize")
-        {
-            buttons.push_back(BUTTON_MINIMIZE);
-        } else if (button_name == "maximize")
-        {
-            buttons.push_back(BUTTON_TOGGLE_MAXIMIZE);
-        } else if (button_name == "close")
-        {
-            buttons.push_back(BUTTON_CLOSE);
-        }
-    }
-
-    return buttons;
-}
-
 button_layout_t read_button_layout()
 {
     GSettings *settings = g_settings_new("org.gnome.desktop.wm.preferences");
@@ -52,15 +24,7 @@ button_layout_t read_button_layout()
     g_free(setting);
     g_object_unref(settings);
 
-    std::replace(layout.begin(), layout.end(), ',', ' ');
-    const auto first_separator = layout.find(':');
-    const auto last_separator  = layout.rfind(':');
-
-    button_layout_t result;
-    result.left  = parse_buttons(layout.substr(0, first_separator));
-    result.right = parse_buttons(last_separator == std::string::npos ?
-        std::string{} : layout.substr(last_separator + 1));
-    return result;
+    return parse_button_layout(layout);
 }
 
 wf::geometry_t to_geometry(const geometry::logical_bounds_t& bounds)
@@ -137,8 +101,19 @@ decoration_area_type_t decoration_area_t::get_type() const
 pixdecor_layout_t::pixdecor_layout_t(pixdecor_theme_t& th,
     std::function<void(wlr_box)> callback) :
     theme(th),
-    damage_callback(callback)
+    damage_callback(callback),
+    input_model(click_timer)
 {}
+
+bool pixdecor_layout_t::wayfire_layout_timer_t::is_connected()
+{
+    return timer.is_connected();
+}
+
+void pixdecor_layout_t::wayfire_layout_timer_t::set_timeout(std::uint32_t timeout_ms)
+{
+    timer.set_timeout(timeout_ms, [] () {});
+}
 
 pixdecor_layout_t::~pixdecor_layout_t()
 {
@@ -290,6 +265,8 @@ void pixdecor_layout_t::resize(int width, int height)
         this->layout_areas.push_back(std::make_unique<decoration_area_t>(
             DECORATION_AREA_RESIZE_RIGHT, border_geometry));
     }
+
+    rebuild_input_targets();
 }
 
 /**
@@ -352,12 +329,102 @@ wf::region_t pixdecor_layout_t::limit_region(wf::region_t & region) const
     return out;
 }
 
-void pixdecor_layout_t::unset_hover(wf::point_t position)
+void pixdecor_layout_t::rebuild_input_targets()
 {
-    auto area = find_area_at(position);
-    if (area && (area->get_type() == DECORATION_AREA_BUTTON))
+    std::vector<layout_target_t> targets;
+    auto add_target = [&] (std::size_t id, decoration_area_t& area, wf::geometry_t geometry)
     {
-        area->as_button().set_hover(false);
+        layout_target_t target;
+        target.id     = id;
+        target.bounds = {geometry.x, geometry.y, geometry.width, geometry.height};
+        if (area.get_type() == DECORATION_AREA_BUTTON)
+        {
+            target.kind   = layout_target_kind_t::button;
+            target.button = area.as_button().get_button_type();
+        } else if (area.get_type() & DECORATION_AREA_RESIZE_BIT)
+        {
+            target.kind  = layout_target_kind_t::resize;
+            target.edges = area.get_type() & ~DECORATION_AREA_RESIZE_BIT;
+        } else
+        {
+            target.kind = layout_target_kind_t::move;
+        }
+
+        targets.push_back(target);
+    };
+
+    for (std::size_t id = 0; id < layout_areas.size(); ++id)
+    {
+        auto& area = *layout_areas[id];
+        if (area.get_type() & DECORATION_AREA_MOVE_BIT)
+        {
+            continue;
+        }
+
+        auto geometry = area.get_geometry();
+        const auto input_size = theme.get_input_size();
+        if (area.get_type() & DECORATION_AREA_RESIZE_BIT)
+        {
+            if (input_size <= MIN_RESIZE_HANDLE_SIZE)
+            {
+                geometry = wf::expand_geometry_by_margins(geometry,
+                    wf::decoration_margins_t{input_size, input_size, input_size, input_size});
+            } else if ((area.get_type() == DECORATION_AREA_RESIZE_TOP) ||
+                       (area.get_type() == DECORATION_AREA_RESIZE_BOTTOM))
+            {
+                geometry = wf::expand_geometry_by_margins(geometry,
+                    wf::decoration_margins_t{0, 0, input_size, input_size});
+            } else
+            {
+                geometry = wf::expand_geometry_by_margins(geometry,
+                    wf::decoration_margins_t{input_size, input_size, 0, 0});
+            }
+        }
+
+        add_target(id, area, geometry);
+    }
+
+    for (std::size_t id = 0; id < layout_areas.size(); ++id)
+    {
+        auto& area = *layout_areas[id];
+        if (!(area.get_type() & DECORATION_AREA_MOVE_BIT))
+        {
+            continue;
+        }
+
+        auto geometry = area.get_geometry();
+        if (maximized)
+        {
+            geometry.height += theme.get_input_size();
+        }
+
+        add_target(id, area, geometry);
+    }
+
+    input_model.set_targets(std::move(targets));
+}
+
+void pixdecor_layout_t::apply_button_update(const layout_button_update_t& update)
+{
+    if (update.state.target_id >= layout_areas.size())
+    {
+        return;
+    }
+
+    auto& area = *layout_areas[update.state.target_id];
+    if (area.get_type() != DECORATION_AREA_BUTTON)
+    {
+        return;
+    }
+
+    if (update.hover_changed)
+    {
+        area.as_button().set_hover(update.state.hovered);
+    }
+
+    if (update.pressed_changed)
+    {
+        area.as_button().set_pressed(update.state.pressed);
     }
 }
 
@@ -365,27 +432,9 @@ void pixdecor_layout_t::unset_hover(wf::point_t position)
 pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_motion(
     int x, int y)
 {
-    auto previous_area = find_area_at(current_input);
-    auto current_area  = find_area_at({x, y});
-
-    if ((previous_area == current_area) && is_grabbed && current_area &&
-        (current_area->get_type() & DECORATION_AREA_MOVE_BIT))
-    {
-        is_grabbed = false;
-        return {DECORATION_ACTION_MOVE, 0};
-    } else
-    {
-        unset_hover(current_input);
-        if (current_area && (current_area->get_type() == DECORATION_AREA_BUTTON))
-        {
-            current_area->as_button().set_hover(true);
-        }
-    }
-
     this->current_input = {x, y};
     update_cursor();
-
-    return {DECORATION_ACTION_NONE, 0};
+    return input_model.motion(x, y);
 }
 
 /**
@@ -396,80 +445,13 @@ pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_motion(
 pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_press_event(
     bool pressed)
 {
-    if (pressed)
-    {
-        auto area = find_area_at(current_input);
-        if (area && (area->get_type() & DECORATION_AREA_MOVE_BIT))
-        {
-            if (timer.is_connected())
-            {
-                double_click_at_release = true;
-            } else
-            {
-                timer.set_timeout(300, [] () { return false; });
-            }
-        }
-
-        if (area && (area->get_type() & DECORATION_AREA_RESIZE_BIT))
-        {
-            return {DECORATION_ACTION_RESIZE, calculate_resize_edges()};
-        }
-
-        if (area && (area->get_type() == DECORATION_AREA_BUTTON))
-        {
-            area->as_button().set_pressed(true);
-        }
-
-        is_grabbed  = true;
-        grab_origin = current_input;
-    }
-
-    if (!pressed && double_click_at_release)
-    {
-        double_click_at_release = false;
-        return {DECORATION_ACTION_TOGGLE_MAXIMIZE, 0};
-    } else if (!pressed && is_grabbed)
-    {
-        is_grabbed = false;
-        auto begin_area = find_area_at(grab_origin);
-        auto end_area   = find_area_at(current_input);
-
-        if (begin_area && (begin_area->get_type() == DECORATION_AREA_BUTTON))
-        {
-            begin_area->as_button().set_pressed(false);
-            if (end_area && (begin_area == end_area))
-            {
-                switch (begin_area->as_button().get_button_type())
-                {
-                  case BUTTON_CLOSE:
-                    return {DECORATION_ACTION_CLOSE, 0};
-
-                  case BUTTON_TOGGLE_MAXIMIZE:
-                    return {DECORATION_ACTION_TOGGLE_MAXIMIZE, 0};
-
-                  case BUTTON_MINIMIZE:
-                    return {DECORATION_ACTION_MINIMIZE, 0};
-
-                  default:
-                    break;
-                }
-            }
-        }
-    }
-
-    return {DECORATION_ACTION_NONE, 0};
+    return pressed ? input_model.press() : input_model.release();
 }
 
 pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_axis_event(
     int delta)
 {
-    if (delta < 0)
-    {
-        return {DECORATION_ACTION_SHADE, 0};
-    } else
-    {
-        return {DECORATION_ACTION_UNSHADE, 0};
-    }
+    return input_model.axis(delta);
 }
 
 /**
@@ -597,19 +579,9 @@ void pixdecor_layout_t::set_maximize(bool state)
     maximized = state;
 }
 
-void pixdecor_layout_t::handle_focus_lost()
+pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_focus_lost()
 {
-    if (is_grabbed)
-    {
-        this->is_grabbed = false;
-        auto area = find_area_at(grab_origin);
-        if (area && (area->get_type() == DECORATION_AREA_BUTTON))
-        {
-            area->as_button().set_pressed(false);
-        }
-    }
-
-    this->unset_hover(current_input);
+    return input_model.focus_lost();
 }
 }
 }

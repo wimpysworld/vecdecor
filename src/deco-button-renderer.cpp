@@ -6,6 +6,7 @@
 #include <atomic>
 #include <cmath>
 #include <librsvg/rsvg.h>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -111,6 +112,13 @@ std::uint64_t fallback_hash(button_asset_t asset, const std::string& source)
 {
     auto hash = hash_bytes(reinterpret_cast<const unsigned char*>(source.data()), source.size());
     hash ^= 0xd6e8feb86659fd93ULL + static_cast<std::uint64_t>(asset);
+    return hash == 0 ? 1 : hash;
+}
+
+std::uint64_t document_fallback_hash(const std::string& source)
+{
+    auto hash = hash_bytes(reinterpret_cast<const unsigned char*>(source.data()), source.size());
+    hash ^= 0xd6e8feb86659fd93ULL;
     return hash == 0 ? 1 : hash;
 }
 
@@ -349,19 +357,14 @@ class wayfire_uploaded_texture_t : public uploaded_button_texture_t
 #endif
 }
 
-loaded_button_asset_t load_svg_button_asset(
-    const button_source_spec_t& source, button_asset_t asset,
-    button_state_variant_t variant, std::uint64_t source_generation)
+button_svg_document_t load_svg_button_document(const std::string& path)
 {
-    loaded_button_asset_t result;
-    result.identity.source_generation = source_generation;
-    result.variant     = variant;
-    result.render_mode = source.render_mode;
+    button_svg_document_t result;
 
     gchar *contents = nullptr;
     gsize length    = 0;
     GError *error   = nullptr;
-    if (!g_file_get_contents(source.path.c_str(), &contents, &length, &error))
+    if (!g_file_get_contents(path.c_str(), &contents, &length, &error))
     {
         result.error = error ? error->message : "Could not read the SVG source";
         if (error)
@@ -369,14 +372,11 @@ loaded_button_asset_t load_svg_button_asset(
             g_error_free(error);
         }
 
-        result.identity.content_hash = source_hash(fallback_hash(asset, source.path),
-            asset, variant, source.render_mode);
+        result.content_hash = document_fallback_hash(path);
         return result;
     }
 
-    result.identity.content_hash = source_hash(hash_bytes(
-        reinterpret_cast<const unsigned char*>(contents), length),
-        asset, variant, source.render_mode);
+    result.content_hash = hash_bytes(reinterpret_cast<const unsigned char*>(contents), length);
     RsvgHandle *handle = rsvg_handle_new_from_data(
         reinterpret_cast<const guint8*>(contents), length, &error);
     g_free(contents);
@@ -389,10 +389,10 @@ loaded_button_asset_t load_svg_button_asset(
             g_error_free(error);
         }
 
-        result.identity.content_hash ^= fallback_hash(asset, result.error);
-        if (result.identity.content_hash == 0)
+        result.content_hash ^= document_fallback_hash(result.error);
+        if (result.content_hash == 0)
         {
-            result.identity.content_hash = 1;
+            result.content_hash = 1;
         }
 
         return result;
@@ -408,6 +408,24 @@ loaded_button_asset_t load_svg_button_asset(
         g_object_unref(value);
     });
     result.valid_svg = true;
+    return result;
+}
+
+loaded_button_asset_t load_svg_button_asset(
+    const button_source_spec_t& source, button_asset_t asset,
+    button_state_variant_t variant, std::uint64_t source_generation)
+{
+    const auto document = load_svg_button_document(source.path);
+    loaded_button_asset_t result;
+    result.identity = {
+        source_hash(document.content_hash, asset, variant, source.render_mode),
+        source_generation,
+    };
+    result.payload     = document.payload;
+    result.variant     = variant;
+    result.render_mode = source.render_mode;
+    result.valid_svg   = document.valid_svg;
+    result.error = document.error;
     return result;
 }
 
@@ -570,7 +588,7 @@ button_renderer_dependencies_t wayfire_button_renderer_dependencies()
 {
 #ifdef VECDECOR_BUTTON_RENDERER_NO_WAYFIRE
     return {
-        load_svg_button_asset,
+        load_svg_button_document,
         rasterize_button_asset,
         upload_wayfire_button_texture,
         [] (const std::function<void()>& callback)
@@ -581,7 +599,7 @@ button_renderer_dependencies_t wayfire_button_renderer_dependencies()
     };
 #else
     return {
-        load_svg_button_asset,
+        load_svg_button_document,
         rasterize_button_asset,
         upload_wayfire_button_texture,
         [] (const std::function<void()>& callback)
@@ -613,6 +631,25 @@ button_renderer_t::~button_renderer_t()
 
 bool button_renderer_t::reload_sources(const button_source_config_t& config)
 {
+    if (!dependencies.decoder)
+    {
+        return false;
+    }
+
+    std::unordered_map<std::string, button_svg_document_t> decoded;
+    button_renderer_dependencies_t::decoder_t decode_cached = [&] (const std::string& path)
+    {
+        const auto found = decoded.find(path);
+        if (found != decoded.end())
+        {
+            return found->second;
+        }
+
+        auto document = dependencies.decoder(path);
+        decoded.emplace(path, document);
+        return document;
+    };
+
     for (auto asset : ALL_ASSETS)
     {
         const auto index = asset_index(asset);
@@ -628,7 +665,8 @@ bool button_renderer_t::reload_sources(const button_source_config_t& config)
                 (sources[index][variant_value].identity.source_generation != config.generation);
         }
 
-        if (changed && !reload_source(asset, config.sources[index], config.generation))
+        if (changed && !reload_source(
+            asset, config.sources[index], config.generation, decode_cached))
         {
             return false;
         }
@@ -649,6 +687,32 @@ bool button_renderer_t::reload_source(button_asset_t asset,
     const std::array<button_source_spec_t, 4>& requested_sources,
     std::uint64_t source_generation)
 {
+    if (!dependencies.decoder)
+    {
+        return false;
+    }
+
+    std::unordered_map<std::string, button_svg_document_t> decoded;
+    button_renderer_dependencies_t::decoder_t decode_cached = [&] (const std::string& path)
+    {
+        const auto found = decoded.find(path);
+        if (found != decoded.end())
+        {
+            return found->second;
+        }
+
+        auto document = dependencies.decoder(path);
+        decoded.emplace(path, document);
+        return document;
+    };
+    return reload_source(asset, requested_sources, source_generation, decode_cached);
+}
+
+bool button_renderer_t::reload_source(button_asset_t asset,
+    const std::array<button_source_spec_t, 4>& requested_sources,
+    std::uint64_t source_generation,
+    const button_renderer_dependencies_t::decoder_t& decoder)
+{
     const auto index = asset_index(asset);
     bool changed     = false;
     for (auto variant : ALL_VARIANTS)
@@ -667,7 +731,7 @@ bool button_renderer_t::reload_source(button_asset_t asset,
         return true;
     }
 
-    if (!dependencies.loader)
+    if (!decoder)
     {
         return false;
     }
@@ -677,10 +741,17 @@ bool button_renderer_t::reload_source(button_asset_t asset,
     {
         const auto variant_value = variant_index(variant);
         const auto& requested    = requested_sources[variant_value];
-        auto loaded = dependencies.loader(requested, asset, variant, source_generation);
-        loaded.identity.source_generation = source_generation;
+        const auto document = decoder(requested.path);
+        loaded_button_asset_t loaded;
+        loaded.identity = {
+            source_hash(document.content_hash, asset, variant, requested.render_mode),
+            source_generation,
+        };
+        loaded.payload     = document.payload;
         loaded.variant     = variant;
         loaded.render_mode = requested.render_mode;
+        loaded.valid_svg   = document.valid_svg;
+        loaded.error = document.error;
         if (!geometry::is_valid(loaded.identity))
         {
             loaded.valid_svg = false;

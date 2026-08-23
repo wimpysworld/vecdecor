@@ -1,5 +1,7 @@
 #pragma once
 
+#include "deco-layout-model.hpp"
+
 #include <vector>
 #include <wayfire/util.hpp>
 #include "deco-button.hpp"
@@ -66,24 +68,6 @@ struct decoration_area_t
 };
 
 
-/**
- * Action which needs to be taken in response to an input event
- */
-enum decoration_layout_action_t
-{
-    DECORATION_ACTION_NONE            = 0,
-    /* Drag actions */
-    DECORATION_ACTION_MOVE            = 1,
-    DECORATION_ACTION_RESIZE          = 2,
-    /* Button actions */
-    DECORATION_ACTION_CLOSE           = 3,
-    DECORATION_ACTION_TOGGLE_MAXIMIZE = 4,
-    DECORATION_ACTION_MINIMIZE        = 5,
-    /* Axis actions */
-    DECORATION_ACTION_SHADE           = 6,
-    DECORATION_ACTION_UNSHADE         = 7,
-};
-
 class pixdecor_theme_t;
 /**
  * Manages the layout of the decorations, i.e positioning of the title, buttons, etc.
@@ -119,12 +103,7 @@ class pixdecor_layout_t
      *  @return the intersection between region and the title bar area */
     wf::region_t limit_region(wf::region_t & region) const;
 
-    struct action_response_t
-    {
-        decoration_layout_action_t action;
-        /* For resizing action, determine the edges for resize request */
-        uint32_t edges;
-    };
+    using action_response_t = layout_input_response_t;
 
     /** Handle motion event to (x, y) relative to the decoration */
     action_response_t handle_motion(int x, int y);
@@ -146,7 +125,10 @@ class pixdecor_layout_t
     /**
      * Handle focus lost event.
      */
-    void handle_focus_lost();
+    action_response_t handle_focus_lost();
+
+    /** Apply one input-model update to its production button. */
+    void apply_button_update(const layout_button_update_t& update);
 
     void set_maximize(bool state);
 
@@ -159,19 +141,28 @@ class pixdecor_layout_t
     std::vector<std::unique_ptr<decoration_area_t>> layout_areas;
     wf::geometry_t cached_titlebar{};
 
-    bool is_grabbed = false;
-    /* Position where the grab has started */
-    wf::point_t grab_origin;
     /* Last position of the input */
     wf::point_t current_input;
-    /* double-click timer */
-    wf::wl_timer<false> timer;
-    bool double_click_at_release = false;
+
+    class wayfire_layout_timer_t : public layout_timer_t
+    {
+      public:
+        bool is_connected() override;
+        void set_timeout(std::uint32_t timeout_ms) override;
+
+      private:
+        wf::wl_timer<false> timer;
+    }
+
+    click_timer;
+
+    layout_input_model_t input_model;
 
     /** Create buttons with bounds from the logical layout model. */
     void create_buttons(const std::vector<button_type_t>& buttons,
         const geometry::button_group_positions_t& positions, bool reverse_order);
 
+    void rebuild_input_targets();
     /** Calculate resize edges based on @current_input */
     uint32_t calculate_resize_edges() const;
     /** Update the cursor based on @current_input */
@@ -182,9 +173,6 @@ class pixdecor_layout_t
      * @return The layout area or null on failure
      */
     nonstd::observer_ptr<decoration_area_t> find_area_at(wf::point_t point);
-
-    /** Unset hover state of hovered button at @position, if any */
-    void unset_hover(wf::point_t position);
 };
 }
 }

@@ -17,7 +17,17 @@ deco_button_renderer_dep = declare_dependency(
         link_with: deco_button_renderer)
 
 vecdecor = shared_module('vecdecor',
-        ['decoration.cpp', 'deco-subsurface.cpp', 'deco-button.cpp', 'deco-layout.cpp', 'deco-theme.cpp'],
+        [
+            'decoration.cpp',
+            'deco-background-renderer.cpp',
+            'deco-button.cpp',
+            'deco-button-state.cpp',
+            'deco-layout.cpp',
+            'deco-layout-model.cpp',
+            'deco-subsurface.cpp',
+            'deco-theme.cpp',
+            'shade-state.cpp',
+        ],
         dependencies: [wayfire, deco_geometry_dep, deco_button_renderer_dep],
         install: true,
         install_dir: join_paths(get_option('libdir'), 'wayfire'))
