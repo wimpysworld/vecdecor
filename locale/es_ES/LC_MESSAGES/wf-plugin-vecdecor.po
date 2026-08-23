@@ -235,7 +235,7 @@ msgstr "Grosor de la línea del botón"
 #. (itstool) path: option/_long
 #: metadata/vecdecor.xml:120
 msgid "The line thickness for procedural fallback controls. SVG controls define their own line thickness."
-msgstr ""
+msgstr "El grosor de línea de los controles alternativos dibujados mediante procedimientos. Los controles SVG definen su propio grosor de línea."
 
 #. (itstool) path: option/_short
 #: metadata/vecdecor.xml:125

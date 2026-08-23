@@ -236,7 +236,7 @@ msgstr "Grosimea liniei butoanelor"
 #. (itstool) path: option/_long
 #: metadata/vecdecor.xml:120
 msgid "The line thickness for procedural fallback controls. SVG controls define their own line thickness."
-msgstr ""
+msgstr "Grosimea liniei pentru controalele de rezervă generate procedural. Controalele SVG își definesc propria grosime a liniei."
 
 #. (itstool) path: option/_short
 #: metadata/vecdecor.xml:125
