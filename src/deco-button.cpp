@@ -12,11 +12,11 @@ namespace pixdecor
 button_t::button_t(pixdecor_theme_t& t, std::function<void()> damage) :
     damage_callback(std::move(damage)), theme(&t),
     get_button_bounds([this] { return theme->get_button_bounds(); }),
-    hover([] (const std::string& option_name)
+    hover(std::make_unique<button_animation_t>([] (const std::string& option_name)
 {
     wf::option_wrapper_t<int> duration(option_name);
     return std::shared_ptr<wf::config::option_t<int>>(duration);
-})
+}))
 {
     auto idle_damage = std::make_shared<wf::wl_idle_call>();
     schedule_redraw = [this, idle_damage]
