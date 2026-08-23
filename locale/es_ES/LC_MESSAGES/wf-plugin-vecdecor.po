@@ -197,8 +197,8 @@ msgid "Button Line Thickness"
 msgstr "Grosor de la línea del botón"
 
 #. (itstool) path: option/_long
-msgid "The thickness used to draw the minimize, maximize and close button lines."
-msgstr "El grosor utilizado para dibujar las líneas de los botones minimizar, maximizar y cerrar."
+msgid "The line thickness for procedural fallback controls. SVG controls define their own line thickness."
+msgstr ""
 
 #. (itstool) path: option/_short
 msgid "Left Button Spacing"
