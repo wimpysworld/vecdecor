@@ -1,4 +1,5 @@
 #pragma once
+#include "deco-background-renderer.hpp"
 #include "deco-button-renderer.hpp"
 #include "deco-geometry.hpp"
 
@@ -66,10 +67,10 @@ class pixdecor_theme_t
      *
      * @param rectangle The rectangle to redraw.
      * @param active Whether to use active or inactive colors
-     * @param tiled Whether the view has any tiled edges
+     * @param state The current floating, tiled, maximised, or fullscreen state
      */
     void render_background(const wf::scene::render_instruction_t& data,
-        wf::geometry_t rectangle, bool active, bool tiled);
+        wf::geometry_t rectangle, bool active, background_state_t state);
 
     /**
      * Render the given text on a cairo_surface_t with the given size. The caller is responsible for freeing
@@ -82,23 +83,12 @@ class pixdecor_theme_t
 
   private:
 
-    struct background_cache_key_t
-    {
-        wf::dimensions_t dimensions = {0, 0};
-        bool active = false;
-        wf::color_t color;
-        int radius = 0;
-        bool tiled = false;
-    };
-
     struct pending_button_prepare_t
     {
         button_prepare_config_t config;
         std::vector<std::function<void()>> damage_callbacks;
     };
 
-    bool background_key_matches(const background_cache_key_t& key) const;
-    void update_background_texture(const background_cache_key_t& key);
     button_prepare_config_t get_button_prepare_config(
         geometry::logical_size_t logical_size, double output_scale) const;
     const uploaded_button_texture_t *get_prepared_fallback(
@@ -116,9 +106,8 @@ class pixdecor_theme_t
     bool buttons_prepared = false;
     wf::wl_idle_call idle_prepare_buttons;
     std::unique_ptr<PangoFontDescription, decltype(&pango_font_description_free)> font_description;
-    background_cache_key_t background_cache_key;
+    background_renderer_t background_renderer;
     wf::owned_texture_t background_texture;
-    bool background_texture_valid = false;
 };
 }
 }

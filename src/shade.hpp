@@ -13,6 +13,7 @@
 #include <wayfire/util/duration.hpp>
 
 #include "deco-subsurface.hpp"
+#include "shade-state.hpp"
 
 const std::string shade_transformer_name = "pixdecor_shade";
 
@@ -22,11 +23,40 @@ namespace pixdecor
 {
 using namespace wf::scene;
 using namespace wf::animation;
-class shade_animation_t : public duration_t
+class shade_animation_t : public duration_t, public shade_animation_backend_t
 {
   public:
-    using duration_t::duration_t;
+    explicit shade_animation_t(
+        std::shared_ptr<wf::config::option_t<wf::animation_description_t>> duration) :
+        duration_t(duration)
+    {}
+
     timed_transition_t shade{*this};
+
+    bool running() override
+    {
+        return duration_t::running();
+    }
+
+    bool direction() override
+    {
+        return duration_t::get_direction();
+    }
+
+    double progress() const override
+    {
+        return shade;
+    }
+
+    void reverse() override
+    {
+        duration_t::reverse();
+    }
+
+    void start() override
+    {
+        duration_t::start();
+    }
 };
 class pixdecor_shade : public wf::scene::view_2d_transformer_t
 {
@@ -35,10 +65,36 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
     wf::output_t *output;
     int titlebar_height;
     wf::option_wrapper_t<wf::animation_description_t> shade_duration{"vecdecor/shade_duration"};
+    shade_state_model_t state;
+    bool frame_callback_active = false;
 
   public:
     bool last_direction = false;
     shade_animation_t progression{shade_duration};
+    shade_production_adapter_t production{
+        state,
+        progression,
+        {
+            [this] () { add_frame_callback(); },
+            [this] () { remove_frame_callback(); },
+            [this] () { view->damage(); },
+            [this] () { pop_transformer(view); },
+        },
+    };
+
+    static void init_production_animation(shade_production_adapter_t& production,
+        bool shade)
+    {
+        production.init_animation(shade);
+    }
+
+    static shade_frame_plan_t run_production_frame(
+        shade_production_adapter_t& production,
+        const std::function<void(const shade_frame_plan_t&)>& before_actions = {})
+    {
+        return production.frame(before_actions);
+    }
+
     class simple_node_render_instance_t : public wf::scene::transformer_render_instance_t<transformer_base_node_t>
     {
         wf::signal::connection_t<node_damage_signal> on_node_damaged =
@@ -90,7 +146,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
             auto titlebar = self->titlebar_height + self->get_shadow_margin();
             src_box.y += self->titlebar_height;
             src_box.height *= 1.0 -
-                (self->progression.shade *
+                (self->get_progress() *
                     ((src_box.height - titlebar) / float(src_box.height)));
             auto progress_height = src_box.height;
             shade_region &= src_box;
@@ -131,10 +187,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
         this->output = view->get_output();
         this->titlebar_height = titlebar_height;
         this->progression.shade.set(0.0, 1.0);
-        if (output)
-        {
-            output->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
-        }
+        add_frame_callback();
 
         if (auto toplevel = wf::toplevel_cast(view))
         {
@@ -157,47 +210,36 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
 
     wf::effect_hook_t pre_hook = [=] ()
     {
-        if (auto toplevel = wf::toplevel_cast(view))
+        run_production_frame(production, [&] (const shade_frame_plan_t& frame)
         {
-            if (deco)
+            last_direction = production.direction();
+            if (auto toplevel = wf::toplevel_cast(view))
             {
-                /* SSD */
-                deco->get_margins(toplevel->toplevel()->pending());
-            } else
-            {
-                /* CSD */
-                auto bg = view->get_surface_root_node()->get_bounding_box();
-                auto vg = toplevel->get_geometry();
-                auto margins =
-                    wf::decoration_margins_t{vg.x - bg.x, vg.y - bg.y,
-                    bg.width - ((vg.x - bg.x) + vg.width), bg.height - ((vg.y - bg.y) + vg.height)};
-                if (view->has_data(custom_data_name))
+                if (deco)
                 {
-                    view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
-                        {0, 0, 0,
-                            double(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) *
-                                progression.shade)});
+                    /* SSD */
+                    deco->get_margins(toplevel->toplevel()->pending());
                 } else
                 {
-                    view->store_data(std::make_unique<wf_shadow_margin_t>(), custom_data_name);
+                    /* CSD */
+                    auto bg = view->get_surface_root_node()->get_bounding_box();
+                    auto vg = toplevel->get_geometry();
+                    auto margins =
+                        wf::decoration_margins_t{vg.x - bg.x, vg.y - bg.y,
+                        bg.width - ((vg.x - bg.x) + vg.width),
+                        bg.height - ((vg.y - bg.y) + vg.height)};
+                    if (!view->has_data(custom_data_name))
+                    {
+                        view->store_data(std::make_unique<wf_shadow_margin_t>(), custom_data_name);
+                    }
+
                     view->get_data<wf_shadow_margin_t>(custom_data_name)->set_margins(
                         {0, 0, 0,
                             double(((toplevel->get_geometry().height + margins.bottom) - titlebar_height) *
-                                progression.shade)});
+                                frame.progress)});
                 }
             }
-        }
-
-        view->damage();
-        if (!this->progression.running() && !last_direction)
-        {
-            if (output)
-            {
-                output->render->rem_effect(&pre_hook);
-            }
-
-            pop_transformer(view);
-        }
+        });
     };
 
     void gen_render_instances(std::vector<render_instance_uptr>& instances,
@@ -212,7 +254,7 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
         auto bbox = this->get_children_bounding_box();
         if (((at.y - bbox.y) <
              ((1.0 -
-               (this->progression.shade * ((bbox.height - this->titlebar_height) / float(bbox.height)))) *
+               (get_progress() * ((bbox.height - this->titlebar_height) / float(bbox.height)))) *
               bbox.height)) &&
             ((at.y - bbox.y) > 0.0))
         {
@@ -224,26 +266,31 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
 
     void init_animation(bool shade)
     {
-        if (shade == last_direction)
+        init_production_animation(production, shade);
+        last_direction = production.direction();
+    }
+
+    void add_frame_callback()
+    {
+        if (output && !frame_callback_active)
         {
-            return;
+            output->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
+            frame_callback_active = true;
         }
+    }
 
-        if (this->progression.running())
+    void remove_frame_callback()
+    {
+        if (output && frame_callback_active)
         {
-            this->progression.reverse();
-        } else
-        {
-            if ((shade && !this->progression.get_direction()) ||
-                (!shade && this->progression.get_direction()))
-            {
-                this->progression.reverse();
-            }
-
-            this->progression.start();
+            output->render->rem_effect(&pre_hook);
+            frame_callback_active = false;
         }
+    }
 
-        last_direction = shade;
+    double get_progress() const
+    {
+        return production.progress();
     }
 
     void set_titlebar_height(int titlebar_height)
@@ -271,15 +318,12 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
 
     bool get_direction()
     {
-        return this->last_direction;
+        return production.direction();
     }
 
     virtual ~pixdecor_shade()
     {
-        if (output)
-        {
-            output->render->rem_effect(&pre_hook);
-        }
+        remove_frame_callback();
     }
 };
 }

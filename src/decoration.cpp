@@ -194,29 +194,23 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
     void init_shade(wayfire_view view, bool shade, int titlebar_height)
     {
-        if (!bool(enable_shade))
+        if (!view)
         {
             return;
         }
 
-        if (shade)
-        {
-            if (view && view->is_mapped())
-            {
-                auto tr = ensure_transformer(view, titlebar_height);
-                tr->set_titlebar_height(titlebar_height);
-                tr->init_animation(shade);
-            }
-        } else
-        {
-            if (auto tr =
-                    view->get_transformed_node()->get_transformer<pixdecor_shade>(
-                        shade_transformer_name))
+        auto tr = view->get_transformed_node()->get_transformer<pixdecor_shade>(
+            shade_transformer_name);
+        const shade_control_actions_t actions{
+            [&] () { tr = ensure_transformer(view, titlebar_height); },
+            [&] ()
             {
                 tr->set_titlebar_height(titlebar_height);
                 tr->init_animation(shade);
-            }
-        }
+            },
+        };
+        apply_shade_control(bool(enable_shade), shade, view->is_mapped(), bool(tr),
+            actions);
     }
 
   public:

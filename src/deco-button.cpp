@@ -1,65 +1,31 @@
 #include "deco-button.hpp"
 #include "deco-theme.hpp"
+#include <utility>
 #include <wayfire/opengl.hpp>
-
-#define NORMAL   1.0
-#define HOVERED  0.0
+#include <wayfire/option-wrapper.hpp>
+#include <wayfire/util.hpp>
 
 namespace wf
 {
 namespace pixdecor
 {
 button_t::button_t(pixdecor_theme_t& t, std::function<void()> damage) :
-    theme(t), damage_callback(damage)
-{}
-
-geometry::logical_bounds_t button_t::set_button_type(button_type_t type)
+    damage_callback(std::move(damage)), theme(&t),
+    get_button_bounds([this] { return theme->get_button_bounds(); }),
+    hover([] (const std::string& option_name)
 {
-    this->type     = type;
-    this->type_set = true;
-    this->hover.animate(NORMAL, NORMAL);
-    add_idle_damage();
-
-    return theme.get_button_bounds();
-}
-
-button_type_t button_t::get_button_type() const
+    wf::option_wrapper_t<int> duration(option_name);
+    return std::shared_ptr<wf::config::option_t<int>>(duration);
+})
 {
-    return this->type;
-}
-
-void button_t::set_hover(bool is_hovered)
-{
-    this->is_hovered = is_hovered;
-    if (!this->is_pressed)
+    auto idle_damage = std::make_shared<wf::wl_idle_call>();
+    schedule_redraw = [this, idle_damage]
     {
-        if (is_hovered)
+        idle_damage->run_once([this]
         {
-            this->hover.animate(HOVERED);
-        } else
-        {
-            this->hover.animate(NORMAL);
-        }
-    }
-
-    add_idle_damage();
-}
-
-/**
- * Set whether the button is pressed or not. Affects appearance.
- */
-void button_t::set_pressed(bool is_pressed)
-{
-    this->is_pressed = is_pressed;
-    if (is_pressed)
-    {
-        this->hover.animate(NORMAL);
-    } else
-    {
-        this->hover.animate(is_hovered ? HOVERED : NORMAL);
-    }
-
-    add_idle_damage();
+            damage_callback();
+        });
+    };
 }
 
 void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_t button_geometry,
@@ -70,81 +36,63 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
         return;
     }
 
-    if (this->hover.running())
+    class wayfire_button_backend_t : public button_render_backend_t
     {
-        add_idle_damage();
-    }
+      public:
+        pixdecor_theme_t& theme;
+        const wf::scene::render_instruction_t& data;
+        wf::geometry_t button_geometry;
+        const std::function<void()>& damage_callback;
+        const wf::owned_texture_t *normal_texture  = nullptr;
+        const wf::owned_texture_t *hovered_texture = nullptr;
 
-    geometry::button_state_t state;
-    switch (type)
-    {
-      case BUTTON_CLOSE:
-        state.kind = geometry::button_kind_t::close;
-        break;
+        wayfire_button_backend_t(pixdecor_theme_t& theme,
+            const wf::scene::render_instruction_t& data, wf::geometry_t button_geometry,
+            const std::function<void()>& damage_callback) :
+            theme(theme), data(data), button_geometry(button_geometry),
+            damage_callback(damage_callback)
+        {}
 
-      case BUTTON_TOGGLE_MAXIMIZE:
-        state.kind = geometry::button_kind_t::maximize;
-        break;
+        bool request_texture(button_texture_slot_t slot,
+            const geometry::button_state_t& state,
+            geometry::logical_size_t logical_size) override
+        {
+            auto texture = theme.get_button_texture(
+                state, logical_size, data.target.scale, damage_callback);
+            if (slot == button_texture_slot_t::normal)
+            {
+                normal_texture = texture;
+            } else
+            {
+                hovered_texture = texture;
+            }
 
-      case BUTTON_MINIMIZE:
-        state.kind = geometry::button_kind_t::minimize;
-        break;
-    }
+            return bool(texture);
+        }
 
-    state.focus    = active ? geometry::focus_state_t::active : geometry::focus_state_t::inactive;
-    state.maximize = maximized ? geometry::maximize_state_t::restore :
-        geometry::maximize_state_t::maximize;
+        void draw_texture(button_texture_slot_t slot, double alpha) override
+        {
+            const auto texture = slot == button_texture_slot_t::normal ?
+                normal_texture : hovered_texture;
+            OpenGL::render_texture(wf::gles_texture_t{texture->get_texture()}, data.target,
+                button_geometry, {1, 1, 1, alpha}, OpenGL::RENDER_FLAG_CACHED);
+            data.pass->custom_gles_subpass(data.target, [&]
+            {
+                wf::gles::for_each_scissor_rect(data.target, data.damage, [&]
+                {
+                    OpenGL::draw_cached();
+                });
+            });
+            OpenGL::clear_cached();
+        }
+    };
 
-    state.interaction = is_pressed ? geometry::interaction_state_t::pressed :
-        geometry::interaction_state_t::normal;
+    wayfire_button_backend_t backend(*theme, data, button_geometry, damage_callback);
     const geometry::logical_size_t logical_size = {
         static_cast<int>(button_geometry.width),
         static_cast<int>(button_geometry.height),
     };
-    const auto normal_texture = theme.get_button_texture(
-        state, logical_size, data.target.scale, damage_callback);
-
-    state.interaction = geometry::interaction_state_t::hover;
-    const auto hovered_texture = theme.get_button_texture(
-        state, logical_size, data.target.scale, damage_callback);
-    if (!normal_texture || !hovered_texture)
-    {
-        add_idle_damage();
-        return;
-    }
-
-    OpenGL::render_texture(wf::gles_texture_t{normal_texture->get_texture()}, data.target, button_geometry,
-        {1, 1, 1, this->hover},
-        OpenGL::RENDER_FLAG_CACHED);
-    data.pass->custom_gles_subpass(data.target, [&]
-    {
-        wf::gles::for_each_scissor_rect(data.target, data.damage, [&]
-        {
-            OpenGL::draw_cached();
-        });
-    });
-    OpenGL::clear_cached();
-
-    OpenGL::render_texture(wf::gles_texture_t{hovered_texture->get_texture()}, data.target,
-        button_geometry,
-        {1, 1, 1, 1.0 - this->hover},
-        OpenGL::RENDER_FLAG_CACHED);
-    data.pass->custom_gles_subpass(data.target, [&]
-    {
-        wf::gles::for_each_scissor_rect(data.target, data.damage, [&]
-        {
-            OpenGL::draw_cached();
-        });
-    });
-    OpenGL::clear_cached();
-}
-
-void button_t::add_idle_damage()
-{
-    this->idle_damage.run_once([=] ()
-    {
-        this->damage_callback();
-    });
+    render(backend, logical_size, active, maximized);
 }
 }
 }

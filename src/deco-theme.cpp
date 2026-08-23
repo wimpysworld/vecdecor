@@ -269,29 +269,25 @@ void pixdecor_theme_t::set_maximize(bool state)
  * @param active Whether to use active or inactive colors
  */
 void pixdecor_theme_t::render_background(const wf::scene::render_instruction_t& data,
-    wf::geometry_t rectangle, bool active, bool tiled)
+    wf::geometry_t rectangle, bool active, background_state_t state)
 {
-    background_cache_key_t key;
-    key.dimensions = {
-        int(std::round(rectangle.width * data.target.scale)),
-        int(std::round(rectangle.height * data.target.scale)),
-    };
-    key.active = active;
-    key.color  = get_decor_color(active);
-    key.radius = std::clamp(
-        int(std::round(int(rounded_corner_radius) * data.target.scale)), 0,
-        std::min(key.dimensions.width, key.dimensions.height) / 2);
-    key.tiled = tiled;
-
-    if ((key.dimensions.width <= 0) || (key.dimensions.height <= 0))
+    const auto colour = get_decor_color(active);
+    const auto result = background_renderer.prepare({
+                .logical_size = {rectangle.width, rectangle.height},
+                .output_scale = data.target.scale,
+                .active = active,
+                .colour = {colour.r, colour.g, colour.b, colour.a},
+                .corner_radius = int(rounded_corner_radius),
+                .state = state,
+            });
+    if (result == background_prepare_result_t::invalid)
     {
         return;
     }
 
-    // Avoid repeated Cairo drawing and texture uploads while the background properties stay unchanged.
-    if (!background_key_matches(key))
+    if (result == background_prepare_result_t::rendered)
     {
-        update_background_texture(key);
+        background_texture = wf::owned_texture_t{background_renderer.surface()};
     }
 
     OpenGL::render_texture(wf::gles_texture_t{background_texture.get_texture()}, data.target, rectangle,
@@ -306,61 +302,6 @@ void pixdecor_theme_t::render_background(const wf::scene::render_instruction_t& 
     });
 
     OpenGL::clear_cached();
-}
-
-bool pixdecor_theme_t::background_key_matches(const background_cache_key_t& key) const
-{
-    return background_texture_valid &&
-           (background_cache_key.dimensions.width == key.dimensions.width) &&
-           (background_cache_key.dimensions.height == key.dimensions.height) &&
-           (background_cache_key.active == key.active) &&
-           (background_cache_key.color.r == key.color.r) &&
-           (background_cache_key.color.g == key.color.g) &&
-           (background_cache_key.color.b == key.color.b) &&
-           (background_cache_key.color.a == key.color.a) &&
-           (background_cache_key.radius == key.radius) &&
-           (background_cache_key.tiled == key.tiled);
-}
-
-void pixdecor_theme_t::update_background_texture(const background_cache_key_t& key)
-{
-    auto surface = cairo_image_surface_create(
-        CAIRO_FORMAT_ARGB32, key.dimensions.width, key.dimensions.height);
-    auto cr = cairo_create(surface);
-
-    cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-    cairo_paint(cr);
-    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-    cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
-
-    if (key.tiled || (key.radius == 0))
-    {
-        cairo_rectangle(cr, 0, 0, key.dimensions.width, key.dimensions.height);
-    } else
-    {
-        constexpr double PI = 3.14159265358979323846;
-        double radius = key.radius;
-        double width  = key.dimensions.width;
-        double height = key.dimensions.height;
-
-        cairo_new_sub_path(cr);
-        cairo_arc(cr, width - radius, radius, radius, -PI / 2.0, 0);
-        cairo_arc(cr, width - radius, height - radius, radius, 0, PI / 2.0);
-        cairo_arc(cr, radius, height - radius, radius, PI / 2.0, PI);
-        cairo_arc(cr, radius, radius, radius, PI, 3.0 * PI / 2.0);
-        cairo_close_path(cr);
-    }
-
-    cairo_set_source_rgba(cr, key.color.r, key.color.g, key.color.b, key.color.a);
-    cairo_fill(cr);
-    cairo_surface_flush(surface);
-
-    background_texture   = wf::owned_texture_t{surface};
-    background_cache_key = key;
-    background_texture_valid = true;
-
-    cairo_destroy(cr);
-    cairo_surface_destroy(surface);
 }
 
 /**
