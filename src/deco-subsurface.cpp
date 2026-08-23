@@ -502,7 +502,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
     void handle_touch_up(uint32_t time_ms, int finger_id, wf::pointf_t lift_off_position) override
     {
-        input_adapter.touch_up();
+        input_adapter.touch_up({lift_off_position.x, lift_off_position.y});
     }
 
     void handle_touch_motion(uint32_t time_ms, int finger_id, wf::pointf_t position) override
