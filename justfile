@@ -73,6 +73,7 @@ install-staged: build
         rm -rf -- staged
     fi
     meson install -C build --destdir "$PWD/staged"
+    build/tests/test-button-renderer assets/buttons "$PWD/staged"
     for language in es_ES ro zh_CN; do
         test -f "$PWD/staged/usr/share/locale/$language/LC_MESSAGES/wf-plugin-vecdecor.mo"
     done
