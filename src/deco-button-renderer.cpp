@@ -53,6 +53,8 @@ constexpr std::array<const char*, 4> ASSET_FILENAMES = {
     "restore.svg",
     "close.svg",
 };
+constexpr double PI = 3.14159265358979323846;
+constexpr double MINIMUM_GLYPH_CONTRAST = 4.5;
 
 std::size_t asset_index(button_asset_t asset)
 {
@@ -144,6 +146,73 @@ bool surface_has_alpha(cairo_surface_t *surface)
     }
 
     return false;
+}
+
+bool draw_interaction_background(cairo_t *cr, const geometry::button_cache_key_t& key)
+{
+    if (key.state.interaction == geometry::interaction_state_t::normal)
+    {
+        return true;
+    }
+
+    const double width  = key.raster_size.width;
+    const double height = key.raster_size.height;
+    const double radius = std::min(width, height) / 2.0;
+
+    cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
+    cairo_new_sub_path(cr);
+    if (width == height)
+    {
+        cairo_arc(cr, width / 2.0, height / 2.0, radius, 0.0, 2.0 * PI);
+    } else if (width > height)
+    {
+        cairo_arc(cr, width - radius, radius, radius, -PI / 2.0, PI / 2.0);
+        cairo_arc(cr, radius, radius, radius, PI / 2.0, 3.0 * PI / 2.0);
+    } else
+    {
+        cairo_arc(cr, radius, radius, radius, PI, 2.0 * PI);
+        cairo_arc(cr, radius, height - radius, radius, 0.0, PI);
+    }
+
+    cairo_close_path(cr);
+    const auto& colour = key.background_colour;
+    cairo_set_source_rgba(cr, colour.r, colour.g, colour.b, colour.a);
+    cairo_fill(cr);
+    return cairo_status(cr) == CAIRO_STATUS_SUCCESS;
+}
+
+double linear_colour_channel(double channel)
+{
+    return channel <= 0.04045 ? channel / 12.92 :
+           std::pow((channel + 0.055) / 1.055, 2.4);
+}
+
+double relative_luminance(const geometry::rgba_t& colour)
+{
+    return 0.2126 * linear_colour_channel(colour.r) +
+           0.7152 * linear_colour_channel(colour.g) +
+           0.0722 * linear_colour_channel(colour.b);
+}
+
+double contrast_ratio(const geometry::rgba_t& lhs, const geometry::rgba_t& rhs)
+{
+    const double lighter = std::max(relative_luminance(lhs), relative_luminance(rhs));
+    const double darker  = std::min(relative_luminance(lhs), relative_luminance(rhs));
+    return (lighter + 0.05) / (darker + 0.05);
+}
+
+geometry::rgba_t contrasting_glyph_colour(
+    const geometry::rgba_t& configured, const geometry::rgba_t& background)
+{
+    if ((background.a == 0.0) ||
+        (contrast_ratio(configured, background) >= MINIMUM_GLYPH_CONTRAST))
+    {
+        return configured;
+    }
+
+    const geometry::rgba_t black = {0.0, 0.0, 0.0, 1.0};
+    const geometry::rgba_t white = {1.0, 1.0, 1.0, 1.0};
+    return contrast_ratio(black, background) >= contrast_ratio(white, background) ? black : white;
 }
 
 bool draw_fallback(cairo_t *cr, const geometry::button_cache_key_t& key)
@@ -322,6 +391,7 @@ button_surface_t rasterize_button_asset(
     const loaded_button_asset_t& asset, const geometry::button_cache_key_t& key)
 {
     if (!geometry::is_valid(key.raster_size) || !geometry::is_valid(key.colour) ||
+        !geometry::is_valid(key.background_colour) ||
         !geometry::is_valid(key.svg_proportions) || !std::isfinite(key.line_thickness) ||
         (key.line_thickness < 0.0))
     {
@@ -342,6 +412,12 @@ button_surface_t rasterize_button_asset(
             cairo_destroy(cr);
         }
 
+        return {};
+    }
+
+    if (!draw_interaction_background(cr, key))
+    {
+        cairo_destroy(cr);
         return {};
     }
 
@@ -376,7 +452,7 @@ button_surface_t rasterize_button_asset(
 
     if (!rendered)
     {
-        if (!clear_surface(cr) || !draw_fallback(cr, key))
+        if (!draw_fallback(cr, key))
         {
             cairo_destroy(cr);
             return {};
@@ -640,6 +716,7 @@ geometry::button_cache_key_t button_renderer_t::resolve_key(
     input.state = state;
     input.resolved_asset_identity = sources[asset_index(asset_for_state(state))].identity;
     input.colour = colour_for_state(state, config.palette);
+    input.background_colour = background_colour_for_state(state, config.palette);
     input.logical_size     = config.logical_size;
     input.svg_proportions  = config.svg_proportions;
     input.output_scale     = config.output_scale;
@@ -696,16 +773,24 @@ button_asset_t button_renderer_t::asset_for_state(const geometry::button_state_t
 geometry::rgba_t button_renderer_t::colour_for_state(
     const geometry::button_state_t& state, const button_palette_t& palette) const
 {
+    const auto configured = state.focus == geometry::focus_state_t::active ?
+        palette.active : palette.inactive;
+    return contrasting_glyph_colour(configured, background_colour_for_state(state, palette));
+}
+
+geometry::rgba_t button_renderer_t::background_colour_for_state(
+    const geometry::button_state_t& state, const button_palette_t& palette) const
+{
     switch (state.interaction)
     {
-      case geometry::interaction_state_t::pressed:
-        return palette.pressed;
-
       case geometry::interaction_state_t::hover:
         return palette.hover;
 
+      case geometry::interaction_state_t::pressed:
+        return palette.pressed;
+
       case geometry::interaction_state_t::normal:
-        return state.focus == geometry::focus_state_t::active ? palette.active : palette.inactive;
+        return {};
     }
 
     return {};
