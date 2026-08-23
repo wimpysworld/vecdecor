@@ -429,7 +429,17 @@ button_renderer_t::button_renderer_t(button_renderer_dependencies_t dependencies
 
 button_renderer_t::~button_renderer_t()
 {
-    clear_cache();
+    if (!clear_cache())
+    {
+        // Uploaded Wayfire textures must be destroyed in a GL context. Context entry can fail
+        // during compositor teardown, so leak the bounded cache instead of destroying it.
+        for (auto& entry : cache)
+        {
+            (void)entry.texture.release();
+        }
+
+        cache.clear();
+    }
 }
 
 bool button_renderer_t::reload_sources(const button_source_config_t& config)
