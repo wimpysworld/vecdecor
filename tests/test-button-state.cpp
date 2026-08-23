@@ -1,11 +1,10 @@
 #include "deco-button.hpp"
 
 #include <array>
-#include <chrono>
 #include <cmath>
 #include <iostream>
+#include <memory>
 #include <string>
-#include <thread>
 #include <utility>
 #include <vector>
 #include <wayfire/config/option-wrapper.hpp>
@@ -312,8 +311,40 @@ struct button_backend_probe_t : public pixdecor::button_render_backend_t
     }
 };
 
+class fake_button_animation_t : public pixdecor::button_animation_backend_t
+{
+  public:
+    bool complete_immediately = true;
+    bool running_value   = false;
+    double current_value = 1.0;
+
+    void animate(double end) override
+    {
+        if (complete_immediately)
+        {
+            current_value = end;
+        }
+    }
+
+    void animate(double start, double end) override
+    {
+        current_value = complete_immediately ? end : start;
+    }
+
+    bool running() override
+    {
+        return running_value;
+    }
+
+    double value() const override
+    {
+        return current_value;
+    }
+};
+
 pixdecor::button_t make_button(int duration_ms, int& redraw_count,
-    std::string& loaded_duration_name)
+    std::string& loaded_duration_name,
+    std::unique_ptr<pixdecor::button_animation_backend_t> animation = {})
 {
     return pixdecor::button_t({
             [duration_ms, &loaded_duration_name] (const std::string& option_name)
@@ -329,6 +360,7 @@ pixdecor::button_t make_button(int duration_ms, int& redraw_count,
         {
             ++redraw_count;
         },
+            std::move(animation),
         });
 }
 
@@ -350,7 +382,7 @@ void expect_two_draws(const button_backend_probe_t& backend,
         message);
 }
 
-void test_button_adapter_state_and_render()
+void test_production_button_animation_wiring()
 {
     expect(pixdecor::button_animation_t::duration_option_name() ==
         "vecdecor/button_hover_duration",
@@ -365,8 +397,27 @@ void test_button_adapter_state_and_render()
     expect(bounds == geometry::logical_bounds_t{2, 3, 18, 20} && redraw_count == 1,
         "set_button_type uses the injected bounds and requests a redraw");
 
+    button_backend_probe_t backend;
+    button.render(backend, {18, 20}, true, true);
+    expect_two_draws(backend,
+        "the production animation wrapper supplies both texture weights");
+    expect_close(backend.draws[0].second, 1.0,
+        "the production animation keeps a constant normal texture weight");
+    expect_close(backend.draws[1].second, 0.0,
+        "the production animation keeps a constant hover texture weight");
+}
+
+void test_button_adapter_state_and_render()
+{
+    int redraw_count = 0;
+    std::string loaded_duration_name;
+    auto button = make_button(1, redraw_count, loaded_duration_name,
+        std::make_unique<fake_button_animation_t>());
+    const auto bounds = button.set_button_type(pixdecor::BUTTON_TOGGLE_MAXIMIZE);
+    expect(bounds == geometry::logical_bounds_t{2, 3, 18, 20} && redraw_count == 1,
+        "set_button_type uses the injected bounds and requests a redraw");
+
     button.set_hover(true);
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
     expect(redraw_count == 2,
         "button_t::set_hover requests a redraw");
 
@@ -390,7 +441,6 @@ void test_button_adapter_state_and_render()
     backend.clear();
     const int before_press = redraw_count;
     button.set_pressed(true);
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
     expect(redraw_count == before_press + 1,
         "button_t::set_pressed requests a redraw");
     button.render(backend, {18, 20}, false, false);
@@ -402,7 +452,6 @@ void test_button_adapter_state_and_render()
     backend.clear();
     const int before_release = redraw_count;
     button.set_pressed(false);
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
     expect(redraw_count == before_release + 1,
         "button_t::set_pressed requests a redraw on release");
     button.render(backend, {18, 20}, false, false);
@@ -425,10 +474,14 @@ void test_button_adapter_animation_redraws()
 {
     int redraw_count = 0;
     std::string loaded_duration_name;
-    auto button = make_button(10000, redraw_count, loaded_duration_name);
+    auto animation = std::make_unique<fake_button_animation_t>();
+    animation->complete_immediately = false;
+    auto *animation_probe = animation.get();
+    auto button = make_button(10000, redraw_count, loaded_duration_name, std::move(animation));
     button.set_button_type(pixdecor::BUTTON_CLOSE);
     button.set_hover(true);
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    animation_probe->current_value = 0.5;
+    animation_probe->running_value = true;
 
     button_backend_probe_t backend;
     const int before_first_frame = redraw_count;
@@ -468,6 +521,7 @@ int main()
     test_input_transitions();
     test_deterministic_progress_and_redraws();
     test_missing_textures_request_redraw();
+    test_production_button_animation_wiring();
     test_button_adapter_state_and_render();
     test_button_adapter_animation_redraws();
     return failures == 0 ? 0 : 1;

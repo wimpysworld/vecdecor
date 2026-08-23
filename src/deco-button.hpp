@@ -30,6 +30,7 @@ struct button_runtime_t
     button_animation_t::duration_loader_t load_hover_duration;
     std::function<geometry::logical_bounds_t()> get_button_bounds;
     std::function<void()> schedule_redraw;
+    std::unique_ptr<button_animation_backend_t> hover_animation;
 };
 
 class button_t
@@ -91,7 +92,7 @@ class button_t
     bool type_set = false;
 
     button_state_model_t state_model;
-    button_animation_t hover;
+    std::unique_ptr<button_animation_backend_t> hover;
 };
 }
 }

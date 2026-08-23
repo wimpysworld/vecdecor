@@ -81,7 +81,18 @@ class button_state_model_t
     bool is_pressed = false;
 };
 
-class button_animation_t
+class button_animation_backend_t
+{
+  public:
+    virtual ~button_animation_backend_t() = default;
+
+    virtual void animate(double end) = 0;
+    virtual void animate(double start, double end) = 0;
+    virtual bool running() = 0;
+    virtual double value() const = 0;
+};
+
+class button_animation_t : public button_animation_backend_t
 {
   public:
     using duration_loader_t = std::function<std::shared_ptr<wf::config::option_t<int>>(
@@ -93,10 +104,10 @@ class button_animation_t
     button_animation_t(button_animation_t&&) noexcept;
     button_animation_t& operator =(button_animation_t&&) noexcept;
 
-    void animate(double end);
-    void animate(double start, double end);
-    bool running();
-    double value() const;
+    void animate(double end) override;
+    void animate(double start, double end) override;
+    bool running() override;
+    double value() const override;
 
     static const std::string& duration_option_name();
 
