@@ -37,30 +37,34 @@ button_maximize_svg = /path/to/maximize.svg
 button_restore_svg = /path/to/restore.svg
 button_close_svg = /path/to/close.svg
 
-button_color = 0.0 0.0 0.0 1.0
-button_inactive_color = 0.4 0.4 0.4 1.0
-button_hover_color = 0.2 0.2 0.2 1.0
-button_pressed_color = 0.8 0.8 0.8 1.0
+button_color = 0.803922 0.839216 0.956863 1.0
+button_inactive_color = 0.529412 0.533333 0.572549 1.0
+button_hover_color = 0.192157 0.196078 0.266667 1.0
+button_pressed_color = 0.270588 0.278431 0.352941 1.0
 ```
 
 | Option | Role |
 | --- | --- |
 | `title_height` | Non-negative titlebar height in logical pixels. `0` uses an automatic height derived from the title font. |
 | `button_size` | Non-negative square button size in logical pixels. `0` selects `18` or `26`, based on the title font. |
-| `button_minimize_svg` | SVG file override for the minimise button. Leave empty to use Vecdecor's control. |
-| `button_maximize_svg` | SVG file override for the maximise button. Leave empty to use Vecdecor's control. |
-| `button_restore_svg` | SVG file override for the restore button. Leave empty to use Vecdecor's control. |
-| `button_close_svg` | SVG file override for the close button. Leave empty to use Vecdecor's control. |
-| `button_color` | Colour of active buttons |
-| `button_inactive_color` | Colour of inactive buttons |
-| `button_hover_color` | Colour of buttons under the pointer |
-| `button_pressed_color` | Colour of pressed buttons |
+| `button_minimize_svg` | Custom SVG mask for every minimise state. Leave empty to use the bundled controls. |
+| `button_maximize_svg` | Custom SVG mask for every maximise state. Leave empty to use the bundled controls. |
+| `button_restore_svg` | Custom SVG mask for every restore state. Leave empty to use the bundled controls. |
+| `button_close_svg` | Custom SVG mask for every close state. Leave empty to use the bundled controls. |
+| `button_color` | Active glyph colour for custom masks and procedural fallbacks |
+| `button_inactive_color` | Inactive glyph colour for custom masks and procedural fallbacks |
+| `button_hover_color` | Hover background colour for custom masks and procedural fallbacks |
+| `button_pressed_color` | Pressed background colour for custom masks and procedural fallbacks |
 
 `title_height` and `button_size` are independent. If either value is positive, Vecdecor expands the titlebar when needed to contain the button after applying `button_y_offset`. Changes to either option recreate the decoration frames, so the new size applies without restarting Wayfire.
 
 The logical geometry stays constant across output scales. Vecdecor rasterises each button for the output scale and keeps the rendered and pointer bounds equal.
 
-Empty SVG options use the Vecdecor-owned controls installed with the plugin. A configured file overrides the matching Vecdecor control. The configured colours recolour the controls, so each colour does not need a separate asset file. If a configured file is missing or invalid, Vecdecor uses the matching procedural fallback control. Changes to an SVG option path or a colour option apply without restarting Wayfire.
+Empty SVG options use 16 full-colour controls installed with the plugin. Each minimise, maximise, restore, and close control has active, active hover, inactive, and inactive hover assets. Pressed states use the matching hover asset. The bundled colours do not use the palette options.
+
+A configured SVG path overrides all four states of its control. Vecdecor treats the custom SVG as an alpha mask and recolours it with the palette options. If one source is missing, blank, or invalid, Vecdecor uses the procedural fallback for that exact state. Changes to an SVG option path or a colour option apply without restarting Wayfire.
+
+The bundled controls use the Catppuccin Mocha palette. Active minimise circles use `#f9e2af`, maximise and restore circles use `#a6e3a1`, and close circles use `#f38ba8`. Inactive circles use `#45475a`. Active glyphs use `#cdd6f4`, inactive glyphs use `#878892`, and hover backgrounds use `#313244`.
 
 > [!WARNING]
 > This version removes the `overlay_engine`, `effect_type`, `effect_color`, `animate`, `shadow_radius`, `shadow_color`, and `maximized_shadows` options. Remove these keys from `[vecdecor]`, then configure and enable Wayfire's `winshadows` plugin if you need window shadows.

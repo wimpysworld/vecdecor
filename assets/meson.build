@@ -1,9 +1,21 @@
 install_data(
     [
         'buttons/minimize.svg',
+        'buttons/minimize-hover.svg',
+        'buttons/minimize-inactive.svg',
+        'buttons/minimize-inactive-hover.svg',
         'buttons/maximize.svg',
+        'buttons/maximize-hover.svg',
+        'buttons/maximize-inactive.svg',
+        'buttons/maximize-inactive-hover.svg',
         'buttons/restore.svg',
+        'buttons/restore-hover.svg',
+        'buttons/restore-inactive.svg',
+        'buttons/restore-inactive-hover.svg',
         'buttons/close.svg',
+        'buttons/close-hover.svg',
+        'buttons/close-inactive.svg',
+        'buttons/close-inactive-hover.svg',
     ],
     install_dir: vecdecor_asset_dir,
 )

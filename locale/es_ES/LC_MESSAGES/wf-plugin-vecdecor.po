@@ -165,7 +165,7 @@ msgid "Button Colour"
 msgstr "Color del botón"
 
 #. (itstool) path: option/_long
-msgid "Colour of active buttons."
+msgid "Glyph colour for custom SVG masks and active procedural fallback controls."
 msgstr "Color de los botones minimizar, maximizar y cerrar."
 
 #. (itstool) path: option/_short
@@ -173,7 +173,7 @@ msgid "Inactive Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-msgid "Colour of inactive buttons."
+msgid "Glyph colour for custom SVG masks and inactive procedural fallback controls."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -181,7 +181,7 @@ msgid "Hover Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-msgid "Colour of buttons under the pointer."
+msgid "Hover background colour for custom SVG masks and procedural fallback controls."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -189,7 +189,7 @@ msgid "Pressed Button Colour"
 msgstr ""
 
 #. (itstool) path: option/_long
-msgid "Colour of pressed buttons."
+msgid "Pressed background colour for custom SVG masks and procedural fallback controls."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -253,7 +253,7 @@ msgid "Minimise Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-msgid "The SVG file to use for the minimise button."
+msgid "A custom SVG mask that overrides every state of the minimise button."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -261,7 +261,7 @@ msgid "Maximise Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-msgid "The SVG file to use for the maximise button."
+msgid "A custom SVG mask that overrides every state of the maximise button."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -269,7 +269,7 @@ msgid "Restore Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-msgid "The SVG file to use for the restore button."
+msgid "A custom SVG mask that overrides every state of the restore button."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -277,7 +277,7 @@ msgid "Close Button SVG"
 msgstr ""
 
 #. (itstool) path: option/_long
-msgid "The SVG file to use for the close button."
+msgid "A custom SVG mask that overrides every state of the close button."
 msgstr ""
 
 #. (itstool) path: group/_short

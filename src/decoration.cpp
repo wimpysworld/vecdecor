@@ -142,20 +142,20 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         update_view_decoration(ev->view);
     };
 
-    std::string resolve_button_source(
+    std::array<button_source_spec_t, 4> resolve_button_sources(
         const wf::option_wrapper_t<std::string>& option, button_asset_t asset) const
     {
-        return resolve_button_source_path(std::string(option), asset);
+        return resolve_button_source_specs(std::string(option), asset);
     }
 
     button_source_config_t get_button_source_config() const
     {
         return {
-            .paths = {
-                resolve_button_source(button_minimize_svg, button_asset_t::minimize),
-                resolve_button_source(button_maximize_svg, button_asset_t::maximize),
-                resolve_button_source(button_restore_svg, button_asset_t::restore),
-                resolve_button_source(button_close_svg, button_asset_t::close),
+            .sources = {
+                resolve_button_sources(button_minimize_svg, button_asset_t::minimize),
+                resolve_button_sources(button_maximize_svg, button_asset_t::maximize),
+                resolve_button_sources(button_restore_svg, button_asset_t::restore),
+                resolve_button_sources(button_close_svg, button_asset_t::close),
             },
             .generation = source_generation,
         };
@@ -509,7 +509,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         ++source_generation;
         const auto config = get_button_source_config();
         if (!button_renderer.reload_source(
-            assets[source], config.paths[source], config.generation))
+            assets[source], config.sources[source], config.generation))
         {
             return;
         }
