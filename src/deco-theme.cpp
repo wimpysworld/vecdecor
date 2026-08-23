@@ -251,21 +251,33 @@ const uploaded_button_texture_t*pixdecor_theme_t::get_prepared_fallback(
 
 const wf::owned_texture_t*pixdecor_theme_t::get_button_texture(
     const geometry::button_state_t& state, geometry::logical_size_t logical_size,
-    double output_scale)
+    double output_scale, const std::function<void()>& damage_callback)
 {
     const auto requested = get_button_prepare_config(logical_size, output_scale);
     auto texture = button_renderer.lookup(state, requested);
     const auto cache_decision = geometry::resolve_button_frame_cache_decision(texture != nullptr,
-        [this, &requested] (auto prepare)
+        [this, &requested, &damage_callback] (auto prepare)
     {
         pending_button_config = requested;
+        pending_button_damage_callbacks.push_back(damage_callback);
         idle_prepare_buttons.run_once(std::move(prepare));
     }, [this]
     {
-        if (button_renderer.prepare(pending_button_config))
+        const bool prepared = button_renderer.prepare(pending_button_config);
+        if (prepared)
         {
             prepared_button_config = pending_button_config;
             buttons_prepared = true;
+        }
+
+        auto damage_callbacks = std::move(pending_button_damage_callbacks);
+        pending_button_damage_callbacks.clear();
+        if (prepared)
+        {
+            for (const auto& damage : damage_callbacks)
+            {
+                damage();
+            }
         }
     });
     if (cache_decision == geometry::button_frame_cache_decision_t::schedule_idle_prepare)

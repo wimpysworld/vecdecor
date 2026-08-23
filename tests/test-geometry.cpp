@@ -537,8 +537,10 @@ void test_complete_cache_key_contract()
 
 void test_button_frame_cache_decision()
 {
-    int idle_schedules = 0;
-    int prepare_calls  = 0;
+    int idle_schedules    = 0;
+    int prepare_calls     = 0;
+    int damage_requests   = 0;
+    bool prepare_succeeds = true;
     std::function<void()> deferred_prepare;
     auto schedule_idle_prepare = [&] (auto prepare)
     {
@@ -548,24 +550,41 @@ void test_button_frame_cache_decision()
     auto prepare = [&]
     {
         ++prepare_calls;
+        if (prepare_succeeds)
+        {
+            ++damage_requests;
+        }
     };
 
     expect(geometry::resolve_button_frame_cache_decision(true,
         schedule_idle_prepare, prepare) ==
         geometry::button_frame_cache_decision_t::use_cached_texture,
         "a frame cache hit uses the cached texture");
-    expect((idle_schedules == 0) && (prepare_calls == 0) && !deferred_prepare,
+    expect((idle_schedules == 0) && (prepare_calls == 0) &&
+        (damage_requests == 0) && !deferred_prepare,
         "a frame cache hit neither schedules nor prepares a texture");
 
     expect(geometry::resolve_button_frame_cache_decision(false,
         schedule_idle_prepare, prepare) ==
         geometry::button_frame_cache_decision_t::schedule_idle_prepare,
         "a frame cache miss schedules preparation for idle time");
-    expect((idle_schedules == 1) && (prepare_calls == 0) && bool(deferred_prepare),
+    expect((idle_schedules == 1) && (prepare_calls == 0) &&
+        (damage_requests == 0) && bool(deferred_prepare),
         "a frame cache miss does not prepare a texture synchronously");
 
     deferred_prepare();
-    expect(prepare_calls == 1, "the scheduled idle callback performs preparation");
+    expect((prepare_calls == 1) && (damage_requests == 1),
+        "successful deferred preparation requests damage after the idle callback");
+
+    prepare_succeeds = false;
+    deferred_prepare = {};
+    expect(geometry::resolve_button_frame_cache_decision(false,
+        schedule_idle_prepare, prepare) ==
+        geometry::button_frame_cache_decision_t::schedule_idle_prepare,
+        "another frame cache miss schedules another idle preparation");
+    deferred_prepare();
+    expect((prepare_calls == 2) && (damage_requests == 1),
+        "failed deferred preparation does not request damage");
 }
 }
 
