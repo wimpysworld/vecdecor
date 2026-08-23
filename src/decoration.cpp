@@ -372,7 +372,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
         titlebar.set_callback([=] {recreate_decorations();});
         register_button_colour_option_callbacks(button_color, button_inactive_color,
-            button_hover_color, button_pressed_color, [=] {invalidate_button_style();});
+            button_hover_color, button_pressed_color, [=] {prepare_button_frames();});
         button_line_thickness.set_callback([=] {invalidate_button_style();});
         left_button_spacing.set_callback([=] {recreate_frames();});
         right_button_spacing.set_callback([=] {recreate_frames();});
