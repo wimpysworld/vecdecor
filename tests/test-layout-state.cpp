@@ -469,6 +469,22 @@ void test_move_action()
     }
 }
 
+void test_button_grab_does_not_move()
+{
+    fixture_t fixture;
+    press(input_source_t::pointer, fixture, fixture.centre(pixdecor::BUTTON_CLOSE));
+    fixture.reset_observation();
+    motion(input_source_t::pointer, fixture, fixture.move_centre());
+    expect_transition(fixture, pixdecor::BUTTON_CLOSE, false,
+        geometry::interaction_state_t::pressed, pixdecor::DECORATION_ACTION_NONE, 1,
+        "pointer button grab entering move target");
+    fixture.reset_observation();
+    motion(input_source_t::pointer, fixture, fixture.move_centre());
+    expect_transition(fixture, pixdecor::BUTTON_CLOSE, false,
+        geometry::interaction_state_t::pressed, pixdecor::DECORATION_ACTION_NONE, 0,
+        "pointer button grab remaining in move target");
+}
+
 void test_cross_control_and_release_outside()
 {
     for (const auto source : {input_source_t::pointer, input_source_t::touch})
@@ -568,6 +584,7 @@ int main()
     test_layout_parser();
     test_motion_press_and_same_control_actions();
     test_move_action();
+    test_button_grab_does_not_move();
     test_cross_control_and_release_outside();
     test_focus_loss();
     test_axis_actions();
