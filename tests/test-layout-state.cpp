@@ -475,18 +475,22 @@ void test_move_action()
 
 void test_button_grab_does_not_move()
 {
-    fixture_t fixture;
-    press(input_source_t::pointer, fixture, fixture.centre(pixdecor::BUTTON_CLOSE));
-    fixture.reset_observation();
-    motion(input_source_t::pointer, fixture, fixture.move_centre());
-    expect_transition(fixture, pixdecor::BUTTON_CLOSE, false,
-        geometry::interaction_state_t::pressed, pixdecor::DECORATION_ACTION_NONE, 1,
-        "pointer button grab entering move target");
-    fixture.reset_observation();
-    motion(input_source_t::pointer, fixture, fixture.move_centre());
-    expect_transition(fixture, pixdecor::BUTTON_CLOSE, false,
-        geometry::interaction_state_t::pressed, pixdecor::DECORATION_ACTION_NONE, 0,
-        "pointer button grab remaining in move target");
+    for (const auto source : {input_source_t::pointer, input_source_t::touch})
+    {
+        const std::string source_name = source == input_source_t::pointer ? "pointer" : "touch";
+        fixture_t fixture;
+        press(source, fixture, fixture.centre(pixdecor::BUTTON_CLOSE));
+        fixture.reset_observation();
+        motion(source, fixture, fixture.move_centre());
+        expect_transition(fixture, pixdecor::BUTTON_CLOSE, false,
+            geometry::interaction_state_t::pressed, pixdecor::DECORATION_ACTION_NONE, 1,
+            source_name + " button grab entering move target");
+        fixture.reset_observation();
+        motion(source, fixture, fixture.move_centre());
+        expect_transition(fixture, pixdecor::BUTTON_CLOSE, false,
+            geometry::interaction_state_t::pressed, pixdecor::DECORATION_ACTION_NONE, 0,
+            source_name + " button grab remaining in move target");
+    }
 }
 
 void test_cross_control_and_release_outside()
