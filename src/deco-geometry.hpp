@@ -149,6 +149,7 @@ struct cache_key_input_t
     button_state_t state;
     resolved_asset_identity_t resolved_asset_identity;
     rgba_t colour;
+    rgba_t background_colour;
     logical_size_t logical_size;
     svg_proportions_t svg_proportions;
     double output_scale   = 1.0;
@@ -165,6 +166,7 @@ struct button_cache_key_t
     button_state_t state;
     resolved_asset_identity_t resolved_asset_identity;
     rgba_t colour;
+    rgba_t background_colour;
     logical_size_t logical_size;
     raster_size_t raster_size;
     svg_proportions_t svg_proportions;

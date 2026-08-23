@@ -219,6 +219,7 @@ bool operator ==(const button_cache_key_t& lhs, const button_cache_key_t& rhs)
     return (lhs.state == rhs.state) &&
            (lhs.resolved_asset_identity == rhs.resolved_asset_identity) &&
            (lhs.colour == rhs.colour) &&
+           (lhs.background_colour == rhs.background_colour) &&
            (lhs.logical_size == rhs.logical_size) &&
            (lhs.raster_size == rhs.raster_size) &&
            (lhs.svg_proportions == rhs.svg_proportions) &&
@@ -322,7 +323,8 @@ bool is_valid(const button_group_input_t& input)
 bool is_valid(const cache_key_input_t& input)
 {
     return is_valid(input.state) && is_valid(input.resolved_asset_identity) &&
-           is_valid(input.colour) && is_valid(input.logical_size) &&
+           is_valid(input.colour) && is_valid(input.background_colour) &&
+           is_valid(input.logical_size) &&
            is_valid(input.svg_proportions) &&
            std::isfinite(input.output_scale) && (input.output_scale > 0.0) &&
            std::isfinite(input.line_thickness) && (input.line_thickness >= 0.0) &&
@@ -534,6 +536,8 @@ button_cache_key_t resolve_cache_key(const cache_key_input_t& input)
     result.resolved_asset_identity = is_valid(input.resolved_asset_identity) ?
         input.resolved_asset_identity : resolved_asset_identity_t{};
     result.colour = is_valid(input.colour) ? input.colour : rgba_t{};
+    result.background_colour = is_valid(input.background_colour) ?
+        input.background_colour : rgba_t{};
     result.svg_proportions = resolve_svg_proportions(input.svg_proportions);
     result.line_thickness  = std::isfinite(input.line_thickness) &&
         (input.line_thickness >= 0.0) ? input.line_thickness : DEFAULT_BUTTON_LINE_THICKNESS;
