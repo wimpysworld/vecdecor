@@ -321,13 +321,27 @@ void verify_asset_directory(const std::string& directory)
 
 void verify_svg_fallbacks(const std::string& directory)
 {
-    const auto transparent_path = make_svg_fixture(
-        "<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>"
-        "<rect width='32' height='32' fill='none'/></svg>");
-    const std::array<std::pair<std::string, bool>, 3> SOURCES = {{
+    const std::array<std::string, 4> transparent_paths = {{
+        make_svg_fixture(
+            "<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>"
+            "<rect width='32' height='32' fill='none'/></svg>"),
+        make_svg_fixture(
+            "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>"
+            "<symbol id='glyph'><path d='M2 2h12v12H2z'/></symbol></svg>"),
+        make_svg_fixture(
+            "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>"
+            "<defs><path id='glyph' d='M2 2h12v12H2z'/></defs></svg>"),
+        make_svg_fixture(
+            "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>"
+            "<path d='M100 100h12v12h-12z'/></svg>"),
+    }};
+    const std::array<std::pair<std::string, bool>, 6> SOURCES = {{
         {directory + "/missing.svg", false},
         {directory + "/../../tests/fixtures/malformed.svg", false},
-        {transparent_path, true},
+        {transparent_paths[0], true},
+        {transparent_paths[1], true},
+        {transparent_paths[2], true},
+        {transparent_paths[3], true},
     }};
     constexpr std::array<button_render_mode_t, 2> MODES = {
         button_render_mode_t::full_colour,
@@ -388,7 +402,10 @@ void verify_svg_fallbacks(const std::string& directory)
         }
     }
 
-    unlink(transparent_path.c_str());
+    for (const auto& path : transparent_paths)
+    {
+        unlink(path.c_str());
+    }
 }
 
 void verify_fallback_line_thickness()
