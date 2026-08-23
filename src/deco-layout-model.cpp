@@ -134,19 +134,32 @@ void layout_input_adapter_t::pointer_focus_lost()
 
 void layout_input_adapter_t::touch_down(layout_input_point_t point)
 {
+    last_touch_point = point;
+    touch_active     = true;
     motion(point);
     button(true);
 }
 
 void layout_input_adapter_t::touch_motion(layout_input_point_t point)
 {
+    last_touch_point = point;
     motion(point);
 }
 
-void layout_input_adapter_t::touch_up()
+void layout_input_adapter_t::touch_up(layout_input_point_t point)
 {
+    const auto local = dependencies.to_local(point);
+    if (!touch_active || (point.x != last_touch_point.x) ||
+        (point.y != last_touch_point.y))
+    {
+        auto response = dependencies.motion(local.x, local.y);
+        response.action = DECORATION_ACTION_NONE;
+        dispatch(std::move(response));
+    }
+
     button(false);
     focus_lost();
+    touch_active = false;
 }
 
 layout_input_model_t::layout_input_model_t(layout_timer_t& timer) : timer(timer)

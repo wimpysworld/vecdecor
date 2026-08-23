@@ -303,14 +303,15 @@ void press(input_source_t source, fixture_t& fixture, std::pair<int, int> point)
     }
 }
 
-void release(input_source_t source, fixture_t& fixture)
+void release(input_source_t source, fixture_t& fixture, std::pair<int, int> point)
 {
     if (source == input_source_t::pointer)
     {
         fixture.input->pointer_button(false);
     } else
     {
-        fixture.input->touch_up();
+        const auto [x, y] = fixture.global(point);
+        fixture.input->touch_up({double(x), double(y)});
     }
 }
 
@@ -426,7 +427,7 @@ void test_motion_press_and_same_control_actions()
             geometry::interaction_state_t::pressed, pixdecor::DECORATION_ACTION_NONE, 1,
             std::string{"pointer "} + activation.name + " press");
         pointer.reset_observation();
-        release(input_source_t::pointer, pointer);
+        release(input_source_t::pointer, pointer, pointer.centre(activation.button));
         expect_transition(pointer, activation.button, activation.maximized,
             geometry::interaction_state_t::hover, activation.action, 1,
             std::string{"pointer "} + activation.name + " release");
@@ -437,7 +438,7 @@ void test_motion_press_and_same_control_actions()
             geometry::interaction_state_t::pressed, pixdecor::DECORATION_ACTION_NONE, 2,
             std::string{"touch "} + activation.name + " press");
         touch.reset_observation();
-        release(input_source_t::touch, touch);
+        release(input_source_t::touch, touch, touch.centre(activation.button));
         expect_transition(touch, activation.button, activation.maximized,
             geometry::interaction_state_t::normal, activation.action, 2,
             std::string{"touch "} + activation.name + " release");
@@ -450,7 +451,7 @@ void test_motion_press_and_same_control_actions()
             std::none_of(touch.model.button_states().begin(),
                 touch.model.button_states().end(), [] (const auto& state) { return state.pressed; }),
             std::string{activation.name} + " clears pointer and touch pressed state");
-        expect(pointer.coordinate_calls == 1 && touch.coordinate_calls == 1,
+        expect(pointer.coordinate_calls == 1 && touch.coordinate_calls == 2,
             std::string{activation.name} + " uses the injected production coordinate conversion");
     }
 }
@@ -498,7 +499,7 @@ void test_cross_control_and_release_outside()
             geometry::interaction_state_t::pressed, pixdecor::DECORATION_ACTION_NONE, 2,
             source_name + " cross-control motion");
         cross.reset_observation();
-        release(source, cross);
+        release(source, cross, cross.centre(pixdecor::BUTTON_TOGGLE_MAXIMIZE));
         expect_transition(cross, pixdecor::BUTTON_CLOSE, false,
             geometry::interaction_state_t::normal, pixdecor::DECORATION_ACTION_NONE,
             source == input_source_t::pointer ? 1 : 2,
@@ -512,11 +513,24 @@ void test_cross_control_and_release_outside()
             geometry::interaction_state_t::pressed, pixdecor::DECORATION_ACTION_NONE, 1,
             source_name + " move outside");
         outside.reset_observation();
-        release(source, outside);
+        release(source, outside, {-20, -20});
         expect_transition(outside, pixdecor::BUTTON_CLOSE, false,
             geometry::interaction_state_t::normal, pixdecor::DECORATION_ACTION_NONE, 1,
             source_name + " release outside");
     }
+}
+
+void test_touch_release_uses_lift_position()
+{
+    fixture_t fixture;
+    press(input_source_t::touch, fixture, fixture.centre(pixdecor::BUTTON_CLOSE));
+    fixture.reset_observation();
+    release(input_source_t::touch, fixture, {-20, -20});
+    expect_transition(fixture, pixdecor::BUTTON_CLOSE, false,
+        geometry::interaction_state_t::normal, pixdecor::DECORATION_ACTION_NONE, 2,
+        "touch release outside without a final motion event");
+    expect(fixture.coordinate_calls == 2,
+        "touch release converts the lift position");
 }
 
 void test_focus_loss()
@@ -555,10 +569,10 @@ pixdecor::decoration_layout_action_t double_click_after(input_source_t source,
     fixture_t fixture;
     const auto point = fixture.move_centre();
     press(source, fixture, point);
-    release(source, fixture);
+    release(source, fixture, point);
     fixture.timer.advance(delay);
     press(source, fixture, point);
-    release(source, fixture);
+    release(source, fixture, point);
     expect(fixture.timer.last_timeout == pixdecor::layout_input_model_t::DOUBLE_CLICK_TIMEOUT_MS,
         "the production adapter sends the 300 ms timeout to the timer");
     return fixture.actions.empty() ? pixdecor::DECORATION_ACTION_NONE : fixture.actions.back();
@@ -586,6 +600,7 @@ int main()
     test_move_action();
     test_button_grab_does_not_move();
     test_cross_control_and_release_outside();
+    test_touch_release_uses_lift_position();
     test_focus_loss();
     test_axis_actions();
     test_double_click_boundary();
