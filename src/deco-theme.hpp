@@ -92,6 +92,12 @@ class pixdecor_theme_t
         bool tiled = false;
     };
 
+    struct pending_button_prepare_t
+    {
+        button_prepare_config_t config;
+        std::vector<std::function<void()>> damage_callbacks;
+    };
+
     bool background_key_matches(const background_cache_key_t& key) const;
     void update_background_texture(const background_cache_key_t& key);
     button_prepare_config_t get_button_prepare_config(
@@ -108,8 +114,7 @@ class pixdecor_theme_t
     button_renderer_t& button_renderer;
     const std::uint64_t& generation;
     button_prepare_config_t prepared_button_config;
-    button_prepare_config_t pending_button_config;
-    std::vector<std::function<void()>> pending_button_damage_callbacks;
+    std::vector<pending_button_prepare_t> pending_button_prepares;
     bool buttons_prepared = false;
     wf::wl_idle_call idle_prepare_buttons;
     background_cache_key_t background_cache_key;

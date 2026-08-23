@@ -3,6 +3,7 @@
 #include <wayfire/opengl.hpp>
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 #include <map>
 #include <mutex>
 #include <stdlib.h>
@@ -25,6 +26,24 @@ wf::option_wrapper_t<wf::color_t> button_inactive_color{"vecdecor/button_inactiv
 wf::option_wrapper_t<wf::color_t> button_hover_color{"vecdecor/button_hover_color"};
 wf::option_wrapper_t<wf::color_t> button_pressed_color{"vecdecor/button_pressed_color"};
 wf::option_wrapper_t<double> button_line_thickness{"vecdecor/button_line_thickness"};
+
+namespace
+{
+bool same_button_prepare_config(
+    const button_prepare_config_t& lhs, const button_prepare_config_t& rhs)
+{
+    return (lhs.logical_size == rhs.logical_size) &&
+           (lhs.svg_proportions == rhs.svg_proportions) &&
+           (lhs.output_scale == rhs.output_scale) &&
+           (lhs.line_thickness == rhs.line_thickness) &&
+           (lhs.theme_generation == rhs.theme_generation) &&
+           (lhs.palette.active == rhs.palette.active) &&
+           (lhs.palette.inactive == rhs.palette.inactive) &&
+           (lhs.palette.hover == rhs.palette.hover) &&
+           (lhs.palette.pressed == rhs.palette.pressed);
+}
+}
+
 /** Create a new theme with the default parameters */
 pixdecor_theme_t::pixdecor_theme_t(button_renderer_t& renderer, const std::uint64_t& generation) :
     button_renderer(renderer), generation(generation)
@@ -258,25 +277,34 @@ const wf::owned_texture_t*pixdecor_theme_t::get_button_texture(
     const auto cache_decision = geometry::resolve_button_frame_cache_decision(texture != nullptr,
         [this, &requested, &damage_callback] (auto prepare)
     {
-        pending_button_config = requested;
-        pending_button_damage_callbacks.push_back(damage_callback);
+        auto pending = std::find_if(pending_button_prepares.begin(), pending_button_prepares.end(),
+            [&requested] (const auto& item)
+        {
+            return same_button_prepare_config(item.config, requested);
+        });
+        if (pending == pending_button_prepares.end())
+        {
+            pending_button_prepares.push_back({requested, {}});
+            pending = std::prev(pending_button_prepares.end());
+        }
+
+        pending->damage_callbacks.push_back(damage_callback);
         idle_prepare_buttons.run_once(std::move(prepare));
     }, [this]
     {
-        const bool prepared = button_renderer.prepare(pending_button_config);
-        if (prepared)
+        auto pending = std::move(pending_button_prepares);
+        pending_button_prepares.clear();
+        for (auto& item : pending)
         {
-            prepared_button_config = pending_button_config;
-            buttons_prepared = true;
-        }
-
-        auto damage_callbacks = std::move(pending_button_damage_callbacks);
-        pending_button_damage_callbacks.clear();
-        if (prepared)
-        {
-            for (const auto& damage : damage_callbacks)
+            const bool prepared = button_renderer.prepare(item.config);
+            if (prepared)
             {
-                damage();
+                prepared_button_config = item.config;
+                buttons_prepared = true;
+                for (const auto& damage : item.damage_callbacks)
+                {
+                    damage();
+                }
             }
         }
     });
