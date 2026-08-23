@@ -44,6 +44,26 @@ std::uint64_t surface_digest(cairo_surface_t *surface)
     return digest;
 }
 
+std::size_t visible_pixels(cairo_surface_t *surface)
+{
+    cairo_surface_flush(surface);
+    const int width   = cairo_image_surface_get_width(surface);
+    const int height  = cairo_image_surface_get_height(surface);
+    const int stride  = cairo_image_surface_get_stride(surface) / sizeof(std::uint32_t);
+    const auto pixels = reinterpret_cast<const std::uint32_t*>(
+        cairo_image_surface_get_data(surface));
+    std::size_t count = 0;
+    for (int y = 0; y < height; ++y)
+    {
+        for (int x = 0; x < width; ++x)
+        {
+            count += (pixels[y * stride + x] & 0xff000000U) != 0;
+        }
+    }
+
+    return count;
+}
+
 class fake_texture_t : public uploaded_button_texture_t
 {
   public:
@@ -53,17 +73,7 @@ class fake_texture_t : public uploaded_button_texture_t
         digest = surface_digest(surface);
         width  = cairo_image_surface_get_width(surface);
         height = cairo_image_surface_get_height(surface);
-        cairo_surface_flush(surface);
-        const int stride  = cairo_image_surface_get_stride(surface) / sizeof(std::uint32_t);
-        const auto pixels = reinterpret_cast<const std::uint32_t*>(
-            cairo_image_surface_get_data(surface));
-        for (int y = 0; y < height; ++y)
-        {
-            for (int x = 0; x < width; ++x)
-            {
-                visible_pixels += (pixels[y * stride + x] & 0xff000000U) != 0;
-            }
-        }
+        visible_pixel_count = visible_pixels(surface);
 
         ++lifecycle.live_textures;
     }
@@ -91,7 +101,7 @@ class fake_texture_t : public uploaded_button_texture_t
     lifecycle_t& lifecycle;
     std::uint64_t serial = 0;
     std::uint64_t digest = 0;
-    std::size_t visible_pixels = 0;
+    std::size_t visible_pixel_count = 0;
     int width  = 0;
     int height = 0;
 };
@@ -139,26 +149,6 @@ button_prepare_config_t preparation(std::uint64_t generation = 1)
             {0.2, 0.1, 0.9, 1.0},
         },
     };
-}
-
-std::size_t visible_pixels(cairo_surface_t *surface)
-{
-    cairo_surface_flush(surface);
-    const int width   = cairo_image_surface_get_width(surface);
-    const int height  = cairo_image_surface_get_height(surface);
-    const int stride  = cairo_image_surface_get_stride(surface) / sizeof(std::uint32_t);
-    const auto pixels = reinterpret_cast<const std::uint32_t*>(
-        cairo_image_surface_get_data(surface));
-    std::size_t count = 0;
-    for (int y = 0; y < height; ++y)
-    {
-        for (int x = 0; x < width; ++x)
-        {
-            count += (pixels[y * stride + x] & 0xff000000U) != 0;
-        }
-    }
-
-    return count;
 }
 
 void verify_default_source_paths()
@@ -546,9 +536,9 @@ int main(int argc, char **argv)
             require((active_digest != hover_digest) && (hover_digest != pressed_digest) &&
                 (active_digest != pressed_digest),
                 "The interaction colours produced equal pixels");
-            require((hover_texture.visible_pixels > normal_texture.visible_pixels) &&
-                (pressed_texture.visible_pixels > normal_texture.visible_pixels) &&
-                (hover_texture.visible_pixels == pressed_texture.visible_pixels),
+            require((hover_texture.visible_pixel_count > normal_texture.visible_pixel_count) &&
+                (pressed_texture.visible_pixel_count > normal_texture.visible_pixel_count) &&
+                (hover_texture.visible_pixel_count == pressed_texture.visible_pixel_count),
                 "The interaction backgrounds produced the wrong pixel coverage");
 
             const int exact_rasters = lifecycle.rasters;
