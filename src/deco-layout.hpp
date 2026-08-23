@@ -125,7 +125,7 @@ class pixdecor_layout_t
     /**
      * Handle focus lost event.
      */
-    action_response_t handle_focus_lost();
+    action_response_t handle_focus_lost(bool clear_double_click);
 
     /** Apply one input-model update to its production button. */
     void apply_button_update(const layout_button_update_t& update);

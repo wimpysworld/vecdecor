@@ -589,9 +589,10 @@ void pixdecor_layout_t::set_maximize(bool state)
     maximized = state;
 }
 
-pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_focus_lost()
+pixdecor_layout_t::action_response_t pixdecor_layout_t::handle_focus_lost(
+    bool clear_double_click)
 {
-    return input_model.focus_lost();
+    return input_model.focus_lost(clear_double_click);
 }
 }
 }
