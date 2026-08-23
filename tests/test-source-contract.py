@@ -145,6 +145,32 @@ RETAINED_IDENTIFIERS = {
     },
 }
 
+WAYFIRE_011_IDENTIFIERS = {
+    "deco-button.cpp": {
+        "wf::gles::for_each_scissor_rect",
+        "static_cast<int>(button_geometry.width)",
+        "static_cast<int>(button_geometry.height)",
+    },
+    "deco-layout.cpp": {
+        "wf::regionf_t pixdecor_layout_t::calculate_region() const",
+        "static_cast<int>(geometry.width)",
+        "static_cast<int>(geometry.height)",
+    },
+    "deco-subsurface.cpp": {
+        "wf::gles::for_each_scissor_rect",
+        "wf::regionf_t cached_region",
+    },
+    "deco-theme.cpp": {
+        "wf::gles::for_each_scissor_rect",
+        "static_cast<int>(rectangle.width)",
+        "static_cast<int>(rectangle.height)",
+    },
+    "shade.hpp": {
+        "wf::gles::for_each_scissor_rect",
+        "wf::regionf_t& damage",
+    },
+}
+
 
 class SourceContractTest(unittest.TestCase):
     @classmethod
@@ -250,6 +276,22 @@ class SourceContractTest(unittest.TestCase):
                         source,
                         f"retained production identifier {identifier} is missing",
                     )
+
+    def test_wayfire_011_contracts_remain_present(self):
+        for filename, identifiers in WAYFIRE_011_IDENTIFIERS.items():
+            source = (SOURCE_ROOT / filename).read_text(encoding="utf-8")
+            for identifier in sorted(identifiers):
+                with self.subTest(filename=filename, identifier=identifier):
+                    self.assertIn(
+                        identifier,
+                        source,
+                        f"Wayfire 0.11 identifier {identifier} is missing",
+                    )
+
+        self.assertFalse(
+            self.locations_with_pattern(r"\brender_target_logic_scissor\b"),
+            "the deprecated Wayfire scissor call returned",
+        )
 
 
 if __name__ == "__main__":

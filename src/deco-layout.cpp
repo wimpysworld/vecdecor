@@ -346,7 +346,12 @@ void pixdecor_layout_t::rebuild_input_targets()
     {
         layout_target_t target;
         target.id     = id;
-        target.bounds = {geometry.x, geometry.y, geometry.width, geometry.height};
+        target.bounds = {
+            static_cast<int>(geometry.x),
+            static_cast<int>(geometry.y),
+            static_cast<int>(geometry.width),
+            static_cast<int>(geometry.height),
+        };
         if (area.get_type() == DECORATION_AREA_BUTTON)
         {
             target.kind   = layout_target_kind_t::button;
@@ -372,7 +377,7 @@ void pixdecor_layout_t::rebuild_input_targets()
         }
 
         auto geometry = area.get_geometry();
-        const auto input_size = theme.get_input_size();
+        const double input_size = theme.get_input_size();
         if (area.get_type() & DECORATION_AREA_RESIZE_BIT)
         {
             if (input_size <= MIN_RESIZE_HANDLE_SIZE)

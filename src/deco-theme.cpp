@@ -273,7 +273,10 @@ void pixdecor_theme_t::render_background(const wf::scene::render_instruction_t& 
 {
     const auto colour = get_decor_color(active);
     const auto result = background_renderer.prepare({
-                .logical_size = {rectangle.width, rectangle.height},
+                .logical_size = {
+                    static_cast<int>(rectangle.width),
+                    static_cast<int>(rectangle.height),
+                },
                 .output_scale = data.target.scale,
                 .active = active,
                 .colour = {colour.r, colour.g, colour.b, colour.a},

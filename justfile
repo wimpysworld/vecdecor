@@ -30,7 +30,7 @@ test: build
 check-wayfire-version:
     #!/usr/bin/env bash
     set -euo pipefail
-    required=0.10.1
+    required=0.11.0
     actual=$(pkg-config --modversion wayfire)
     if [[ "$actual" != "$required" ]]; then
         printf 'Expected Wayfire version %s, found %s\n' "$required" "$actual" >&2
