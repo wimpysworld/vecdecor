@@ -67,6 +67,27 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             }
         }
     };
+    wf::signal::connection_t<wf::view_set_output_signal> on_view_set_output =
+        [=] (wf::view_set_output_signal*)
+    {
+        if (auto view = _view.lock())
+        {
+            auto output = view->get_output();
+            connect_output_configuration(output);
+            const double scale = output ? output->handle->scale : 1.0;
+            prepare_buttons(scale);
+            view->damage();
+        }
+    };
+
+    void connect_output_configuration(wf::output_t *output)
+    {
+        on_output_configuration_changed.disconnect();
+        if (output)
+        {
+            output->connect(&on_output_configuration_changed);
+        }
+    }
 
     void update_title(int width, int height, int t_width, int border, int buttons_width, double scale)
     {
@@ -123,10 +144,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         this->_view = view->weak_from_this();
         view->connect(&title_set);
-        if (view->get_output())
-        {
-            view->get_output()->connect(&on_output_configuration_changed);
-        }
+        view->connect(&on_view_set_output);
+        connect_output_configuration(view->get_output());
 
         // make sure to hide frame if the view is fullscreen
         update_decoration_size();
