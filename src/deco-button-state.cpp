@@ -121,14 +121,15 @@ button_t::button_t(button_runtime_t runtime, std::function<void()> damage) :
     damage_callback(std::move(damage)),
     get_button_bounds(std::move(runtime.get_button_bounds)),
     schedule_redraw(std::move(runtime.schedule_redraw)),
-    hover(std::move(runtime.load_hover_duration))
+    hover(runtime.hover_animation ? std::move(runtime.hover_animation) :
+        std::make_unique<button_animation_t>(std::move(runtime.load_hover_duration)))
 {}
 
 geometry::logical_bounds_t button_t::set_button_type(button_type_t type)
 {
     this->type     = type;
     this->type_set = true;
-    hover.animate(1.0, 1.0);
+    hover->animate(1.0, 1.0);
     schedule_redraw();
     return get_button_bounds();
 }
@@ -143,7 +144,7 @@ void button_t::set_hover(bool is_hovered)
     const auto transition = state_model.set_hover(is_hovered);
     if (transition.animate)
     {
-        hover.animate(transition.target_normal_alpha);
+        hover->animate(transition.target_normal_alpha);
     }
 
     if (transition.needs_redraw)
@@ -157,7 +158,7 @@ void button_t::set_pressed(bool is_pressed)
     const auto transition = state_model.set_pressed(is_pressed);
     if (transition.animate)
     {
-        hover.animate(transition.target_normal_alpha);
+        hover->animate(transition.target_normal_alpha);
     }
 
     if (transition.needs_redraw)
@@ -174,8 +175,8 @@ void button_t::render(button_render_backend_t& backend,
         return;
     }
 
-    const bool transition_running = hover.running();
-    auto plan = state_model.render_plan(type, active, maximized, hover.value(),
+    const bool transition_running = hover->running();
+    auto plan = state_model.render_plan(type, active, maximized, hover->value(),
         transition_running);
     const bool textures_available = request_button_textures(plan,
         [&] (button_texture_slot_t slot, const geometry::button_state_t& state)
