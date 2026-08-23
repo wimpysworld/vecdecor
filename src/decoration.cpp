@@ -550,7 +550,12 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
         ++source_generation;
         const auto config = get_button_source_config();
-        button_renderer.reload_source(assets[source], config.paths[source], config.generation);
+        if (!button_renderer.reload_source(
+            assets[source], config.paths[source], config.generation))
+        {
+            return;
+        }
+
         prepare_button_frames();
     }
 
