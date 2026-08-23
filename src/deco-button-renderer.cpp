@@ -204,7 +204,7 @@ double contrast_ratio(const geometry::rgba_t& lhs, const geometry::rgba_t& rhs)
 geometry::rgba_t contrasting_glyph_colour(
     const geometry::rgba_t& configured, const geometry::rgba_t& background)
 {
-    if ((background.a == 0.0) ||
+    if ((background.a < 1.0) || (configured.a < 1.0) ||
         (contrast_ratio(configured, background) >= MINIMUM_GLYPH_CONTRAST))
     {
         return configured;

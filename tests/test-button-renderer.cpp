@@ -566,8 +566,8 @@ int main(int argc, char **argv)
                 maximize_state_t::maximize,
             };
             const auto initial_hover_key = renderer.resolve_key(active_hover, config);
-            require(initial_hover_key.colour == rgba_t{0.0, 0.0, 0.0, 1.0},
-                "The hover glyph did not select a contrasting colour");
+            require(initial_hover_key.colour == config.palette.active,
+                "A translucent hover background changed the configured glyph colour");
             require(renderer.resolve_key({
                 button_kind_t::close,
                 focus_state_t::active,
@@ -575,6 +575,15 @@ int main(int argc, char **argv)
                 maximize_state_t::maximize,
             }, config).colour == rgba_t{1.0, 1.0, 1.0, 1.0},
                 "The pressed glyph did not select a contrasting colour");
+            auto translucent_glyph = config;
+            translucent_glyph.palette.active = {0.0, 0.0, 0.0, 0.1};
+            require(renderer.resolve_key({
+                button_kind_t::close,
+                focus_state_t::active,
+                interaction_state_t::pressed,
+                maximize_state_t::maximize,
+            }, translucent_glyph).colour == translucent_glyph.palette.active,
+                "Contrast substitution changed a translucent configured glyph colour");
             const auto initial_hover_identity   = texture_for(renderer, active_hover, config).identity();
             const button_state_t active_pressed = {
                 button_kind_t::close,
@@ -636,9 +645,9 @@ int main(int argc, char **argv)
             recoloured.palette.active = {0.7, 0.6, 0.1, 1.0};
             require(renderer.prepare(recoloured), "The colour matrix preparation failed");
             require(lifecycle.loads == frame_loads, "A colour change reloaded an SVG");
-            require((lifecycle.rasters == frame_rasters + 4) &&
-                (lifecycle.uploads == frame_uploads + 4),
-                "An active colour change did not replace only active normal textures");
+            require((lifecycle.rasters == frame_rasters + 8) &&
+                (lifecycle.uploads == frame_uploads + 8),
+                "An active colour change did not replace active normal and hover textures");
             require(texture_for(renderer, active_normal, recoloured).digest != active_digest,
                 "A colour change did not change the pixels");
             require(texture_for(renderer, active_normal, recoloured).identity() !=
@@ -647,13 +656,13 @@ int main(int argc, char **argv)
             require(texture_for(renderer, inactive_normal, recoloured).identity() ==
                 before_inactive_identity,
                 "An active colour change replaced an inactive normal texture");
-            require(texture_for(renderer, active_hover, recoloured).identity() ==
+            require(texture_for(renderer, active_hover, recoloured).identity() !=
                 before_hover_identity,
-                "An active colour change replaced a hover texture");
+                "An active colour change reused a translucent hover texture");
             require(texture_for(renderer, active_pressed, recoloured).identity() ==
                 before_pressed_identity,
                 "An active colour change replaced a pressed texture");
-            require(renderer.cache_size() == 36,
+            require(renderer.cache_size() == 40,
                 "A colour change removed reusable entries from the current generation");
 
             const int before_inactive_rasters = lifecycle.rasters;
@@ -668,9 +677,9 @@ int main(int argc, char **argv)
             inactive_recoloured.palette.inactive = {0.4, 0.2, 0.8, 0.9};
             require(renderer.prepare(inactive_recoloured),
                 "The inactive colour matrix preparation failed");
-            require((lifecycle.rasters == before_inactive_rasters + 4) &&
-                (lifecycle.uploads == before_inactive_uploads + 4),
-                "An inactive colour change did not replace only inactive normal textures");
+            require((lifecycle.rasters == before_inactive_rasters + 12) &&
+                (lifecycle.uploads == before_inactive_uploads + 12),
+                "An inactive colour change did not replace only inactive textures");
             require(texture_for(renderer, inactive_normal, inactive_recoloured).identity() !=
                 before_inactive_identity,
                 "An inactive colour change reused an inactive normal texture");
@@ -683,7 +692,7 @@ int main(int argc, char **argv)
             require(texture_for(renderer, active_pressed, inactive_recoloured).identity() ==
                 pressed_identity,
                 "An inactive colour change replaced a pressed texture");
-            require(renderer.cache_size() == 40,
+            require(renderer.cache_size() == 52,
                 "An inactive colour change removed reusable entries");
             recoloured = inactive_recoloured;
 
@@ -716,7 +725,7 @@ int main(int argc, char **argv)
             require(texture_for(renderer, active_hover, pressed_recoloured).identity() ==
                 before_pressed_hover_identity,
                 "A pressed colour change replaced a hover texture");
-            require(renderer.cache_size() == 48,
+            require(renderer.cache_size() == 60,
                 "A pressed colour change removed reusable entries");
             recoloured = pressed_recoloured;
 
