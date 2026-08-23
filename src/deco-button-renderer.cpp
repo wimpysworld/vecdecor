@@ -103,6 +103,38 @@ bool clear_surface(cairo_t *cr)
     return cairo_status(cr) == CAIRO_STATUS_SUCCESS;
 }
 
+bool surface_has_alpha(cairo_surface_t *surface)
+{
+    cairo_surface_flush(surface);
+    if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+    {
+        return false;
+    }
+
+    const int width    = cairo_image_surface_get_width(surface);
+    const int height   = cairo_image_surface_get_height(surface);
+    const int stride   = cairo_image_surface_get_stride(surface) / sizeof(std::uint32_t);
+    const auto *pixels = reinterpret_cast<const std::uint32_t*>(
+        cairo_image_surface_get_data(surface));
+    if (!pixels)
+    {
+        return false;
+    }
+
+    for (int y = 0; y < height; ++y)
+    {
+        for (int x = 0; x < width; ++x)
+        {
+            if (pixels[y * stride + x] & 0xff000000U)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 bool draw_fallback(cairo_t *cr, const geometry::button_cache_key_t& key)
 {
     const double width  = key.raster_size.width;
@@ -321,6 +353,7 @@ button_surface_t rasterize_button_asset(
                 cairo_destroy(mask_cr);
             }
 
+            rendered = rendered && surface_has_alpha(mask.get());
             if (rendered)
             {
                 cairo_set_source_rgba(cr, key.colour.r, key.colour.g, key.colour.b, key.colour.a);
