@@ -404,6 +404,31 @@ int main(int argc, char **argv)
             require(renderer.source(button_asset_t::maximize).identity == initial_maximize_identity,
                 "An exact source reload changed the SVG identity");
 
+            const std::array initial_identities = {
+                renderer.source(button_asset_t::minimize).identity,
+                renderer.source(button_asset_t::maximize).identity,
+                renderer.source(button_asset_t::restore).identity,
+                renderer.source(button_asset_t::close).identity,
+            };
+            sources.generation = 2;
+            require(renderer.reload_sources(sources), "The generation-only source reload failed");
+            require(lifecycle.loads == 8,
+                "A generation-only source reload did not load every SVG");
+            const std::array assets = {
+                button_asset_t::minimize,
+                button_asset_t::maximize,
+                button_asset_t::restore,
+                button_asset_t::close,
+            };
+            for (std::size_t index = 0; index < assets.size(); ++index)
+            {
+                const auto& identity = renderer.source(assets[index]).identity;
+                require(identity.source_generation == 2,
+                    "A generation-only source reload retained an old generation");
+                require(!(identity == initial_identities[index]),
+                    "A generation-only source reload retained an old identity");
+            }
+
             auto config = preparation();
             require(renderer.prepare(config), "The initial matrix preparation failed");
             require((lifecycle.rasters == 36) && (lifecycle.uploads == 36),

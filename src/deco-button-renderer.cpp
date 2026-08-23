@@ -437,7 +437,8 @@ bool button_renderer_t::reload_sources(const button_source_config_t& config)
     for (auto asset : ALL_ASSETS)
     {
         const auto index = asset_index(asset);
-        if (!source_loaded[index] || (source_config.paths[index] != config.paths[index]))
+        if (!source_loaded[index] || (source_config.paths[index] != config.paths[index]) ||
+            (sources[index].identity.source_generation != config.generation))
         {
             if (!reload_source(asset, config.paths[index], config.generation))
             {
