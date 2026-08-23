@@ -125,6 +125,8 @@ class button_renderer_t
     button_asset_t asset_for_state(const geometry::button_state_t& state) const;
     geometry::rgba_t colour_for_state(
         const geometry::button_state_t& state, const button_palette_t& palette) const;
+    geometry::rgba_t background_colour_for_state(
+        const geometry::button_state_t& state, const button_palette_t& palette) const;
     bool clear_cache();
 
     button_renderer_dependencies_t dependencies;

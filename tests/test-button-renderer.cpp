@@ -53,6 +53,18 @@ class fake_texture_t : public uploaded_button_texture_t
         digest = surface_digest(surface);
         width  = cairo_image_surface_get_width(surface);
         height = cairo_image_surface_get_height(surface);
+        cairo_surface_flush(surface);
+        const int stride  = cairo_image_surface_get_stride(surface) / sizeof(std::uint32_t);
+        const auto pixels = reinterpret_cast<const std::uint32_t*>(
+            cairo_image_surface_get_data(surface));
+        for (int y = 0; y < height; ++y)
+        {
+            for (int x = 0; x < width; ++x)
+            {
+                visible_pixels += (pixels[y * stride + x] & 0xff000000U) != 0;
+            }
+        }
+
         ++lifecycle.live_textures;
     }
 
@@ -79,6 +91,7 @@ class fake_texture_t : public uploaded_button_texture_t
     lifecycle_t& lifecycle;
     std::uint64_t serial = 0;
     std::uint64_t digest = 0;
+    std::size_t visible_pixels = 0;
     int width  = 0;
     int height = 0;
 };
@@ -514,14 +527,27 @@ int main(int argc, char **argv)
                 interaction_state_t::hover,
                 maximize_state_t::maximize,
             }, config).digest;
-            const auto pressed_digest = texture_for(renderer, {
+            const auto& normal_texture = texture_for(renderer, active_normal, config);
+            const auto& hover_texture  = texture_for(renderer, {
+                button_kind_t::close,
+                focus_state_t::active,
+                interaction_state_t::hover,
+                maximize_state_t::maximize,
+            }, config);
+            const auto& pressed_texture = texture_for(renderer, {
                 button_kind_t::close,
                 focus_state_t::active,
                 interaction_state_t::pressed,
                 maximize_state_t::maximize,
-            }, config).digest;
-            require((active_digest != hover_digest) && (hover_digest != pressed_digest),
+            }, config);
+            const auto pressed_digest = pressed_texture.digest;
+            require((active_digest != hover_digest) && (hover_digest != pressed_digest) &&
+                (active_digest != pressed_digest),
                 "The interaction colours produced equal pixels");
+            require((hover_texture.visible_pixels > normal_texture.visible_pixels) &&
+                (pressed_texture.visible_pixels > normal_texture.visible_pixels) &&
+                (hover_texture.visible_pixels == pressed_texture.visible_pixels),
+                "The interaction backgrounds produced the wrong pixel coverage");
 
             const int exact_rasters = lifecycle.rasters;
             const int exact_uploads = lifecycle.uploads;
@@ -530,6 +556,42 @@ int main(int argc, char **argv)
                 "The exact matrix preparation repeated work");
             require(texture_for(renderer, active_normal, config).identity() == first_identity,
                 "The exact matrix preparation replaced a texture");
+
+            const button_state_t active_hover = {
+                button_kind_t::close,
+                focus_state_t::active,
+                interaction_state_t::hover,
+                maximize_state_t::maximize,
+            };
+            const auto initial_hover_key = renderer.resolve_key(active_hover, config);
+            require(initial_hover_key.colour == rgba_t{0.0, 0.0, 0.0, 1.0},
+                "The hover glyph did not select a contrasting colour");
+            require(renderer.resolve_key({
+                button_kind_t::close,
+                focus_state_t::active,
+                interaction_state_t::pressed,
+                maximize_state_t::maximize,
+            }, config).colour == rgba_t{1.0, 1.0, 1.0, 1.0},
+                "The pressed glyph did not select a contrasting colour");
+            const auto initial_hover_identity = texture_for(renderer, active_hover, config).identity();
+            auto background_recoloured = config;
+            background_recoloured.palette.hover = {0.8, 0.4, 0.1, 0.6};
+            const auto changed_hover_key = renderer.resolve_key(active_hover, background_recoloured);
+            require(initial_hover_key.colour == changed_hover_key.colour &&
+                !(initial_hover_key.background_colour == changed_hover_key.background_colour) &&
+                !(initial_hover_key == changed_hover_key),
+                "A background colour change did not separate cache keys");
+            require(renderer.prepare(background_recoloured),
+                "The background colour matrix preparation failed");
+            require((lifecycle.rasters == exact_rasters + 8) &&
+                (lifecycle.uploads == exact_uploads + 8),
+                "A hover background change did not replace only hover textures");
+            require(texture_for(renderer, active_hover, background_recoloured).identity() !=
+                initial_hover_identity,
+                "A background colour change reused the old texture identity");
+            require(renderer.cache_size() == 32,
+                "A background colour change removed reusable entries");
+            config = background_recoloured;
 
             const int frame_loads   = lifecycle.loads;
             const int frame_rasters = lifecycle.rasters;
@@ -547,12 +609,12 @@ int main(int argc, char **argv)
             recoloured.palette.active = {0.7, 0.6, 0.1, 1.0};
             require(renderer.prepare(recoloured), "The colour matrix preparation failed");
             require(lifecycle.loads == frame_loads, "A colour change reloaded an SVG");
-            require((lifecycle.rasters == exact_rasters + 4) &&
-                (lifecycle.uploads == exact_uploads + 4),
-                "A colour change did not replace only active normal textures");
+            require((lifecycle.rasters == frame_rasters + 4) &&
+                (lifecycle.uploads == frame_uploads + 4),
+                "An active colour change did not replace only active normal textures");
             require(texture_for(renderer, active_normal, recoloured).digest != active_digest,
                 "A colour change did not change the pixels");
-            require(renderer.cache_size() == 28,
+            require(renderer.cache_size() == 36,
                 "A colour change removed reusable entries from the current generation");
 
             const int before_scale_rasters = lifecycle.rasters;

@@ -34,6 +34,7 @@ geometry::cache_key_input_t valid_cache_input()
     geometry::cache_key_input_t input;
     input.resolved_asset_identity = {0x1234, 1};
     input.colour = {0.1, 0.2, 0.3, 0.4};
+    input.background_colour = {0.4, 0.3, 0.2, 0.1};
     input.logical_size   = {18, 18};
     input.line_thickness = 0.7;
     return input;
@@ -453,8 +454,9 @@ void test_complete_cache_key_contract()
     const auto base  = geometry::resolve_cache_key(input);
     expect(geometry::is_valid(input), "the complete cache-key input is valid");
     expect((base.resolved_asset_identity == input.resolved_asset_identity) &&
-        (base.colour == input.colour),
-        "the cache key preserves the resolved asset identity and plain RGBA colour");
+        (base.colour == input.colour) &&
+        (base.background_colour == input.background_colour),
+        "the cache key preserves the asset identity and both RGBA colours");
 
     struct key_change_t
     {
@@ -481,6 +483,10 @@ void test_complete_cache_key_contract()
         {"green channel", [] (auto& key) {key.colour.g += 0.01;}},
         {"blue channel", [] (auto& key) {key.colour.b += 0.01;}},
         {"alpha channel", [] (auto& key) {key.colour.a += 0.01;}},
+        {"background red channel", [] (auto& key) {key.background_colour.r += 0.01;}},
+        {"background green channel", [] (auto& key) {key.background_colour.g += 0.01;}},
+        {"background blue channel", [] (auto& key) {key.background_colour.b += 0.01;}},
+        {"background alpha channel", [] (auto& key) {key.background_colour.a += 0.01;}},
         {"logical width", [] (auto& key) {key.logical_size.width += 1;}},
         {"logical height", [] (auto& key) {key.logical_size.height += 1;}},
         {"raster width", [] (auto& key) {key.raster_size.width += 1;}},
@@ -525,6 +531,16 @@ void test_complete_cache_key_contract()
         const auto resolved = geometry::resolve_cache_key(changed_input);
         expect(!geometry::is_valid(colour) && (resolved.colour == geometry::rgba_t{}),
             "an invalid cache colour uses transparent black");
+    }
+
+    for (const auto& colour : invalid_colours)
+    {
+        changed_input = input;
+        changed_input.background_colour = colour;
+        const auto resolved = geometry::resolve_cache_key(changed_input);
+        expect(!geometry::is_valid(colour) &&
+            (resolved.background_colour == geometry::rgba_t{}),
+            "an invalid cache background colour uses transparent black");
     }
 
     changed_input = input;
