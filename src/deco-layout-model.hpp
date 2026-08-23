@@ -118,10 +118,12 @@ class layout_input_adapter_t
 
     void touch_down(layout_input_point_t point);
     void touch_motion(layout_input_point_t point);
-    void touch_up();
+    void touch_up(layout_input_point_t point);
 
   private:
     layout_input_adapter_dependencies_t dependencies;
+    layout_input_point_t last_touch_point;
+    bool touch_active = false;
 
     void dispatch(layout_input_response_t response);
     void motion(layout_input_point_t point);
