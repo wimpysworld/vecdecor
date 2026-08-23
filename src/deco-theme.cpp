@@ -17,10 +17,6 @@ wf::option_wrapper_t<wf::color_t> fg_color{"vecdecor/fg_color"};
 wf::option_wrapper_t<wf::color_t> bg_color{"vecdecor/bg_color"};
 wf::option_wrapper_t<wf::color_t> fg_text_color{"vecdecor/fg_text_color"};
 wf::option_wrapper_t<wf::color_t> bg_text_color{"vecdecor/bg_text_color"};
-wf::option_wrapper_t<std::string> button_minimize_svg{"vecdecor/button_minimize_svg"};
-wf::option_wrapper_t<std::string> button_maximize_svg{"vecdecor/button_maximize_svg"};
-wf::option_wrapper_t<std::string> button_restore_svg{"vecdecor/button_restore_svg"};
-wf::option_wrapper_t<std::string> button_close_svg{"vecdecor/button_close_svg"};
 wf::option_wrapper_t<int> button_size{"vecdecor/button_size"};
 wf::option_wrapper_t<int> title_height{"vecdecor/title_height"};
 wf::option_wrapper_t<int> button_y_offset{"vecdecor/button_y_offset"};
@@ -30,7 +26,9 @@ wf::option_wrapper_t<wf::color_t> button_hover_color{"vecdecor/button_hover_colo
 wf::option_wrapper_t<wf::color_t> button_pressed_color{"vecdecor/button_pressed_color"};
 wf::option_wrapper_t<double> button_line_thickness{"vecdecor/button_line_thickness"};
 /** Create a new theme with the default parameters */
-pixdecor_theme_t::pixdecor_theme_t() : font_description(nullptr, pango_font_description_free)
+pixdecor_theme_t::pixdecor_theme_t(button_renderer_t& renderer, const std::uint64_t& generation) :
+    button_renderer(renderer), generation(generation),
+    font_description(nullptr, pango_font_description_free)
 {
     // read initial colours
     update_colors();
@@ -45,7 +43,6 @@ void pixdecor_theme_t::update_colors(void)
     bg = wf::color_t(bg_color);
     fg_text = wf::color_t(fg_text_color);
     bg_text = wf::color_t(bg_text_color);
-    ++generation;
 }
 
 std::unique_ptr<PangoFontDescription,
@@ -110,6 +107,93 @@ geometry::svg_proportions_t pixdecor_theme_t::get_svg_proportions() const
 std::uint64_t pixdecor_theme_t::get_generation() const
 {
     return generation;
+}
+
+namespace
+{
+geometry::rgba_t to_rgba(const wf::color_t& colour)
+{
+    return {colour.r, colour.g, colour.b, colour.a};
+}
+}
+
+button_prepare_config_t pixdecor_theme_t::get_button_prepare_config(
+    geometry::logical_size_t logical_size, double output_scale) const
+{
+    return {
+        .logical_size     = logical_size,
+        .svg_proportions  = get_svg_proportions(),
+        .output_scale     = output_scale,
+        .line_thickness   = button_line_thickness,
+        .theme_generation = generation,
+        .palette    = {
+            .active = to_rgba(wf::color_t(button_color)),
+            .inactive = to_rgba(wf::color_t(button_inactive_color)),
+            .hover    = to_rgba(wf::color_t(button_hover_color)),
+            .pressed  = to_rgba(wf::color_t(button_pressed_color)),
+        },
+    };
+}
+
+bool pixdecor_theme_t::prepare_buttons(double output_scale)
+{
+    const auto bounds = get_button_bounds();
+    const auto config = get_button_prepare_config(
+        {bounds.width, bounds.height}, output_scale);
+    buttons_prepared = button_renderer.prepare(config);
+    if (buttons_prepared)
+    {
+        prepared_button_config = config;
+    }
+
+    return buttons_prepared;
+}
+
+const uploaded_button_texture_t*pixdecor_theme_t::get_prepared_fallback(
+    const geometry::button_state_t& state, const button_prepare_config_t& requested) const
+{
+    auto fallback_state = state;
+    fallback_state.interaction = geometry::interaction_state_t::normal;
+    if (auto texture = button_renderer.lookup(fallback_state, requested))
+    {
+        return texture;
+    }
+
+    if (!buttons_prepared)
+    {
+        return nullptr;
+    }
+
+    if (auto texture = button_renderer.lookup(fallback_state, prepared_button_config))
+    {
+        return texture;
+    }
+
+    fallback_state = {};
+    return button_renderer.lookup(fallback_state, prepared_button_config);
+}
+
+const wf::owned_texture_t*pixdecor_theme_t::get_button_texture(
+    const geometry::button_state_t& state, geometry::logical_size_t logical_size,
+    double output_scale)
+{
+    const auto requested = get_button_prepare_config(logical_size, output_scale);
+    auto texture = button_renderer.lookup(state, requested);
+    if (!texture)
+    {
+        pending_button_config = requested;
+        idle_prepare_buttons.run_once([this]
+        {
+            if (button_renderer.prepare(pending_button_config))
+            {
+                prepared_button_config = pending_button_config;
+                buttons_prepared = true;
+            }
+        });
+        texture = get_prepared_fallback(state, requested);
+    }
+
+    return texture ? texture->wayfire_texture() : nullptr;
 }
 
 /** @return The available border for resizing */
@@ -289,90 +373,6 @@ cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
     cairo_destroy(cr);
 
     return surface;
-}
-
-static cairo_surface_t *get_cairo_surface(const geometry::button_cache_key_t& key)
-{
-    const int w  = key.raster_size.width;
-    const int h  = key.raster_size.height;
-    auto surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-
-    auto cr = cairo_create(surface);
-    cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
-
-    cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-    cairo_set_source_rgba(cr, 0, 0, 0, 0);
-    cairo_rectangle(cr, 0, 0, w, h);
-    cairo_fill(cr);
-
-    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-
-    /** Draw the button  */
-    cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-    const float alpha = key.state.interaction == geometry::interaction_state_t::hover ? 0.25 : 1.0;
-    cairo_set_source_rgba(cr,
-        wf::color_t(button_color).r,
-        wf::color_t(button_color).g,
-        wf::color_t(button_color).b,
-        wf::color_t(button_color).a * alpha);
-    const auto& proportions = key.svg_proportions;
-    const double x = proportions.x * w;
-    const double y = proportions.y * h;
-    const double icon_width  = proportions.width * w;
-    const double icon_height = proportions.height * h;
-    const double line_width  = double(button_line_thickness) * key.output_scale;
-    switch (key.state.kind)
-    {
-      case geometry::button_kind_t::close:
-        cairo_set_line_width(cr, line_width);
-        cairo_move_to(cr, x + icon_width / 4.0, y + icon_height / 4.0);
-        cairo_line_to(cr, x + 3.0 * icon_width / 4.0, y + 3.0 * icon_height / 4.0);
-        cairo_move_to(cr, x + 3.0 * icon_width / 4.0, y + icon_height / 4.0);
-        cairo_line_to(cr, x + icon_width / 4.0, y + 3.0 * icon_height / 4.0);
-        cairo_stroke(cr);
-        break;
-
-      case geometry::button_kind_t::maximize:
-        cairo_set_line_width(cr, line_width);
-        cairo_rectangle(cr, x + icon_width / 4.0, y + icon_height / 4.0,
-            icon_width / 2.0, icon_height / 2.0);
-        cairo_stroke(cr);
-        break;
-
-      case geometry::button_kind_t::minimize:
-        cairo_set_line_width(cr, line_width);
-        cairo_move_to(cr, x + icon_width / 4.0, y + 3.0 * icon_height / 4.0);
-        cairo_line_to(cr, x + 3.0 * icon_width / 4.0, y + 3.0 * icon_height / 4.0);
-        cairo_stroke(cr);
-        break;
-    }
-
-    cairo_destroy(cr);
-
-    return surface;
-}
-
-cairo_surface_t*pixdecor_theme_t::get_button_surface(const geometry::button_cache_key_t& key) const
-{
-    std::string button_svg;
-    switch (key.state.kind)
-    {
-      case geometry::button_kind_t::close:
-        button_svg = button_close_svg;
-        break;
-
-      case geometry::button_kind_t::maximize:
-        button_svg = key.state.maximize == geometry::maximize_state_t::restore ?
-            std::string(button_restore_svg) : std::string(button_maximize_svg);
-        break;
-
-      case geometry::button_kind_t::minimize:
-        button_svg = button_minimize_svg;
-        break;
-    }
-
-    (void)button_svg;
-    return get_cairo_surface(key);
 }
 }
 }

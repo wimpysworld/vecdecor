@@ -3,7 +3,6 @@
 #include "deco-geometry.hpp"
 
 #include <functional>
-#include <optional>
 #include <wayfire/util.hpp>
 #include <wayfire/opengl.hpp>
 #include <wayfire/render-manager.hpp>
@@ -74,10 +73,6 @@ class button_t
 
     wf::option_wrapper_t<int> button_hover_duration{"vecdecor/button_hover_duration"};
     button_type_t type;
-    wf::owned_texture_t button_texture;
-    wf::owned_texture_t button_texture_hovered;
-    std::optional<geometry::button_cache_key_t> button_texture_key;
-    std::optional<geometry::button_cache_key_t> button_texture_hovered_key;
     bool type_set = false;
 
     /* Whether the button is currently being hovered */
@@ -90,13 +85,6 @@ class button_t
     wf::wl_idle_call idle_damage;
     /** Damage button the next time the main loop goes idle */
     void add_idle_damage();
-
-    /**
-     * Redraw the button surface and store it as a texture
-     */
-    void update_texture(const geometry::button_cache_key_t& key,
-        wf::owned_texture_t& texture,
-        std::optional<geometry::button_cache_key_t>& texture_key);
 };
 }
 }

@@ -14,6 +14,7 @@ constexpr int AUTOMATIC_BUTTON_LARGE_FONT_THRESHOLD = 20;
 constexpr int SMALL_AUTOMATIC_BUTTON_SIZE = 18;
 constexpr int LARGE_AUTOMATIC_BUTTON_SIZE = 26;
 constexpr int MINIMUM_TITLE_HEIGHT = 20;
+constexpr double DEFAULT_BUTTON_LINE_THICKNESS = 0.7;
 
 struct logical_point_t
 {
@@ -47,6 +48,20 @@ struct raster_size_t
 {
     int width  = 1;
     int height = 1;
+};
+
+struct resolved_asset_identity_t
+{
+    std::uint64_t content_hash = 0;
+    std::uint64_t source_generation = 0;
+};
+
+struct rgba_t
+{
+    double r = 0.0;
+    double g = 0.0;
+    double b = 0.0;
+    double a = 0.0;
 };
 
 enum class button_kind_t
@@ -125,9 +140,12 @@ struct button_group_positions_t
 struct cache_key_input_t
 {
     button_state_t state;
+    resolved_asset_identity_t resolved_asset_identity;
+    rgba_t colour;
     logical_size_t logical_size;
     svg_proportions_t svg_proportions;
-    double output_scale = 1.0;
+    double output_scale   = 1.0;
+    double line_thickness = DEFAULT_BUTTON_LINE_THICKNESS;
     std::uint64_t theme_generation = 0;
 };
 
@@ -138,10 +156,13 @@ struct cache_key_input_t
 struct button_cache_key_t
 {
     button_state_t state;
+    resolved_asset_identity_t resolved_asset_identity;
+    rgba_t colour;
     logical_size_t logical_size;
     raster_size_t raster_size;
     svg_proportions_t svg_proportions;
-    double output_scale = 1.0;
+    double output_scale   = 1.0;
+    double line_thickness = DEFAULT_BUTTON_LINE_THICKNESS;
     std::uint64_t theme_generation = 0;
 };
 
@@ -149,6 +170,8 @@ bool operator ==(const logical_size_t& lhs, const logical_size_t& rhs);
 bool operator ==(const logical_bounds_t& lhs, const logical_bounds_t& rhs);
 bool operator ==(const svg_proportions_t& lhs, const svg_proportions_t& rhs);
 bool operator ==(const raster_size_t& lhs, const raster_size_t& rhs);
+bool operator ==(const resolved_asset_identity_t& lhs, const resolved_asset_identity_t& rhs);
+bool operator ==(const rgba_t& lhs, const rgba_t& rhs);
 bool operator ==(const button_state_t& lhs, const button_state_t& rhs);
 bool operator ==(const button_cache_key_t& lhs, const button_cache_key_t& rhs);
 
@@ -159,6 +182,8 @@ bool is_valid(const logical_size_t& size);
 bool is_valid(const logical_bounds_t& bounds);
 bool is_valid(const svg_proportions_t& proportions);
 bool is_valid(const raster_size_t& size);
+bool is_valid(const resolved_asset_identity_t& identity);
+bool is_valid(const rgba_t& colour);
 bool is_valid(const button_state_t& state);
 bool is_valid(const geometry_input_t& input);
 bool is_valid(const button_group_input_t& input);
