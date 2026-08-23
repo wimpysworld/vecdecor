@@ -148,7 +148,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                     [this] (int x, int y) { return layout.handle_motion(x, y); },
                     [this] (bool pressed) { return layout.handle_press_event(pressed); },
                     [this] (int delta) { return layout.handle_axis_event(delta); },
-                    [this] () { return layout.handle_focus_lost(); },
+                    [this] (bool clear_double_click)
+            {
+                return layout.handle_focus_lost(clear_double_click);
+            },
                     [this] (const layout_button_update_t& update)
             {
                 layout.apply_button_update(update);
