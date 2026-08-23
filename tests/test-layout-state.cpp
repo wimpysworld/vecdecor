@@ -571,6 +571,21 @@ void test_pointer_focus_loss_clears_double_click()
         "click after pointer focus loss does not toggle maximize");
 }
 
+void test_outside_touch_release_clears_double_click()
+{
+    fixture_t fixture;
+    const auto point = fixture.move_centre();
+    press(input_source_t::touch, fixture, point);
+    motion(input_source_t::touch, fixture, {-20, -20});
+    release(input_source_t::touch, fixture, {-20, -20});
+    fixture.timer.advance(299);
+    fixture.reset_observation();
+    press(input_source_t::touch, fixture, point);
+    release(input_source_t::touch, fixture, point);
+    expect(fixture.actions.empty(),
+        "touch tap after an outside release does not toggle maximize");
+}
+
 void test_axis_actions()
 {
     fixture_t fixture;
@@ -665,6 +680,7 @@ int main()
     test_touch_release_uses_lift_position();
     test_focus_loss();
     test_pointer_focus_loss_clears_double_click();
+    test_outside_touch_release_clears_double_click();
     test_axis_actions();
     test_double_click_boundary();
     test_titlebar_drag_clears_double_click();
