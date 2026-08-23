@@ -537,9 +537,20 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
     void reload_button_source(std::size_t source)
     {
-        (void)source;
+        constexpr std::array<button_asset_t, 4> assets = {
+            button_asset_t::minimize,
+            button_asset_t::maximize,
+            button_asset_t::restore,
+            button_asset_t::close,
+        };
+        if (source >= assets.size())
+        {
+            return;
+        }
+
         ++source_generation;
-        button_renderer.reload_sources(get_button_source_config());
+        const auto config = get_button_source_config();
+        button_renderer.reload_source(assets[source], config.paths[source], config.generation);
         prepare_button_frames();
     }
 
