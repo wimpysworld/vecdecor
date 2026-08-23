@@ -9,6 +9,38 @@ from pathlib import Path
 ASSET_DIRECTORY = Path(sys.argv.pop())
 METADATA_PATH = Path(sys.argv.pop())
 
+REMOVED_OPTIONS = {
+    "overlay_engine",
+    "effect_type",
+    "effect_color",
+    "animate",
+    "beveled_glass",
+    "beveled_glass_overlay",
+    "maximized_shadows",
+    "shadow_radius",
+    "shadow_color",
+}
+
+REMOVED_EFFECT_VALUES = {
+    "smoke",
+    "ink",
+    "clouds",
+    "halftone",
+    "pattern",
+    "lava",
+    "hex",
+    "zebra",
+    "neural_network",
+    "hexagon_maze",
+    "raymarched_truchet",
+    "neon_pattern",
+    "neon_rings",
+    "deco",
+    "rounded_corners",
+    "beveled_glass",
+    "beveled_glass_overlay",
+}
+
 
 class MetadataTest(unittest.TestCase):
     @classmethod
@@ -39,6 +71,30 @@ class MetadataTest(unittest.TestCase):
 
     def test_title_height_contract(self):
         self.assert_size_option("title_height", "General")
+
+    def test_removed_public_options_stay_removed(self):
+        option_names = {option.get("name") for option in self.root.findall(".//option")}
+        self.assertFalse(
+            option_names & REMOVED_OPTIONS,
+            "removed public options returned to the metadata",
+        )
+
+    def test_removed_effect_selectors_stay_removed(self):
+        values = {
+            value.text.strip()
+            for value in self.root.findall(".//value")
+            if value.text
+        }
+        self.assertFalse(
+            values & REMOVED_EFFECT_VALUES,
+            "removed effect selectors returned to the metadata",
+        )
+
+    def test_rounded_corner_option_is_retained(self):
+        option = self.option("rounded_corner_radius")
+        self.assertEqual(option.get("type"), "int")
+        self.assertEqual(option.findtext("default"), "5")
+        self.assertEqual(option.findtext("min"), "0")
 
     def test_button_colour_defaults(self):
         expected = {

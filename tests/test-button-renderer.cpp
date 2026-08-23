@@ -1,4 +1,5 @@
 #include "deco-button-renderer.hpp"
+#include "test-cairo-support.hpp"
 
 #include <algorithm>
 #include <array>
@@ -11,12 +12,14 @@
 #include <stdexcept>
 #include <string>
 #include <unistd.h>
+#include <utility>
 #include <vector>
 
 namespace
 {
 using namespace wf::pixdecor;
 using namespace wf::pixdecor::geometry;
+using namespace test_cairo;
 
 constexpr std::array<button_asset_t, 4> ASSETS = {
     button_asset_t::minimize,
@@ -59,54 +62,9 @@ void require(bool condition, const std::string& message)
     }
 }
 
-std::uint64_t surface_digest(cairo_surface_t *surface)
-{
-    cairo_surface_flush(surface);
-    const int height = cairo_image_surface_get_height(surface);
-    const int stride = cairo_image_surface_get_stride(surface);
-    const unsigned char *data = cairo_image_surface_get_data(surface);
-    std::uint64_t digest = 14695981039346656037ULL;
-    for (int byte = 0; byte < height * stride; ++byte)
-    {
-        digest ^= data[byte];
-        digest *= 1099511628211ULL;
-    }
-
-    return digest;
-}
-
-std::uint32_t surface_pixel(cairo_surface_t *surface, int x, int y)
-{
-    cairo_surface_flush(surface);
-    const int stride   = cairo_image_surface_get_stride(surface) / sizeof(std::uint32_t);
-    const auto *pixels = reinterpret_cast<const std::uint32_t*>(
-        cairo_image_surface_get_data(surface));
-    return pixels[y * stride + x];
-}
-
-std::size_t visible_pixels(cairo_surface_t *surface)
-{
-    cairo_surface_flush(surface);
-    const int width    = cairo_image_surface_get_width(surface);
-    const int height   = cairo_image_surface_get_height(surface);
-    const int stride   = cairo_image_surface_get_stride(surface) / sizeof(std::uint32_t);
-    const auto *pixels = reinterpret_cast<const std::uint32_t*>(
-        cairo_image_surface_get_data(surface));
-    std::size_t count = 0;
-    for (int y = 0; y < height; ++y)
-    {
-        for (int x = 0; x < width; ++x)
-        {
-            count += (pixels[y * stride + x] & 0xff000000U) != 0;
-        }
-    }
-
-    return count;
-}
-
 struct lifecycle_t
 {
-    int loads   = 0;
+    int parses  = 0;
     int rasters = 0;
     int uploads = 0;
     int context_runs  = 0;
@@ -165,11 +123,10 @@ class fake_texture_t : public uploaded_button_texture_t
 button_renderer_dependencies_t dependencies(lifecycle_t& lifecycle)
 {
     return {
-        [&] (const button_source_spec_t& source, button_asset_t asset,
-             button_state_variant_t variant, std::uint64_t generation)
+        [&] (const std::string& path)
         {
-            ++lifecycle.loads;
-            return load_svg_button_asset(source, asset, variant, generation);
+            ++lifecycle.parses;
+            return load_svg_button_document(path);
         },
         [&] (const loaded_button_asset_t& asset, const button_cache_key_t& key)
         {
@@ -362,77 +319,76 @@ void verify_asset_directory(const std::string& directory)
     }
 }
 
-void verify_transparent_svg_fallbacks()
+void verify_svg_fallbacks(const std::string& directory)
 {
-    constexpr std::array<const char*, 4> TRANSPARENT_SVGS = {{
+    const auto transparent_path = make_svg_fixture(
         "<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'>"
-        "<rect width='32' height='32' fill='none'/></svg>",
-        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>"
-        "<symbol id='glyph'><path d='M2 2h12v12H2z'/></symbol></svg>",
-        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>"
-        "<defs><path id='glyph' d='M2 2h12v12H2z'/></defs></svg>",
-        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>"
-        "<path d='M100 100h12v12h-12z'/></svg>",
+        "<rect width='32' height='32' fill='none'/></svg>");
+    const std::array<std::pair<std::string, bool>, 3> SOURCES = {{
+        {directory + "/missing.svg", false},
+        {directory + "/../../tests/fixtures/malformed.svg", false},
+        {transparent_path, true},
     }};
     constexpr std::array<button_render_mode_t, 2> MODES = {
         button_render_mode_t::full_colour,
         button_render_mode_t::recoloured_mask,
     };
-    struct fallback_case_t
+    for (const auto& source_case : SOURCES)
     {
-        button_asset_t asset;
-        button_state_variant_t variant;
-    };
-
-    constexpr std::array<fallback_case_t, 4> CASES = {{
-        {button_asset_t::minimize, button_state_variant_t::active},
-        {button_asset_t::maximize, button_state_variant_t::active_hover},
-        {button_asset_t::restore, button_state_variant_t::inactive},
-        {button_asset_t::close, button_state_variant_t::inactive_hover},
-    }};
-    for (const auto *contents : TRANSPARENT_SVGS)
-    {
-        const auto path = make_svg_fixture(contents);
         for (auto mode : MODES)
         {
-            for (const auto& item : CASES)
+            for (auto asset : ASSETS)
             {
-                const button_source_spec_t transparent = {path, mode};
-                const button_source_spec_t missing     = {path + ".missing", mode};
-                const auto loaded = load_svg_button_asset(
-                    transparent, item.asset, item.variant, 1);
-                const auto fallback = load_svg_button_asset(
-                    missing, item.asset, item.variant, 1);
-                require(loaded.valid_svg, "A transparent SVG did not parse");
-                require(loaded.render_mode == mode,
-                    "A transparent SVG did not retain its render mode");
-                require(!fallback.valid_svg, "A missing SVG unexpectedly parsed");
+                for (auto focus : {focus_state_t::active, focus_state_t::inactive})
+                {
+                    for (auto interaction : {interaction_state_t::normal,
+                         interaction_state_t::hover, interaction_state_t::pressed})
+                    {
+                        const auto variant = focus == focus_state_t::active ?
+                            (interaction == interaction_state_t::normal ?
+                                button_state_variant_t::active :
+                                button_state_variant_t::active_hover) :
+                            (interaction == interaction_state_t::normal ?
+                                button_state_variant_t::inactive :
+                                button_state_variant_t::inactive_hover);
+                        const auto state = state_for(asset, variant, interaction);
+                        const button_source_spec_t source = {source_case.first, mode};
+                        const auto loaded = load_svg_button_asset(source, asset, variant, 1);
+                        require(loaded.valid_svg == source_case.second,
+                            "An SVG fallback source has the wrong parse state");
+                        require(loaded.render_mode == mode,
+                            "An SVG fallback source lost its render mode");
 
-                const auto key = resolve_cache_key({
-                        .state = state_for(item.asset, item.variant),
-                        .resolved_asset_identity = loaded.identity,
-                        .colour = {0.8, 0.2, 0.1, 1.0},
-                        .background_colour = {0.1, 0.2, 0.3, 0.7},
-                        .logical_size    = {34, 34},
-                        .svg_proportions = full_box_svg_proportions(),
-                        .line_thickness  = DEFAULT_BUTTON_LINE_THICKNESS,
-                    });
-                auto fallback_key = key;
-                fallback_key.resolved_asset_identity = fallback.identity;
-                const auto transparent_surface = rasterize_button_asset(loaded, key);
-                const auto fallback_surface    = rasterize_button_asset(fallback, fallback_key);
-                require(transparent_surface && fallback_surface,
-                    "A transparent SVG fallback did not render");
-                require(visible_pixels(transparent_surface.get()) > 0,
-                    "A transparent SVG produced a transparent control");
-                require(surface_digest(transparent_surface.get()) ==
-                    surface_digest(fallback_surface.get()),
-                    "A transparent SVG did not select its exact-state procedural fallback");
+                        loaded_button_asset_t fallback;
+                        fallback.identity    = loaded.identity;
+                        fallback.variant     = variant;
+                        fallback.render_mode = mode;
+                        const auto key = resolve_cache_key({
+                                .state = state,
+                                .resolved_asset_identity = loaded.identity,
+                                .colour = {0.8, 0.2, 0.1, 1.0},
+                                .background_colour = interaction == interaction_state_t::pressed ?
+                                    rgba_t{0.3, 0.1, 0.6, 0.7} : rgba_t{0.1, 0.2, 0.3, 0.7},
+                                .logical_size    = {34, 34},
+                                .svg_proportions = full_box_svg_proportions(),
+                                .line_thickness  = DEFAULT_BUTTON_LINE_THICKNESS,
+                            });
+                        const auto source_surface = rasterize_button_asset(loaded, key);
+                        const auto direct_surface = rasterize_button_asset(fallback, key);
+                        require(source_surface && direct_surface,
+                            "An SVG procedural fallback did not render");
+                        require(visible_pixels(source_surface.get()) > 0,
+                            "An SVG procedural fallback produced a transparent control");
+                        require(surface_digest(source_surface.get()) ==
+                            surface_digest(direct_surface.get()),
+                            "An SVG source did not select its exact-state procedural fallback");
+                    }
+                }
             }
         }
-
-        unlink(path.c_str());
     }
+
+    unlink(transparent_path.c_str());
 }
 
 void verify_fallback_line_thickness()
@@ -465,6 +421,136 @@ button_source_config_t custom_sources(const std::string& path, std::uint64_t gen
     }
 
     return result;
+}
+
+void verify_parse_cache_and_state_keys()
+{
+    const auto first_path = make_svg_fixture(
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>"
+        "<path fill='white' d='M2 7h12v2H2z'/></svg>");
+    const auto second_path = make_svg_fixture(
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>"
+        "<path fill='white' d='M3 3h10v10H3z'/></svg>");
+    lifecycle_t lifecycle;
+    {
+        button_renderer_t renderer(dependencies(lifecycle));
+        const auto shared = custom_sources(first_path, 30);
+        require(renderer.reload_sources(shared), "The shared custom source matrix did not load");
+        require(lifecycle.parses == 1,
+            "A shared custom source was parsed more than once during reload");
+        require(!(renderer.source(button_asset_t::minimize,
+            button_state_variant_t::active).identity == renderer.source(
+                button_asset_t::close, button_state_variant_t::active).identity),
+            "A texture source identity omitted the control asset");
+        require(!(renderer.source(button_asset_t::close,
+            button_state_variant_t::active).identity == renderer.source(
+                button_asset_t::close, button_state_variant_t::inactive).identity),
+            "A texture source identity omitted the state variant");
+
+        const auto base = preparation(30);
+        require(renderer.prepare(base), "The shared custom source matrix did not prepare");
+        const int prepared_parses = lifecycle.parses;
+        require(renderer.prepare(base), "The shared custom source matrix did not prepare twice");
+        const auto lookup_state = state_for(
+            button_asset_t::close, button_state_variant_t::active);
+        for (int frame = 0; frame < 120; ++frame)
+        {
+            require(renderer.lookup(lookup_state, base) != nullptr,
+                "An animation-frame lookup missed a prepared texture");
+        }
+
+        require(lifecycle.parses == prepared_parses,
+            "A repeated prepare or animation-frame lookup parsed an SVG");
+
+        const auto base_key    = renderer.resolve_key(lookup_state, base);
+        const auto base_digest = texture_for(renderer, lookup_state, base).digest;
+
+        auto sized = base;
+        sized.logical_size = {41, 29};
+        require(renderer.prepare(sized), "The changed-dimensions matrix did not prepare");
+        require(!(renderer.resolve_key(lookup_state, sized) == base_key) &&
+            (texture_for(renderer, lookup_state, sized).digest != base_digest),
+            "Changed dimensions did not change the texture key and digest");
+
+        auto scaled = base;
+        scaled.output_scale = 1.5;
+        require(renderer.prepare(scaled), "The changed-scale matrix did not prepare");
+        require(!(renderer.resolve_key(lookup_state, scaled) == base_key) &&
+            (texture_for(renderer, lookup_state, scaled).digest != base_digest),
+            "Changed output scale did not change the texture key and digest");
+
+        auto themed = base;
+        themed.theme_generation = 31;
+        themed.palette.active   = {0.1, 0.7, 0.9, 1.0};
+        require(renderer.prepare(themed), "The changed-theme matrix did not prepare");
+        require(!(renderer.resolve_key(lookup_state, themed) == base_key) &&
+            (texture_for(renderer, lookup_state, themed).digest != base_digest),
+            "Changed theme colours did not change the texture key and digest");
+        require(renderer.prepare(base), "The baseline matrix did not restore after a theme change");
+
+        const auto inactive_state = state_for(
+            button_asset_t::close, button_state_variant_t::inactive);
+        require(!(renderer.resolve_key(inactive_state, base) == base_key) &&
+            (texture_for(renderer, inactive_state, base).digest != base_digest),
+            "Changed focus did not change the texture key and digest");
+
+        const auto hover_state = state_for(button_asset_t::close,
+            button_state_variant_t::active_hover, interaction_state_t::hover);
+        require(!(renderer.resolve_key(hover_state, base) == base_key) &&
+            (texture_for(renderer, hover_state, base).digest != base_digest),
+            "Changed interaction did not change the texture key and digest");
+
+        const auto maximize_state = state_for(
+            button_asset_t::maximize, button_state_variant_t::active);
+        const auto restore_state = state_for(
+            button_asset_t::restore, button_state_variant_t::active);
+        require(!(renderer.resolve_key(maximize_state, base) ==
+            renderer.resolve_key(restore_state, base)) &&
+            (texture_for(renderer, maximize_state, base).identity() !=
+                texture_for(renderer, restore_state, base).identity()),
+            "Changed maximise state did not change the texture key and texture");
+
+        const auto old_source_identity = renderer.source(
+            button_asset_t::close, button_state_variant_t::active).identity;
+        const auto changed_specs = resolve_button_source_specs(
+            second_path, button_asset_t::close);
+        const int source_parses = lifecycle.parses;
+        require(renderer.reload_source(button_asset_t::close, changed_specs, 30),
+            "The changed glyph source did not load");
+        require(lifecycle.parses == source_parses + 1,
+            "One changed custom asset did not add exactly one parse");
+        require(!(renderer.source(button_asset_t::close,
+            button_state_variant_t::active).identity == old_source_identity),
+            "A texture source identity omitted the content hash");
+        require(renderer.prepare(base), "The changed glyph source did not prepare");
+        require(!(renderer.resolve_key(lookup_state, base) == base_key) &&
+            (texture_for(renderer, lookup_state, base).digest != base_digest),
+            "Changed glyph source did not change the texture key and digest");
+
+        auto full_colour_specs = changed_specs;
+        for (auto& spec : full_colour_specs)
+        {
+            spec.render_mode = button_render_mode_t::full_colour;
+        }
+
+        const auto mask_identity = renderer.source(
+            button_asset_t::close, button_state_variant_t::active).identity;
+        require(renderer.reload_source(button_asset_t::close, full_colour_specs, 30),
+            "The changed render mode did not load");
+        require(!(renderer.source(button_asset_t::close,
+            button_state_variant_t::active).identity == mask_identity),
+            "A texture source identity omitted the render mode");
+        const auto generation_identity = renderer.source(
+            button_asset_t::close, button_state_variant_t::active).identity;
+        require(renderer.reload_source(button_asset_t::close, full_colour_specs, 31),
+            "The changed source generation did not load");
+        require(!(renderer.source(button_asset_t::close,
+            button_state_variant_t::active).identity == generation_identity),
+            "A texture source identity omitted the source generation");
+    }
+
+    unlink(first_path.c_str());
+    unlink(second_path.c_str());
 }
 
 void verify_palette_cache_keys(const std::string& directory)
@@ -556,11 +642,11 @@ void verify_renderer_regressions(const std::string& directory)
         require(renderer.reload_sources(sources), "The regression source matrix did not load");
         auto config = preparation(10);
         require(renderer.prepare(config), "The regression matrix did not prepare");
-        const int exact_loads   = lifecycle.loads;
+        const int exact_parses  = lifecycle.parses;
         const int exact_rasters = lifecycle.rasters;
         const int exact_uploads = lifecycle.uploads;
         require(renderer.prepare(config), "The repeated regression matrix did not prepare");
-        require((lifecycle.loads == exact_loads) && (lifecycle.rasters == exact_rasters) &&
+        require((lifecycle.parses == exact_parses) && (lifecycle.rasters == exact_rasters) &&
             (lifecycle.uploads == exact_uploads), "An exact repeated prepare performed work");
 
         const auto active = state_for(button_asset_t::close, button_state_variant_t::active);
@@ -672,7 +758,7 @@ void verify_renderer(const std::string& directory)
     button_renderer_t renderer(dependencies(lifecycle));
     auto sources = bundled_sources(directory);
     require(renderer.reload_sources(sources), "The bundled matrix did not load");
-    require(lifecycle.loads == 16, "The renderer did not load all 16 bundled sources");
+    require(lifecycle.parses == 16, "The renderer did not parse all 16 bundled sources");
     for (auto asset : ASSETS)
     {
         for (auto variant : VARIANTS)
@@ -757,11 +843,11 @@ void verify_renderer(const std::string& directory)
 
     const auto custom = resolve_button_source_specs(directory + "/minimize.svg",
         button_asset_t::close);
-    const int custom_loads = lifecycle.loads;
+    const int custom_parses = lifecycle.parses;
     require(renderer.reload_source(button_asset_t::close, custom, 2),
         "The custom control did not reload");
-    require(lifecycle.loads == custom_loads + 4,
-        "Reloading one custom option did not reload exactly four variants");
+    require(lifecycle.parses == custom_parses + 1,
+        "Reloading one custom option did not parse its shared path exactly once");
     for (auto variant : VARIANTS)
     {
         require(renderer.source(button_asset_t::close, variant).render_mode ==
@@ -838,7 +924,7 @@ int main(int argc, char **argv)
             "The test needs the source and optional staged button directories");
         verify_source_mapping();
         verify_asset_directory(argv[1]);
-        verify_transparent_svg_fallbacks();
+        verify_svg_fallbacks(argv[1]);
         verify_fallback_line_thickness();
         if (argc == 3)
         {
@@ -846,6 +932,7 @@ int main(int argc, char **argv)
         }
 
         verify_renderer(argv[1]);
+        verify_parse_cache_and_state_keys();
         verify_palette_cache_keys(argv[1]);
         verify_renderer_regressions(argv[1]);
     } catch (const std::exception& error)

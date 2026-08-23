@@ -127,6 +127,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
   public:
     pixdecor_theme_t theme;
     pixdecor_layout_t layout;
+    layout_input_adapter_t input_adapter;
     wf::region_t cached_region;
 
     wf::dimensions_t size;
@@ -137,7 +138,23 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         const std::uint64_t& theme_generation) :
         node_t(false),
         theme{button_renderer, theme_generation},
-        layout{theme, [=] (wlr_box box) { wf::scene::damage_node(shared_from_this(), box + get_offset()); }}
+        layout{theme, [=] (wlr_box box) { wf::scene::damage_node(shared_from_this(), box + get_offset()); }},
+        input_adapter{{
+                    [this] (layout_input_point_t point)
+            {
+                const auto offset = get_offset();
+                return layout_input_point_t{point.x - offset.x, point.y - offset.y};
+            },
+                    [this] (int x, int y) { return layout.handle_motion(x, y); },
+                    [this] (bool pressed) { return layout.handle_press_event(pressed); },
+                    [this] (int delta) { return layout.handle_axis_event(delta); },
+                    [this] () { return layout.handle_focus_lost(); },
+                    [this] (const layout_button_update_t& update)
+            {
+                layout.apply_button_update(update);
+            },
+                    [this] (const layout_input_response_t& response) { handle_action(response); },
+                }}
     {
         this->_view = view->weak_from_this();
         view->connect(&title_set);
@@ -188,13 +205,20 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         int border = theme.get_border_size();
         wlr_box geometry{origin.x, origin.y, size.width, size.height};
 
-        bool activated = false;
-        bool maximized = false;
+        bool activated  = false;
+        bool fullscreen = false;
+        uint32_t tiled_edges = 0;
         if (auto view = _view.lock())
         {
-            activated = view->activated;
-            maximized = view->pending_tiled_edges();
+            activated   = view->activated;
+            fullscreen  = view->toplevel()->pending().fullscreen;
+            tiled_edges = view->pending_tiled_edges();
         }
+
+        const bool maximized = tiled_edges != 0;
+        const auto background_state = fullscreen ? background_state_t::fullscreen :
+            (tiled_edges == wf::TILED_EDGES_ALL) ? background_state_t::maximised :
+            tiled_edges ? background_state_t::tiled : background_state_t::floating;
 
         auto renderables = layout.get_renderable_areas();
         auto offset =
@@ -206,7 +230,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         {
             wf::gles::bind_render_buffer(data.target);
 
-            theme.render_background(data, geometry, activated, maximized);
+            theme.render_background(data, geometry, activated, background_state);
 
             if (!titlebar_opt)
             {
@@ -335,19 +359,17 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     /* wf::compositor_surface_t implementation */
     void handle_pointer_enter(wf::pointf_t point) override
     {
-        point -= wf::pointf_t{get_offset()};
-        layout.handle_motion(point.x, point.y);
+        input_adapter.pointer_motion({point.x, point.y});
     }
 
     void handle_pointer_leave() override
     {
-        layout.handle_focus_lost();
+        input_adapter.pointer_focus_lost();
     }
 
     void handle_pointer_motion(wf::pointf_t to, uint32_t) override
     {
-        to -= wf::pointf_t{get_offset()};
-        handle_action(layout.handle_motion(to.x, to.y));
+        input_adapter.pointer_motion({to.x, to.y});
     }
 
     void handle_pointer_button(const wlr_pointer_button_event& ev) override
@@ -357,14 +379,20 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             return;
         }
 
-        handle_action(layout.handle_press_event(ev.state == WL_POINTER_BUTTON_STATE_PRESSED));
+        if (ev.state == WL_POINTER_BUTTON_STATE_PRESSED)
+        {
+            input_adapter.pointer_button(true);
+        } else
+        {
+            input_adapter.pointer_button(false);
+        }
     }
 
     void handle_pointer_axis(const wlr_pointer_axis_event& ev) override
     {
         if (ev.orientation == WL_POINTER_AXIS_VERTICAL_SCROLL)
         {
-            handle_action(layout.handle_axis_event(ev.delta));
+            input_adapter.pointer_axis(ev.delta);
         }
     }
 
@@ -401,29 +429,23 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
     void init_shade(wayfire_view view, bool shade, int titlebar_height)
     {
-        if (!bool(enable_shade))
+        if (!view)
         {
             return;
         }
 
-        if (shade)
-        {
-            if (view && view->is_mapped())
-            {
-                auto tr = ensure_transformer(view, titlebar_height);
-                tr->set_titlebar_height(titlebar_height);
-                tr->init_animation(shade);
-            }
-        } else
-        {
-            if (auto tr =
-                    view->get_transformed_node()->get_transformer<pixdecor_shade>(
-                        shade_transformer_name))
+        auto tr = view->get_transformed_node()->get_transformer<pixdecor_shade>(
+            shade_transformer_name);
+        const shade_control_actions_t actions{
+            [&] () { tr = ensure_transformer(view, titlebar_height); },
+            [&] ()
             {
                 tr->set_titlebar_height(titlebar_height);
                 tr->init_animation(shade);
-            }
-        }
+            },
+        };
+        apply_shade_control(bool(enable_shade), shade, view->is_mapped(), bool(tr),
+            actions);
     }
 
     void handle_action(pixdecor_layout_t::action_response_t action)
@@ -472,20 +494,17 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
     void handle_touch_down(uint32_t time_ms, int finger_id, wf::pointf_t position) override
     {
-        handle_touch_motion(time_ms, finger_id, position);
-        handle_action(layout.handle_press_event());
+        input_adapter.touch_down({position.x, position.y});
     }
 
     void handle_touch_up(uint32_t time_ms, int finger_id, wf::pointf_t lift_off_position) override
     {
-        handle_action(layout.handle_press_event(false));
-        layout.handle_focus_lost();
+        input_adapter.touch_up();
     }
 
     void handle_touch_motion(uint32_t time_ms, int finger_id, wf::pointf_t position) override
     {
-        position -= wf::pointf_t{get_offset()};
-        layout.handle_motion(position.x, position.y);
+        input_adapter.touch_motion({position.x, position.y});
     }
 
     void recreate_frame()
@@ -649,7 +668,7 @@ wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_stat
                 shade_transformer_name))
     {
         tr->set_titlebar_height(titlebar);
-        shade_progress = tr->progression.shade;
+        shade_progress = tr->get_progress();
     }
 
     if (view->has_data(custom_data_name))

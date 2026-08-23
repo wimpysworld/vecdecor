@@ -1,12 +1,11 @@
 #pragma once
 
-#include "deco-geometry.hpp"
+#include "deco-button-state.hpp"
 
 #include <functional>
-#include <wayfire/util.hpp>
+#include <memory>
 #include <wayfire/opengl.hpp>
 #include <wayfire/render-manager.hpp>
-#include <wayfire/util/duration.hpp>
 #include <wayfire/scene-render.hpp>
 #include <wayfire/plugins/common/cairo-util.hpp>
 
@@ -16,11 +15,21 @@ namespace pixdecor
 {
 class pixdecor_theme_t;
 
-enum button_type_t
+class button_render_backend_t
 {
-    BUTTON_CLOSE,
-    BUTTON_TOGGLE_MAXIMIZE,
-    BUTTON_MINIMIZE,
+  public:
+    virtual ~button_render_backend_t() = default;
+
+    virtual bool request_texture(button_texture_slot_t slot,
+        const geometry::button_state_t& state, geometry::logical_size_t logical_size) = 0;
+    virtual void draw_texture(button_texture_slot_t slot, double alpha) = 0;
+};
+
+struct button_runtime_t
+{
+    button_animation_t::duration_loader_t load_hover_duration;
+    std::function<geometry::logical_bounds_t()> get_button_bounds;
+    std::function<void()> schedule_redraw;
 };
 
 class button_t
@@ -34,6 +43,9 @@ class button_t
      */
     button_t(pixdecor_theme_t& theme,
         std::function<void()> damage_callback);
+
+    button_t(button_runtime_t runtime,
+        std::function<void()> damage_callback = {});
 
     /**
      * Set the type of the button. This will affect the displayed icon and potentially other appearance like
@@ -66,25 +78,20 @@ class button_t
     void render(const wf::scene::render_instruction_t& data, wf::geometry_t button_geometry,
         bool active, bool maximized);
 
-    pixdecor_theme_t& theme;
+    void render(button_render_backend_t& backend, geometry::logical_size_t logical_size,
+        bool active, bool maximized);
+
     std::function<void()> damage_callback;
 
   private:
-
-    wf::option_wrapper_t<int> button_hover_duration{"vecdecor/button_hover_duration"};
+    pixdecor_theme_t *theme = nullptr;
+    std::function<geometry::logical_bounds_t()> get_button_bounds;
+    std::function<void()> schedule_redraw;
     button_type_t type;
     bool type_set = false;
 
-    /* Whether the button is currently being hovered */
-    bool is_hovered = false;
-    /* Whether the button is currently being held */
-    bool is_pressed = false;
-    /* The shade of button background to use. */
-    wf::animation::simple_animation_t hover{button_hover_duration};
-
-    wf::wl_idle_call idle_damage;
-    /** Damage button the next time the main loop goes idle */
-    void add_idle_damage();
+    button_state_model_t state_model;
+    button_animation_t hover;
 };
 }
 }

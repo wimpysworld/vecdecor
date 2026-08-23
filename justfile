@@ -26,6 +26,17 @@ build: setup
 test: build
     meson test -C build --print-errorlogs
 
+# Require the Wayfire version for this branch
+check-wayfire-version:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    required=0.10.1
+    actual=$(pkg-config --modversion wayfire)
+    if [[ "$actual" != "$required" ]]; then
+        printf 'Expected Wayfire version %s, found %s\n' "$required" "$actual" >&2
+        exit 1
+    fi
+
 # Check C++ formatting with the Wayfire configuration
 lint:
     #!/usr/bin/env bash
@@ -39,7 +50,7 @@ lint:
         xargs -0 -r uncrustify -c "$WAYFIRE_UNCRUSTIFY_CONFIG" --check
 
 # Run the full CI check suite
-check: eval test lint check-locales install-staged
+check: check-wayfire-version eval test lint check-locales install-staged
 
 # Check translation syntax and metadata coverage
 check-locales:

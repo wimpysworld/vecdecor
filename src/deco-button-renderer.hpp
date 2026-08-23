@@ -78,6 +78,14 @@ struct loaded_button_asset_t
     std::string error;
 };
 
+struct button_svg_document_t
+{
+    std::shared_ptr<void> payload;
+    std::uint64_t content_hash = 0;
+    bool valid_svg = false;
+    std::string error;
+};
+
 using button_surface_t = std::shared_ptr<cairo_surface_t>;
 
 class uploaded_button_texture_t
@@ -90,19 +98,19 @@ class uploaded_button_texture_t
 
 struct button_renderer_dependencies_t
 {
-    using loader_t = std::function<loaded_button_asset_t (
-        const button_source_spec_t&, button_asset_t, button_state_variant_t, std::uint64_t)>;
+    using decoder_t    = std::function<button_svg_document_t (const std::string&)>;
     using rasterizer_t = std::function<button_surface_t (
         const loaded_button_asset_t&, const geometry::button_cache_key_t&)>;
     using uploader_t = std::function<std::unique_ptr<uploaded_button_texture_t>(cairo_surface_t*)>;
     using context_runner_t = std::function<bool (const std::function<void ()>&)>;
 
-    loader_t loader;
+    decoder_t decoder;
     rasterizer_t rasterizer;
     uploader_t uploader;
     context_runner_t run_in_context;
 };
 
+button_svg_document_t load_svg_button_document(const std::string& path);
 loaded_button_asset_t load_svg_button_asset(
     const button_source_spec_t& source, button_asset_t asset,
     button_state_variant_t variant, std::uint64_t source_generation);
@@ -156,6 +164,10 @@ class button_renderer_t
         const geometry::button_state_t& state, const button_palette_t& palette) const;
     geometry::rgba_t background_colour_for_state(
         const geometry::button_state_t& state, const button_palette_t& palette) const;
+    bool reload_source(button_asset_t asset,
+        const std::array<button_source_spec_t, 4>& requested_sources,
+        std::uint64_t source_generation,
+        const button_renderer_dependencies_t::decoder_t& decoder);
     bool clear_cache();
 
     button_renderer_dependencies_t dependencies;
