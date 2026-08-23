@@ -591,6 +591,46 @@ void test_double_click_boundary()
             std::to_string(delay) + " ms");
     }
 }
+
+void test_titlebar_drag_clears_double_click()
+{
+    for (const auto source : {input_source_t::pointer, input_source_t::touch})
+    {
+        for (const auto delay : {299u, 300u})
+        {
+            fixture_t first_drag;
+            const auto point = first_drag.move_centre();
+            press(source, first_drag, point);
+            first_drag.reset_observation();
+            motion(source, first_drag, point);
+            expect(first_drag.actions ==
+                std::vector<pixdecor::decoration_layout_action_t>{
+                    pixdecor::DECORATION_ACTION_MOVE},
+                "titlebar drag starts at the double-click boundary");
+            first_drag.reset_observation();
+            release(source, first_drag, point);
+            first_drag.timer.advance(delay);
+            press(source, first_drag, point);
+            release(source, first_drag, point);
+            expect(first_drag.actions.empty(),
+                "click after a titlebar drag does not toggle maximize");
+
+            fixture_t second_drag;
+            press(source, second_drag, point);
+            release(source, second_drag, point);
+            second_drag.timer.advance(delay);
+            press(source, second_drag, point);
+            second_drag.reset_observation();
+            motion(source, second_drag, point);
+            second_drag.reset_observation();
+            release(source, second_drag, point);
+            press(source, second_drag, point);
+            release(source, second_drag, point);
+            expect(second_drag.actions.empty(),
+                "titlebar drag during a double-click does not leave maximize armed");
+        }
+    }
+}
 }
 
 int main()
@@ -604,5 +644,6 @@ int main()
     test_focus_loss();
     test_axis_actions();
     test_double_click_boundary();
+    test_titlebar_drag_clears_double_click();
     return failures == 0 ? 0 : 1;
 }

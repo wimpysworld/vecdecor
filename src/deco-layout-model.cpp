@@ -180,6 +180,7 @@ void layout_input_model_t::set_targets(std::vector<layout_target_t> new_targets)
     current_target = nullptr;
     grab_target    = nullptr;
     grabbed = false;
+    double_click_pending    = false;
     double_click_at_release = false;
 }
 
@@ -256,6 +257,8 @@ layout_input_response_t layout_input_model_t::motion(int x, int y)
     {
         grabbed     = false;
         grab_target = nullptr;
+        double_click_pending    = false;
+        double_click_at_release = false;
         response.action = DECORATION_ACTION_MOVE;
     } else if (previous_target != next_target)
     {
@@ -283,12 +286,14 @@ layout_input_response_t layout_input_model_t::press()
     layout_input_response_t response;
     if (current_target && (current_target->kind == layout_target_kind_t::move))
     {
-        if (timer.is_connected())
+        if (double_click_pending && timer.is_connected())
         {
+            double_click_pending    = false;
             double_click_at_release = true;
         } else
         {
             timer.set_timeout(DOUBLE_CLICK_TIMEOUT_MS);
+            double_click_pending = true;
         }
     }
 
