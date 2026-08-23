@@ -101,7 +101,7 @@ struct layout_input_adapter_dependencies_t
     std::function<layout_input_response_t(int, int)> motion;
     std::function<layout_input_response_t(bool)> button;
     std::function<layout_input_response_t(int)> axis;
-    std::function<layout_input_response_t()> focus_lost;
+    std::function<layout_input_response_t(bool)> focus_lost;
     std::function<void(const layout_button_update_t&)> update_button;
     std::function<void(const layout_input_response_t&)> handle_action;
 };
@@ -128,7 +128,7 @@ class layout_input_adapter_t
     void dispatch(layout_input_response_t response);
     void motion(layout_input_point_t point);
     void button(bool pressed);
-    void focus_lost();
+    void focus_lost(bool clear_double_click);
 };
 
 class layout_input_model_t
@@ -143,7 +143,7 @@ class layout_input_model_t
     layout_input_response_t press();
     layout_input_response_t release();
     layout_input_response_t axis(int delta) const;
-    layout_input_response_t focus_lost();
+    layout_input_response_t focus_lost(bool clear_double_click);
 
     const std::vector<layout_button_state_t>& button_states() const;
 

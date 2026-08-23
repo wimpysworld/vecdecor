@@ -155,7 +155,10 @@ struct fixture_t
                 return pressed ? model.press() : model.release();
             },
                 [this] (int delta) { return model.axis(delta); },
-                [this] () { return model.focus_lost(); },
+                [this] (bool clear_double_click)
+            {
+                return model.focus_lost(clear_double_click);
+            },
                 [this] (const pixdecor::layout_button_update_t& update)
             {
                 apply_button_update(update);
@@ -549,6 +552,21 @@ void test_focus_loss()
         "release after focus loss");
 }
 
+void test_pointer_focus_loss_clears_double_click()
+{
+    fixture_t fixture;
+    const auto point = fixture.move_centre();
+    press(input_source_t::pointer, fixture, point);
+    release(input_source_t::pointer, fixture, point);
+    fixture.input->pointer_focus_lost();
+    fixture.timer.advance(299);
+    fixture.reset_observation();
+    press(input_source_t::pointer, fixture, point);
+    release(input_source_t::pointer, fixture, point);
+    expect(fixture.actions.empty(),
+        "click after pointer focus loss does not toggle maximize");
+}
+
 void test_axis_actions()
 {
     fixture_t fixture;
@@ -642,6 +660,7 @@ int main()
     test_cross_control_and_release_outside();
     test_touch_release_uses_lift_position();
     test_focus_loss();
+    test_pointer_focus_loss_clears_double_click();
     test_axis_actions();
     test_double_click_boundary();
     test_titlebar_drag_clears_double_click();

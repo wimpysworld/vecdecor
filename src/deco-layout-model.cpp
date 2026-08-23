@@ -107,9 +107,9 @@ void layout_input_adapter_t::button(bool pressed)
     dispatch(dependencies.button(pressed));
 }
 
-void layout_input_adapter_t::focus_lost()
+void layout_input_adapter_t::focus_lost(bool clear_double_click)
 {
-    dispatch(dependencies.focus_lost());
+    dispatch(dependencies.focus_lost(clear_double_click));
 }
 
 void layout_input_adapter_t::pointer_motion(layout_input_point_t point)
@@ -129,7 +129,7 @@ void layout_input_adapter_t::pointer_axis(int delta)
 
 void layout_input_adapter_t::pointer_focus_lost()
 {
-    focus_lost();
+    focus_lost(true);
 }
 
 void layout_input_adapter_t::touch_down(layout_input_point_t point)
@@ -158,7 +158,7 @@ void layout_input_adapter_t::touch_up(layout_input_point_t point)
     }
 
     button(false);
-    focus_lost();
+    focus_lost(false);
     touch_active = false;
 }
 
@@ -353,7 +353,7 @@ layout_input_response_t layout_input_model_t::axis(int delta) const
     return {delta < 0 ? DECORATION_ACTION_SHADE : DECORATION_ACTION_UNSHADE, 0, {}};
 }
 
-layout_input_response_t layout_input_model_t::focus_lost()
+layout_input_response_t layout_input_model_t::focus_lost(bool clear_double_click)
 {
     layout_input_response_t response;
     if (grab_target && (grab_target->kind == layout_target_kind_t::button))
@@ -372,6 +372,11 @@ layout_input_response_t layout_input_model_t::focus_lost()
     grab_target = nullptr;
     current_target = nullptr;
     double_click_at_release = false;
+    if (clear_double_click)
+    {
+        double_click_pending = false;
+    }
+
     return response;
 }
 
