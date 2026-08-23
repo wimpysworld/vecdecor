@@ -195,8 +195,8 @@ msgstr "Culoarea butoanelor"
 
 #. (itstool) path: option/_long
 #: metadata/vecdecor.xml:100
-msgid "Colour of active buttons."
-msgstr "Culoarea butoanelor de minimizare, maximizare și închidere."
+msgid "Glyph colour for custom SVG masks and active procedural fallback controls."
+msgstr ""
 
 #. (itstool) path: option/_short
 #: metadata/vecdecor.xml:104
@@ -205,7 +205,7 @@ msgstr ""
 
 #. (itstool) path: option/_long
 #: metadata/vecdecor.xml:105
-msgid "Colour of inactive buttons."
+msgid "Glyph colour for custom SVG masks and inactive procedural fallback controls."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -215,7 +215,7 @@ msgstr ""
 
 #. (itstool) path: option/_long
 #: metadata/vecdecor.xml:110
-msgid "Colour of buttons under the pointer."
+msgid "Hover background colour for custom SVG masks and procedural fallback controls."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -225,7 +225,7 @@ msgstr ""
 
 #. (itstool) path: option/_long
 #: metadata/vecdecor.xml:115
-msgid "Colour of pressed buttons."
+msgid "Pressed background colour for custom SVG masks and procedural fallback controls."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -305,7 +305,7 @@ msgstr ""
 
 #. (itstool) path: option/_long
 #: metadata/vecdecor.xml:159
-msgid "The SVG file to use for the minimise button."
+msgid "A custom SVG mask that overrides every state of the minimise button."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -315,7 +315,7 @@ msgstr ""
 
 #. (itstool) path: option/_long
 #: metadata/vecdecor.xml:165
-msgid "The SVG file to use for the maximise button."
+msgid "A custom SVG mask that overrides every state of the maximise button."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -325,7 +325,7 @@ msgstr ""
 
 #. (itstool) path: option/_long
 #: metadata/vecdecor.xml:171
-msgid "The SVG file to use for the restore button."
+msgid "A custom SVG mask that overrides every state of the restore button."
 msgstr ""
 
 #. (itstool) path: option/_short
@@ -335,7 +335,7 @@ msgstr ""
 
 #. (itstool) path: option/_long
 #: metadata/vecdecor.xml:177
-msgid "The SVG file to use for the close button."
+msgid "A custom SVG mask that overrides every state of the close button."
 msgstr ""
 
 #. (itstool) path: group/_short

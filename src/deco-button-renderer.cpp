@@ -47,11 +47,21 @@ constexpr std::array<geometry::maximize_state_t, 2> ALL_MAXIMIZE_STATES = {
 constexpr std::size_t UNIQUE_CONTROL_VARIANTS = ALL_KINDS.size() - 1 + ALL_MAXIMIZE_STATES.size();
 constexpr std::size_t MAX_CACHE_ENTRIES = 8 * UNIQUE_CONTROL_VARIANTS *
     ALL_FOCUS_STATES.size() * ALL_INTERACTION_STATES.size();
-constexpr std::array<const char*, 4> ASSET_FILENAMES = {
-    "minimize.svg",
-    "maximize.svg",
-    "restore.svg",
-    "close.svg",
+constexpr std::array<std::array<const char*, 4>, 4> ASSET_FILENAMES = {{
+    {{"minimize.svg", "minimize-hover.svg", "minimize-inactive.svg",
+        "minimize-inactive-hover.svg"}},
+    {{"maximize.svg", "maximize-hover.svg", "maximize-inactive.svg",
+        "maximize-inactive-hover.svg"}},
+    {{"restore.svg", "restore-hover.svg", "restore-inactive.svg",
+        "restore-inactive-hover.svg"}},
+    {{"close.svg", "close-hover.svg", "close-inactive.svg",
+        "close-inactive-hover.svg"}},
+}};
+constexpr std::array<button_state_variant_t, 4> ALL_VARIANTS = {
+    button_state_variant_t::active,
+    button_state_variant_t::active_hover,
+    button_state_variant_t::inactive,
+    button_state_variant_t::inactive_hover,
 };
 constexpr double PI = 3.14159265358979323846;
 constexpr double MINIMUM_GLYPH_CONTRAST = 4.5;
@@ -59,6 +69,18 @@ constexpr double MINIMUM_GLYPH_CONTRAST = 4.5;
 std::size_t asset_index(button_asset_t asset)
 {
     return static_cast<std::size_t>(asset);
+}
+
+std::size_t variant_index(button_state_variant_t variant)
+{
+    return static_cast<std::size_t>(variant);
+}
+
+const loaded_button_asset_t& matrix_source(
+    const std::array<std::array<loaded_button_asset_t, 4>, 4>& sources,
+    button_asset_t asset, button_state_variant_t variant)
+{
+    return sources[asset_index(asset)][variant_index(variant)];
 }
 
 geometry::button_cache_key_t canonical_cache_key(geometry::button_cache_key_t key)
@@ -89,6 +111,15 @@ std::uint64_t fallback_hash(button_asset_t asset, const std::string& source)
 {
     auto hash = hash_bytes(reinterpret_cast<const unsigned char*>(source.data()), source.size());
     hash ^= 0xd6e8feb86659fd93ULL + static_cast<std::uint64_t>(asset);
+    return hash == 0 ? 1 : hash;
+}
+
+std::uint64_t source_hash(std::uint64_t hash, button_asset_t asset,
+    button_state_variant_t variant, button_render_mode_t mode)
+{
+    hash ^= 0x9e3779b97f4a7c15ULL + static_cast<std::uint64_t>(asset);
+    hash ^= 0xd6e8feb86659fd93ULL + static_cast<std::uint64_t>(variant);
+    hash ^= 0xa5a35625e9537b4fULL + static_cast<std::uint64_t>(mode);
     return hash == 0 ? 1 : hash;
 }
 
@@ -270,12 +301,15 @@ bool draw_fallback(cairo_t *cr, const geometry::button_cache_key_t& key)
     return cairo_status(cr) == CAIRO_STATUS_SUCCESS;
 }
 
-bool render_svg_mask(cairo_t *cr, RsvgHandle *handle, const geometry::button_cache_key_t& key)
+bool render_svg(cairo_t *cr, RsvgHandle *handle,
+    const geometry::button_cache_key_t& key, bool full_box)
 {
     const RsvgRectangle viewport = {
-        key.svg_proportions.x * key.raster_size.width,
-        key.svg_proportions.y * key.raster_size.height,
+        full_box ? 0.0 : key.svg_proportions.x * key.raster_size.width,
+        full_box ? 0.0 : key.svg_proportions.y * key.raster_size.height,
+        full_box ? static_cast<double>(key.raster_size.width) :
         key.svg_proportions.width * key.raster_size.width,
+        full_box ? static_cast<double>(key.raster_size.height) :
         key.svg_proportions.height * key.raster_size.height,
     };
     GError *error = nullptr;
@@ -316,15 +350,18 @@ class wayfire_uploaded_texture_t : public uploaded_button_texture_t
 }
 
 loaded_button_asset_t load_svg_button_asset(
-    const std::string& path, button_asset_t asset, std::uint64_t source_generation)
+    const button_source_spec_t& source, button_asset_t asset,
+    button_state_variant_t variant, std::uint64_t source_generation)
 {
     loaded_button_asset_t result;
     result.identity.source_generation = source_generation;
+    result.variant     = variant;
+    result.render_mode = source.render_mode;
 
     gchar *contents = nullptr;
     gsize length    = 0;
     GError *error   = nullptr;
-    if (!g_file_get_contents(path.c_str(), &contents, &length, &error))
+    if (!g_file_get_contents(source.path.c_str(), &contents, &length, &error))
     {
         result.error = error ? error->message : "Could not read the SVG source";
         if (error)
@@ -332,12 +369,14 @@ loaded_button_asset_t load_svg_button_asset(
             g_error_free(error);
         }
 
-        result.identity.content_hash = fallback_hash(asset, path);
+        result.identity.content_hash = source_hash(fallback_hash(asset, source.path),
+            asset, variant, source.render_mode);
         return result;
     }
 
-    result.identity.content_hash = hash_bytes(
-        reinterpret_cast<const unsigned char*>(contents), length);
+    result.identity.content_hash = source_hash(hash_bytes(
+        reinterpret_cast<const unsigned char*>(contents), length),
+        asset, variant, source.render_mode);
     RsvgHandle *handle = rsvg_handle_new_from_data(
         reinterpret_cast<const guint8*>(contents), length, &error);
     g_free(contents);
@@ -377,14 +416,43 @@ std::string default_button_asset_directory()
     return VECDECOR_ASSET_DIR;
 }
 
-std::string resolve_button_source_path(const std::string& configured_path, button_asset_t asset)
+std::array<button_source_spec_t, 4> resolve_button_source_specs(
+    const std::string& configured_path, button_asset_t asset)
 {
+    std::array<button_source_spec_t, 4> result;
     if (!configured_path.empty())
     {
-        return configured_path;
+        for (auto& source : result)
+        {
+            source = {configured_path, button_render_mode_t::recoloured_mask};
+        }
+    } else
+    {
+        for (auto variant : ALL_VARIANTS)
+        {
+            const auto index = variant_index(variant);
+            result[index] = {
+                default_button_asset_directory() + "/" +
+                ASSET_FILENAMES[asset_index(asset)][index],
+                button_render_mode_t::full_colour,
+            };
+        }
     }
 
-    return default_button_asset_directory() + "/" + ASSET_FILENAMES[asset_index(asset)];
+    return result;
+}
+
+button_state_variant_t resolve_button_state_variant(const geometry::button_state_t& state)
+{
+    const bool hover = state.interaction != geometry::interaction_state_t::normal;
+    if (state.focus == geometry::focus_state_t::active)
+    {
+        return hover ? button_state_variant_t::active_hover :
+               button_state_variant_t::active;
+    }
+
+    return hover ? button_state_variant_t::inactive_hover :
+           button_state_variant_t::inactive;
 }
 
 button_surface_t rasterize_button_asset(
@@ -415,43 +483,57 @@ button_surface_t rasterize_button_asset(
         return {};
     }
 
-    if (!draw_interaction_background(cr, key))
-    {
-        cairo_destroy(cr);
-        return {};
-    }
-
     bool rendered = false;
     if (asset.valid_svg && asset.payload)
     {
-        auto mask = make_surface(key.raster_size.width, key.raster_size.height);
-        if (mask)
+        if (asset.render_mode == button_render_mode_t::full_colour)
         {
-            cairo_t *mask_cr = cairo_create(mask.get());
-            if (mask_cr && (cairo_status(mask_cr) == CAIRO_STATUS_SUCCESS) &&
-                clear_surface(mask_cr))
+            rendered = render_svg(cr, static_cast<RsvgHandle*>(asset.payload.get()), key, true) &&
+                surface_has_alpha(surface.get());
+        } else
+        {
+            if (!draw_interaction_background(cr, key))
             {
-                rendered = render_svg_mask(
-                    mask_cr, static_cast<RsvgHandle*>(asset.payload.get()), key);
+                cairo_destroy(cr);
+                return {};
             }
 
-            if (mask_cr)
+            auto mask = make_surface(key.raster_size.width, key.raster_size.height);
+            if (mask)
             {
-                cairo_destroy(mask_cr);
-            }
+                cairo_t *mask_cr = cairo_create(mask.get());
+                if (mask_cr && (cairo_status(mask_cr) == CAIRO_STATUS_SUCCESS) &&
+                    clear_surface(mask_cr))
+                {
+                    rendered = render_svg(mask_cr,
+                        static_cast<RsvgHandle*>(asset.payload.get()), key, false);
+                }
 
-            rendered = rendered && surface_has_alpha(mask.get());
-            if (rendered)
-            {
-                cairo_set_source_rgba(cr, key.colour.r, key.colour.g, key.colour.b, key.colour.a);
-                cairo_mask_surface(cr, mask.get(), 0, 0);
-                rendered = cairo_status(cr) == CAIRO_STATUS_SUCCESS;
+                if (mask_cr)
+                {
+                    cairo_destroy(mask_cr);
+                }
+
+                rendered = rendered && surface_has_alpha(mask.get());
+                if (rendered)
+                {
+                    cairo_set_source_rgba(cr, key.colour.r, key.colour.g, key.colour.b,
+                        key.colour.a);
+                    cairo_mask_surface(cr, mask.get(), 0, 0);
+                    rendered = cairo_status(cr) == CAIRO_STATUS_SUCCESS;
+                }
             }
         }
     }
 
     if (!rendered)
     {
+        if (!clear_surface(cr) || !draw_interaction_background(cr, key))
+        {
+            cairo_destroy(cr);
+            return {};
+        }
+
         if (!draw_fallback(cr, key))
         {
             cairo_destroy(cr);
@@ -534,30 +616,53 @@ bool button_renderer_t::reload_sources(const button_source_config_t& config)
     for (auto asset : ALL_ASSETS)
     {
         const auto index = asset_index(asset);
-        if (!source_loaded[index] || (source_config.paths[index] != config.paths[index]) ||
-            (sources[index].identity.source_generation != config.generation))
+        bool changed     = false;
+        for (auto variant : ALL_VARIANTS)
         {
-            if (!reload_source(asset, config.paths[index], config.generation))
-            {
-                return false;
-            }
+            const auto variant_value = variant_index(variant);
+            const auto& current   = source_config.sources[index][variant_value];
+            const auto& requested = config.sources[index][variant_value];
+            changed = changed || !source_loaded[index][variant_value] ||
+                (current.path != requested.path) ||
+                (current.render_mode != requested.render_mode) ||
+                (sources[index][variant_value].identity.source_generation != config.generation);
+        }
+
+        if (changed && !reload_source(asset, config.sources[index], config.generation))
+        {
+            return false;
         }
     }
 
     source_config  = config;
-    sources_loaded = std::all_of(source_loaded.begin(), source_loaded.end(), [] (bool loaded)
+    sources_loaded = std::all_of(source_loaded.begin(), source_loaded.end(), [] (const auto& row)
     {
-        return loaded;
+        return std::all_of(row.begin(), row.end(), [] (bool loaded)
+        {
+            return loaded;
+        });
     });
     return true;
 }
 
-bool button_renderer_t::reload_source(button_asset_t asset, const std::string& path,
+bool button_renderer_t::reload_source(button_asset_t asset,
+    const std::array<button_source_spec_t, 4>& requested_sources,
     std::uint64_t source_generation)
 {
     const auto index = asset_index(asset);
-    if (source_loaded[index] && (source_config.paths[index] == path) &&
-        (sources[index].identity.source_generation == source_generation))
+    bool changed     = false;
+    for (auto variant : ALL_VARIANTS)
+    {
+        const auto variant_value = variant_index(variant);
+        const auto& current   = source_config.sources[index][variant_value];
+        const auto& requested = requested_sources[variant_value];
+        changed = changed || !source_loaded[index][variant_value] ||
+            (current.path != requested.path) ||
+            (current.render_mode != requested.render_mode) ||
+            (sources[index][variant_value].identity.source_generation != source_generation);
+    }
+
+    if (!changed)
     {
         return true;
     }
@@ -567,16 +672,27 @@ bool button_renderer_t::reload_source(button_asset_t asset, const std::string& p
         return false;
     }
 
-    auto loaded = dependencies.loader(path, asset, source_generation);
-    loaded.identity.source_generation = source_generation;
-    if (!geometry::is_valid(loaded.identity))
+    std::array<loaded_button_asset_t, 4> loaded_sources;
+    for (auto variant : ALL_VARIANTS)
     {
-        loaded.valid_svg = false;
-        loaded.payload.reset();
-        loaded.identity = {
-            fallback_hash(asset, path),
-            source_generation,
-        };
+        const auto variant_value = variant_index(variant);
+        const auto& requested    = requested_sources[variant_value];
+        auto loaded = dependencies.loader(requested, asset, variant, source_generation);
+        loaded.identity.source_generation = source_generation;
+        loaded.variant     = variant;
+        loaded.render_mode = requested.render_mode;
+        if (!geometry::is_valid(loaded.identity))
+        {
+            loaded.valid_svg = false;
+            loaded.payload.reset();
+            loaded.identity = {
+                source_hash(fallback_hash(asset, requested.path), asset, variant,
+                    requested.render_mode),
+                source_generation,
+            };
+        }
+
+        loaded_sources[variant_value] = std::move(loaded);
     }
 
     if (!cache.empty())
@@ -585,8 +701,7 @@ bool button_renderer_t::reload_source(button_asset_t asset, const std::string& p
         {
             cache.erase(std::remove_if(cache.begin(), cache.end(), [&] (const cache_entry_t& entry)
             {
-                return (asset_for_state(entry.key.state) == asset) &&
-                       !(entry.key.resolved_asset_identity == loaded.identity);
+                return asset_for_state(entry.key.state) == asset;
             }), cache.end());
         }))
         {
@@ -594,13 +709,16 @@ bool button_renderer_t::reload_source(button_asset_t asset, const std::string& p
         }
     }
 
-    sources[index] = std::move(loaded);
-    source_loaded[index] = true;
-    source_config.paths[index] = path;
-    source_config.generation   = source_generation;
-    sources_loaded = std::all_of(source_loaded.begin(), source_loaded.end(), [] (bool item_loaded)
+    sources[index] = std::move(loaded_sources);
+    source_loaded[index].fill(true);
+    source_config.sources[index] = requested_sources;
+    source_config.generation     = source_generation;
+    sources_loaded = std::all_of(source_loaded.begin(), source_loaded.end(), [] (const auto& row)
     {
-        return item_loaded;
+        return std::all_of(row.begin(), row.end(), [] (bool loaded)
+        {
+            return loaded;
+        });
     });
     return true;
 }
@@ -648,8 +766,8 @@ bool button_renderer_t::prepare(const button_prepare_config_t& config)
             continue;
         }
 
-        const auto asset = asset_for_state(key.state);
-        auto surface     = dependencies.rasterizer(sources[asset_index(asset)], key);
+        const auto& source = source_for_state(key.state);
+        auto surface = dependencies.rasterizer(source, key);
         if (!surface || (cairo_surface_status(surface.get()) != CAIRO_STATUS_SUCCESS))
         {
             return false;
@@ -664,9 +782,10 @@ bool button_renderer_t::prepare(const button_prepare_config_t& config)
     {
         cache.erase(std::remove_if(cache.begin(), cache.end(), [&] (const cache_entry_t& entry)
         {
-            const auto asset = asset_for_state(entry.key.state);
-            return (entry.key.theme_generation != config.theme_generation) ||
-                   !(entry.key.resolved_asset_identity == sources[asset_index(asset)].identity);
+            const auto& source = source_for_state(entry.key.state);
+            return ((entry.key.theme_generation != 0) &&
+                (entry.key.theme_generation != config.theme_generation)) ||
+                   !(entry.key.resolved_asset_identity == source.identity);
         }), cache.end());
 
         for (auto& entry : cache)
@@ -712,16 +831,27 @@ bool button_renderer_t::prepare(const button_prepare_config_t& config)
 geometry::button_cache_key_t button_renderer_t::resolve_key(
     const geometry::button_state_t& state, const button_prepare_config_t& config) const
 {
+    const auto& source = source_for_state(state);
+    const bool fixed_full_colour = source.valid_svg &&
+        (source.render_mode == button_render_mode_t::full_colour);
     geometry::cache_key_input_t input;
     input.state = state;
-    input.resolved_asset_identity = sources[asset_index(asset_for_state(state))].identity;
-    input.colour = colour_for_state(state, config.palette);
-    input.background_colour = background_colour_for_state(state, config.palette);
+    if (fixed_full_colour &&
+        (input.state.interaction == geometry::interaction_state_t::pressed))
+    {
+        input.state.interaction = geometry::interaction_state_t::hover;
+    }
+
+    input.resolved_asset_identity = source.identity;
+    input.colour = fixed_full_colour ? geometry::rgba_t{} :
+    colour_for_state(state, config.palette);
+    input.background_colour = fixed_full_colour ? geometry::rgba_t{} :
+    background_colour_for_state(state, config.palette);
     input.logical_size     = config.logical_size;
     input.svg_proportions  = config.svg_proportions;
     input.output_scale     = config.output_scale;
-    input.line_thickness   = config.line_thickness;
-    input.theme_generation = config.theme_generation;
+    input.line_thickness   = fixed_full_colour ? 0.0 : config.line_thickness;
+    input.theme_generation = fixed_full_colour ? 0 : config.theme_generation;
     return canonical_cache_key(geometry::resolve_cache_key(input));
 }
 
@@ -747,9 +877,10 @@ std::size_t button_renderer_t::cache_size() const
     return cache.size();
 }
 
-const loaded_button_asset_t& button_renderer_t::source(button_asset_t asset) const
+const loaded_button_asset_t& button_renderer_t::source(
+    button_asset_t asset, button_state_variant_t variant) const
 {
-    return sources[asset_index(asset)];
+    return matrix_source(sources, asset, variant);
 }
 
 button_asset_t button_renderer_t::asset_for_state(const geometry::button_state_t& state) const
@@ -768,6 +899,12 @@ button_asset_t button_renderer_t::asset_for_state(const geometry::button_state_t
     }
 
     return button_asset_t::close;
+}
+
+const loaded_button_asset_t& button_renderer_t::source_for_state(
+    const geometry::button_state_t& state) const
+{
+    return source(asset_for_state(state), resolve_button_state_variant(state));
 }
 
 geometry::rgba_t button_renderer_t::colour_for_state(

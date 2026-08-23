@@ -45,6 +45,7 @@ if python.found()
         args: [
             files('test-metadata.py'),
             join_paths(meson.current_source_dir(), '..', 'metadata', 'vecdecor.xml'),
+            join_paths(meson.current_source_dir(), '..', 'assets', 'buttons'),
         ],
     )
 endif

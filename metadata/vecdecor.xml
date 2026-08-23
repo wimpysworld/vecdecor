@@ -97,23 +97,23 @@
 			</option>
 			<option name="button_color" type="color">
 				<_short>Button Colour</_short>
-				<_long>Colour of active buttons.</_long>
-				<default>0.0 0.0 0.0 1.0</default>
+				<_long>Glyph colour for custom SVG masks and active procedural fallback controls.</_long>
+				<default>0.803922 0.839216 0.956863 1.0</default>
 			</option>
 			<option name="button_inactive_color" type="color">
 				<_short>Inactive Button Colour</_short>
-				<_long>Colour of inactive buttons.</_long>
-				<default>0.0 0.0 0.0 1.0</default>
+				<_long>Glyph colour for custom SVG masks and inactive procedural fallback controls.</_long>
+				<default>0.529412 0.533333 0.572549 1.0</default>
 			</option>
 			<option name="button_hover_color" type="color">
 				<_short>Hover Button Colour</_short>
-				<_long>Colour of buttons under the pointer.</_long>
-				<default>0.0 0.0 0.0 1.0</default>
+				<_long>Hover background colour for custom SVG masks and procedural fallback controls.</_long>
+				<default>0.192157 0.196078 0.266667 1.0</default>
 			</option>
 			<option name="button_pressed_color" type="color">
 				<_short>Pressed Button Colour</_short>
-				<_long>Colour of pressed buttons.</_long>
-				<default>0.0 0.0 0.0 1.0</default>
+				<_long>Pressed background colour for custom SVG masks and procedural fallback controls.</_long>
+				<default>0.270588 0.278431 0.352941 1.0</default>
 			</option>
 			<option name="button_line_thickness" type="double">
 				<_short>Button Line Thickness</_short>
@@ -156,25 +156,25 @@
 			</option>
 			<option name="button_minimize_svg" type="string">
 				<_short>Minimise Button SVG</_short>
-				<_long>The SVG file to use for the minimise button.</_long>
+				<_long>A custom SVG mask that overrides every state of the minimise button.</_long>
 				<default></default>
 				<hint>file</hint>
 			</option>
 			<option name="button_maximize_svg" type="string">
 				<_short>Maximise Button SVG</_short>
-				<_long>The SVG file to use for the maximise button.</_long>
+				<_long>A custom SVG mask that overrides every state of the maximise button.</_long>
 				<default></default>
 				<hint>file</hint>
 			</option>
 			<option name="button_restore_svg" type="string">
 				<_short>Restore Button SVG</_short>
-				<_long>The SVG file to use for the restore button.</_long>
+				<_long>A custom SVG mask that overrides every state of the restore button.</_long>
 				<default></default>
 				<hint>file</hint>
 			</option>
 			<option name="button_close_svg" type="string">
 				<_short>Close Button SVG</_short>
-				<_long>The SVG file to use for the close button.</_long>
+				<_long>A custom SVG mask that overrides every state of the close button.</_long>
 				<default></default>
 				<hint>file</hint>
 			</option>
