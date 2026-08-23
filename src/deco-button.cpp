@@ -97,7 +97,10 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
 
     state.interaction = is_pressed ? geometry::interaction_state_t::pressed :
         geometry::interaction_state_t::normal;
-    const geometry::logical_size_t logical_size = {button_geometry.width, button_geometry.height};
+    const geometry::logical_size_t logical_size = {
+        static_cast<int>(button_geometry.width),
+        static_cast<int>(button_geometry.height),
+    };
     const auto normal_texture = theme.get_button_texture(
         state, logical_size, data.target.scale, damage_callback);
 
