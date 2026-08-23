@@ -34,6 +34,7 @@
             packages = with pkgs; [
               gettext
               just
+              librsvg
               meson
               ninja
               pkg-config

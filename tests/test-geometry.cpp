@@ -31,7 +31,10 @@ geometry::geometry_input_t valid_geometry_input()
 geometry::cache_key_input_t valid_cache_input()
 {
     geometry::cache_key_input_t input;
-    input.logical_size = {18, 18};
+    input.resolved_asset_identity = {0x1234, 1};
+    input.colour = {0.1, 0.2, 0.3, 0.4};
+    input.logical_size   = {18, 18};
+    input.line_thickness = 0.7;
     return input;
 }
 
@@ -422,6 +425,10 @@ void test_scale_and_cache_contracts()
     expect_separate(changed, "theme generations");
 
     changed = base_input;
+    changed.line_thickness = 1.4;
+    expect_separate(changed, "button line thicknesses");
+
+    changed = base_input;
     changed.output_scale = -1.0;
     const auto invalid_scale = geometry::resolve_cache_key(changed);
     expect(invalid_scale.output_scale == 1.0 && invalid_scale.raster_size == base.raster_size,
@@ -438,6 +445,94 @@ void test_scale_and_cache_contracts()
     expect(invalid_state.state == geometry::button_state_t{},
         "an invalid runtime button state uses the safe state");
 }
+
+void test_complete_cache_key_contract()
+{
+    const auto input = valid_cache_input();
+    const auto base  = geometry::resolve_cache_key(input);
+    expect(geometry::is_valid(input), "the complete cache-key input is valid");
+    expect((base.resolved_asset_identity == input.resolved_asset_identity) &&
+        (base.colour == input.colour),
+        "the cache key preserves the resolved asset identity and plain RGBA colour");
+
+    struct key_change_t
+    {
+        const char *field;
+        void (*apply)(geometry::button_cache_key_t& key);
+    };
+
+    const key_change_t changes[] = {
+        {"button kind", [] (auto& key) {key.state.kind = geometry::button_kind_t::minimize;}},
+        {"focus state", [] (auto& key) {key.state.focus = geometry::focus_state_t::active;}},
+        {"interaction state", [] (auto& key)
+            {key.state.interaction = geometry::interaction_state_t::hover;}
+        },
+        {"maximise state", [] (auto& key)
+            {key.state.maximize = geometry::maximize_state_t::restore;}
+        },
+        {"asset content hash", [] (auto& key)
+            {key.resolved_asset_identity.content_hash += 1;}
+        },
+        {"asset source generation", [] (auto& key)
+            {key.resolved_asset_identity.source_generation += 1;}
+        },
+        {"red channel", [] (auto& key) {key.colour.r += 0.01;}},
+        {"green channel", [] (auto& key) {key.colour.g += 0.01;}},
+        {"blue channel", [] (auto& key) {key.colour.b += 0.01;}},
+        {"alpha channel", [] (auto& key) {key.colour.a += 0.01;}},
+        {"logical width", [] (auto& key) {key.logical_size.width += 1;}},
+        {"logical height", [] (auto& key) {key.logical_size.height += 1;}},
+        {"raster width", [] (auto& key) {key.raster_size.width += 1;}},
+        {"raster height", [] (auto& key) {key.raster_size.height += 1;}},
+        {"SVG x proportion", [] (auto& key) {key.svg_proportions.x += 0.01;}},
+        {"SVG y proportion", [] (auto& key) {key.svg_proportions.y += 0.01;}},
+        {"SVG width proportion", [] (auto& key) {key.svg_proportions.width -= 0.01;}},
+        {"SVG height proportion", [] (auto& key) {key.svg_proportions.height -= 0.01;}},
+        {"exact output scale", [] (auto& key) {key.output_scale += 0.01;}},
+        {"button line thickness", [] (auto& key) {key.line_thickness += 0.1;}},
+        {"theme generation", [] (auto& key) {key.theme_generation += 1;}},
+    };
+
+    for (const auto& item : changes)
+    {
+        auto changed = base;
+        item.apply(changed);
+        expect(!(base == changed),
+            std::string{"the cache-key equality separates the "} + item.field);
+    }
+
+    auto changed_input = input;
+    changed_input.resolved_asset_identity.content_hash += 1;
+    expect(!(base == geometry::resolve_cache_key(changed_input)),
+        "different asset content has a different stable cache identity");
+
+    changed_input = input;
+    changed_input.resolved_asset_identity.source_generation += 1;
+    expect(!(base == geometry::resolve_cache_key(changed_input)),
+        "a reloaded asset generation has a different stable cache identity");
+
+    const geometry::rgba_t invalid_colours[] = {
+        {-0.1, 0.2, 0.3, 0.4},
+        {0.1, 1.1, 0.3, 0.4},
+        {0.1, 0.2, std::numeric_limits<double>::infinity(), 0.4},
+        {0.1, 0.2, 0.3, std::numeric_limits<double>::quiet_NaN()},
+    };
+    for (const auto& colour : invalid_colours)
+    {
+        changed_input = input;
+        changed_input.colour = colour;
+        const auto resolved = geometry::resolve_cache_key(changed_input);
+        expect(!geometry::is_valid(colour) && (resolved.colour == geometry::rgba_t{}),
+            "an invalid cache colour uses transparent black");
+    }
+
+    changed_input = input;
+    changed_input.resolved_asset_identity.content_hash = 0;
+    const auto invalid_identity = geometry::resolve_cache_key(changed_input);
+    expect(!geometry::is_valid(changed_input.resolved_asset_identity) &&
+        (invalid_identity.resolved_asset_identity == geometry::resolved_asset_identity_t{}),
+        "an unresolved asset identity uses the safe identity");
+}
 }
 
 int main()
@@ -449,5 +544,6 @@ int main()
     test_group_positions();
     test_svg_cache_contracts();
     test_scale_and_cache_contracts();
+    test_complete_cache_key_contract();
     return failures == 0 ? 0 : 1;
 }

@@ -13,6 +13,7 @@
 
 #include <wayfire/nonstd/wlroots.hpp>
 #include <wayfire/output.hpp>
+#include <wayfire/output-layout.hpp>
 #include <wayfire/opengl.hpp>
 #include <wayfire/core.hpp>
 #include <wayfire/signal-definitions.hpp>
@@ -52,6 +53,18 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         if (auto view = _view.lock())
         {
             view->damage();
+        }
+    };
+    wf::signal::connection_t<wf::output_configuration_changed_signal> on_output_configuration_changed =
+        [=] (wf::output_configuration_changed_signal *ev)
+    {
+        if (ev->changed_fields & wf::OUTPUT_SCALE_CHANGE)
+        {
+            prepare_buttons(ev->state.scale);
+            if (auto view = _view.lock())
+            {
+                view->damage();
+            }
         }
     };
 
@@ -99,9 +112,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
 
     int current_thickness;
     int current_titlebar;
-    simple_decoration_node_t(wayfire_toplevel_view view) :
+    simple_decoration_node_t(wayfire_toplevel_view view, button_renderer_t& button_renderer,
+        const std::uint64_t& theme_generation) :
         node_t(false),
-        theme{},
+        theme{button_renderer, theme_generation},
         layout{theme, [=] (wf::geometry_t box)
         {
             wf::scene::damage_node(shared_from_this(), box + wf::pointf_t{get_offset()});
@@ -109,6 +123,10 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     {
         this->_view = view->weak_from_this();
         view->connect(&title_set);
+        if (view->get_output())
+        {
+            view->get_output()->connect(&on_output_configuration_changed);
+        }
 
         // make sure to hide frame if the view is fullscreen
         update_decoration_size();
@@ -464,6 +482,11 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
     }
 
+    void prepare_buttons(double output_scale)
+    {
+        theme.prepare_buttons(output_scale);
+    }
+
     void resize(wf::dimensions_t dims)
     {
         if (auto view = _view.lock())
@@ -473,6 +496,8 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
             view->damage();
             size = dims;
             layout.resize(size.width, size.height);
+            const double scale = view->get_output() ? view->get_output()->handle->scale : 1.0;
+            prepare_buttons(scale);
             if (!view->toplevel()->pending().fullscreen)
             {
                 this->cached_region = layout.calculate_region();
@@ -518,10 +543,11 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     }
 };
 
-simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view)
+simple_decorator_t::simple_decorator_t(wayfire_toplevel_view view,
+    button_renderer_t& button_renderer, const std::uint64_t& theme_generation)
 {
     this->view = view;
-    deco = std::make_shared<simple_decoration_node_t>(view);
+    deco = std::make_shared<simple_decoration_node_t>(view, button_renderer, theme_generation);
     deco->resize(wf::dimensions(view->get_pending_geometry()));
     wf::scene::add_back(view->get_surface_root_node(), deco);
 
@@ -581,6 +607,11 @@ void simple_decorator_t::update_decoration_size()
 void simple_decorator_t::update_colors()
 {
     deco->theme.update_colors();
+}
+
+void simple_decorator_t::prepare_buttons(double output_scale)
+{
+    deco->prepare_buttons(output_scale);
 }
 
 wf::decoration_margins_t simple_decorator_t::get_margins(const wf::toplevel_state_t& state)
