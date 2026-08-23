@@ -318,6 +318,13 @@ layout_input_response_t layout_input_model_t::press()
 layout_input_response_t layout_input_model_t::release()
 {
     layout_input_response_t response;
+    if (grab_target && (grab_target->kind == layout_target_kind_t::move) &&
+        (current_target != grab_target))
+    {
+        double_click_pending    = false;
+        double_click_at_release = false;
+    }
+
     if (double_click_at_release)
     {
         double_click_at_release = false;
