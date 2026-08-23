@@ -196,6 +196,18 @@ bool operator ==(const raster_size_t& lhs, const raster_size_t& rhs)
     return (lhs.width == rhs.width) && (lhs.height == rhs.height);
 }
 
+bool operator ==(const resolved_asset_identity_t& lhs, const resolved_asset_identity_t& rhs)
+{
+    return (lhs.content_hash == rhs.content_hash) &&
+           (lhs.source_generation == rhs.source_generation);
+}
+
+bool operator ==(const rgba_t& lhs, const rgba_t& rhs)
+{
+    return (lhs.r == rhs.r) && (lhs.g == rhs.g) &&
+           (lhs.b == rhs.b) && (lhs.a == rhs.a);
+}
+
 bool operator ==(const button_state_t& lhs, const button_state_t& rhs)
 {
     return (lhs.kind == rhs.kind) && (lhs.focus == rhs.focus) &&
@@ -204,10 +216,14 @@ bool operator ==(const button_state_t& lhs, const button_state_t& rhs)
 
 bool operator ==(const button_cache_key_t& lhs, const button_cache_key_t& rhs)
 {
-    return (lhs.state == rhs.state) && (lhs.logical_size == rhs.logical_size) &&
+    return (lhs.state == rhs.state) &&
+           (lhs.resolved_asset_identity == rhs.resolved_asset_identity) &&
+           (lhs.colour == rhs.colour) &&
+           (lhs.logical_size == rhs.logical_size) &&
            (lhs.raster_size == rhs.raster_size) &&
            (lhs.svg_proportions == rhs.svg_proportions) &&
            (lhs.output_scale == rhs.output_scale) &&
+           (lhs.line_thickness == rhs.line_thickness) &&
            (lhs.theme_generation == rhs.theme_generation);
 }
 
@@ -265,6 +281,21 @@ bool is_valid(const raster_size_t& size)
     return (size.width > 0) && (size.height > 0);
 }
 
+bool is_valid(const resolved_asset_identity_t& identity)
+{
+    return identity.content_hash != 0;
+}
+
+bool is_valid(const rgba_t& colour)
+{
+    return std::isfinite(colour.r) && std::isfinite(colour.g) &&
+           std::isfinite(colour.b) && std::isfinite(colour.a) &&
+           (colour.r >= 0.0) && (colour.r <= 1.0) &&
+           (colour.g >= 0.0) && (colour.g <= 1.0) &&
+           (colour.b >= 0.0) && (colour.b <= 1.0) &&
+           (colour.a >= 0.0) && (colour.a <= 1.0);
+}
+
 bool is_valid(const button_state_t& state)
 {
     return valid_enum(state.kind) && valid_enum(state.focus) &&
@@ -290,9 +321,11 @@ bool is_valid(const button_group_input_t& input)
 
 bool is_valid(const cache_key_input_t& input)
 {
-    return is_valid(input.state) && is_valid(input.logical_size) &&
+    return is_valid(input.state) && is_valid(input.resolved_asset_identity) &&
+           is_valid(input.colour) && is_valid(input.logical_size) &&
            is_valid(input.svg_proportions) &&
            std::isfinite(input.output_scale) && (input.output_scale > 0.0) &&
+           std::isfinite(input.line_thickness) && (input.line_thickness >= 0.0) &&
            can_rasterize(input.logical_size, input.output_scale);
 }
 
@@ -498,7 +531,12 @@ button_cache_key_t resolve_cache_key(const cache_key_input_t& input)
 {
     button_cache_key_t result;
     result.state = is_valid(input.state) ? input.state : button_state_t{};
-    result.svg_proportions  = resolve_svg_proportions(input.svg_proportions);
+    result.resolved_asset_identity = is_valid(input.resolved_asset_identity) ?
+        input.resolved_asset_identity : resolved_asset_identity_t{};
+    result.colour = is_valid(input.colour) ? input.colour : rgba_t{};
+    result.svg_proportions = resolve_svg_proportions(input.svg_proportions);
+    result.line_thickness  = std::isfinite(input.line_thickness) &&
+        (input.line_thickness >= 0.0) ? input.line_thickness : DEFAULT_BUTTON_LINE_THICKNESS;
     result.theme_generation = input.theme_generation;
 
     logical_size_t logical_size = is_valid(input.logical_size) ?

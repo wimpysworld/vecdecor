@@ -3,6 +3,7 @@
 
 #include "wayfire/object.hpp"
 #include "wayfire/toplevel.hpp"
+#include <cstdint>
 #include <wayfire/signal-definitions.hpp>
 #include <wayfire/toplevel-view.hpp>
 #include <wayfire/scene-render.hpp>
@@ -31,6 +32,7 @@ namespace wf
 namespace pixdecor
 {
 class simple_decoration_node_t;
+class button_renderer_t;
 /**
  * A decorator object attached as custom data to a toplevel object.
  */
@@ -46,9 +48,11 @@ class simple_decorator_t : public wf::custom_data_t
 
   public:
     void update_colors();
+    void prepare_buttons(double output_scale);
     void recreate_frame();
     void update_decoration_size();
-    simple_decorator_t(wayfire_toplevel_view view);
+    simple_decorator_t(wayfire_toplevel_view view, button_renderer_t& button_renderer,
+        const std::uint64_t& theme_generation);
     ~simple_decorator_t();
     wf::decoration_margins_t get_margins(const wf::toplevel_state_t& state);
     int get_titlebar_height();

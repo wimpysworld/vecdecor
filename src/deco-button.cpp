@@ -1,7 +1,6 @@
 #include "deco-button.hpp"
 #include "deco-theme.hpp"
 #include <wayfire/opengl.hpp>
-#include <wayfire/plugins/common/cairo-util.hpp>
 
 #define NORMAL   1.0
 #define HOVERED  0.0
@@ -96,23 +95,20 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
     state.maximize = maximized ? geometry::maximize_state_t::restore :
         geometry::maximize_state_t::maximize;
 
-    geometry::cache_key_input_t key_input;
-    key_input.state = state;
-    key_input.logical_size     = {button_geometry.width, button_geometry.height};
-    key_input.svg_proportions  = theme.get_svg_proportions();
-    key_input.output_scale     = data.target.scale;
-    key_input.theme_generation = theme.get_generation();
-
-    key_input.state.interaction = is_pressed ? geometry::interaction_state_t::pressed :
+    state.interaction = is_pressed ? geometry::interaction_state_t::pressed :
         geometry::interaction_state_t::normal;
-    const auto normal_key = geometry::resolve_cache_key(key_input);
-    update_texture(normal_key, button_texture, button_texture_key);
+    const geometry::logical_size_t logical_size = {button_geometry.width, button_geometry.height};
+    const auto normal_texture = theme.get_button_texture(state, logical_size, data.target.scale);
 
-    auto hovered_key = normal_key;
-    hovered_key.state.interaction = geometry::interaction_state_t::hover;
-    update_texture(hovered_key, button_texture_hovered, button_texture_hovered_key);
+    state.interaction = geometry::interaction_state_t::hover;
+    const auto hovered_texture = theme.get_button_texture(state, logical_size, data.target.scale);
+    if (!normal_texture || !hovered_texture)
+    {
+        add_idle_damage();
+        return;
+    }
 
-    OpenGL::render_texture(wf::gles_texture_t{button_texture.get_texture()}, data.target, button_geometry,
+    OpenGL::render_texture(wf::gles_texture_t{normal_texture->get_texture()}, data.target, button_geometry,
         {1, 1, 1, this->hover},
         OpenGL::RENDER_FLAG_CACHED);
     data.pass->custom_gles_subpass(data.target, [&]
@@ -125,7 +121,7 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
     });
     OpenGL::clear_cached();
 
-    OpenGL::render_texture(wf::gles_texture_t{button_texture_hovered.get_texture()}, data.target,
+    OpenGL::render_texture(wf::gles_texture_t{hovered_texture->get_texture()}, data.target,
         button_geometry,
         {1, 1, 1, 1.0 - this->hover},
         OpenGL::RENDER_FLAG_CACHED);
@@ -138,25 +134,6 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
         }
     });
     OpenGL::clear_cached();
-}
-
-void button_t::update_texture(const geometry::button_cache_key_t& key,
-    wf::owned_texture_t& texture,
-    std::optional<geometry::button_cache_key_t>& texture_key)
-{
-    if (texture_key && (*texture_key == key))
-    {
-        return;
-    }
-
-    auto surface = theme.get_button_surface(key);
-    wf::gles::run_in_context([&]
-    {
-        texture = owned_texture_t{surface};
-    });
-
-    cairo_surface_destroy(surface);
-    texture_key = key;
 }
 
 void button_t::add_idle_damage()

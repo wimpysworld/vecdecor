@@ -8,6 +8,7 @@
 #include <wayfire/txn/transaction-manager.hpp>
 
 #include "deco-subsurface.hpp"
+#include "deco-button-renderer.hpp"
 #include "deco-options.hpp"
 #include "wayfire/core.hpp"
 #include "wayfire/plugin.hpp"
@@ -21,6 +22,8 @@
 #include <wayfire/bindings-repository.hpp>
 #include <wayfire/plugins/ipc/ipc-activator.hpp>
 #include "shade.hpp"
+#include <array>
+#include <cstdint>
 
 namespace wf
 {
@@ -48,6 +51,9 @@ int handle_theme_updated(int fd, uint32_t mask, void *data)
 
 class wayfire_pixdecor : public wf::plugin_interface_t
 {
+    button_renderer_t button_renderer;
+    std::uint64_t theme_generation  = 1;
+    std::uint64_t source_generation = 1;
     wf::option_wrapper_t<int> border_size{"vecdecor/border_size"};
     wf::option_wrapper_t<std::string> title_font{"vecdecor/title_font"};
     wf::option_wrapper_t<int> title_text_align{"vecdecor/title_text_align"};
@@ -161,6 +167,25 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         update_view_decoration(ev->view);
     };
 
+    std::string resolve_button_source(
+        const wf::option_wrapper_t<std::string>& option, button_asset_t asset) const
+    {
+        return resolve_button_source_path(std::string(option), asset);
+    }
+
+    button_source_config_t get_button_source_config() const
+    {
+        return {
+            .paths = {
+                resolve_button_source(button_minimize_svg, button_asset_t::minimize),
+                resolve_button_source(button_maximize_svg, button_asset_t::maximize),
+                resolve_button_source(button_restore_svg, button_asset_t::restore),
+                resolve_button_source(button_close_svg, button_asset_t::close),
+            },
+            .generation = source_generation,
+        };
+    }
+
     void pop_transformer(wayfire_view view)
     {
         if (view->get_transformed_node()->get_transformer(shade_transformer_name))
@@ -223,6 +248,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
     void init() override
     {
+        button_renderer.reload_sources(get_button_source_config());
         wf::get_core().connect(&on_decoration_state_changed);
         wf::get_core().tx_manager->connect(&on_new_tx);
         wf::get_core().connect(&on_app_id_changed);
@@ -370,20 +396,19 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         });
 
         titlebar.set_callback([=] {recreate_decorations();});
-        button_color.set_callback([=] {recreate_frames();});
-        button_inactive_color.set_callback([=] {recreate_frames();});
-        button_hover_color.set_callback([=] {recreate_frames();});
-        button_pressed_color.set_callback([=] {recreate_frames();});
-        button_line_thickness.set_callback([=] {recreate_frames();});
+        register_button_colour_option_callbacks(button_color, button_inactive_color,
+            button_hover_color, button_pressed_color, [=] {invalidate_button_style();});
+        button_line_thickness.set_callback([=] {invalidate_button_style();});
         left_button_spacing.set_callback([=] {recreate_frames();});
         right_button_spacing.set_callback([=] {recreate_frames();});
         left_button_x_offset.set_callback([=] {recreate_frames();});
         right_button_x_offset.set_callback([=] {recreate_frames();});
         button_y_offset.set_callback([=] {recreate_frames();});
-        button_minimize_svg.set_callback([=] {recreate_frames();});
-        button_maximize_svg.set_callback([=] {recreate_frames();});
-        button_restore_svg.set_callback([=] {recreate_frames();});
-        button_close_svg.set_callback([=] {recreate_frames();});
+        register_button_svg_option_callbacks(button_minimize_svg, button_maximize_svg,
+            button_restore_svg, button_close_svg, [=] (std::size_t source)
+        {
+            reload_button_source(source);
+        });
         title_text_align.set_callback([=]
         {
             for (auto& view : wf::get_core().get_all_views())
@@ -482,6 +507,42 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         }
     }
 
+    void prepare_button_frames()
+    {
+        for (auto& view : wf::get_core().get_all_views())
+        {
+            auto toplevel = wf::toplevel_cast(view);
+            if (!toplevel)
+            {
+                continue;
+            }
+
+            auto deco = toplevel->toplevel()->get_data<simple_decorator_t>();
+            if (!deco)
+            {
+                continue;
+            }
+
+            const double scale = view->get_output() ? view->get_output()->handle->scale : 1.0;
+            deco->prepare_buttons(scale);
+            view->damage();
+        }
+    }
+
+    void invalidate_button_style()
+    {
+        ++theme_generation;
+        prepare_button_frames();
+    }
+
+    void reload_button_source(std::size_t source)
+    {
+        (void)source;
+        ++source_generation;
+        button_renderer.reload_sources(get_button_source_config());
+        prepare_button_frames();
+    }
+
     void recreate_decorations()
     {
         for (auto& view : wf::get_core().get_all_views())
@@ -549,7 +610,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
 
         if (!toplevel->get_data<simple_decorator_t>())
         {
-            toplevel->store_data(std::make_unique<simple_decorator_t>(view));
+            toplevel->store_data(std::make_unique<simple_decorator_t>(
+                view, button_renderer, theme_generation));
         }
 
         auto deco     = toplevel->get_data<simple_decorator_t>();
