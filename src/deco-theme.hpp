@@ -4,9 +4,11 @@
 
 #include <cairo.h>
 #include <cstdint>
+#include <functional>
 #include <gio/gio.h>
 #include <pango/pangocairo.h>
 #include <string>
+#include <vector>
 #include <wayfire/plugins/common/cairo-util.hpp>
 #include <wayfire/render-manager.hpp>
 #include <wayfire/scene-render.hpp>
@@ -48,7 +50,7 @@ class pixdecor_theme_t
     /** Return a prepared button texture and schedule preparation after a cache miss. */
     const wf::owned_texture_t *get_button_texture(
         const geometry::button_state_t& state, geometry::logical_size_t logical_size,
-        double output_scale);
+        double output_scale, const std::function<void()>& damage_callback);
     /** @return The available border for rendering */
     int get_border_size() const;
     /** @return The available border for resizing */
@@ -107,6 +109,7 @@ class pixdecor_theme_t
     const std::uint64_t& generation;
     button_prepare_config_t prepared_button_config;
     button_prepare_config_t pending_button_config;
+    std::vector<std::function<void()>> pending_button_damage_callbacks;
     bool buttons_prepared = false;
     wf::wl_idle_call idle_prepare_buttons;
     background_cache_key_t background_cache_key;
