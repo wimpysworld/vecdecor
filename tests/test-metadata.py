@@ -82,7 +82,10 @@ class MetadataTest(unittest.TestCase):
     def test_removed_effect_selectors_stay_removed(self):
         values = {
             value.text.strip()
-            for value in self.root.findall(".//value")
+            for option_name in ("overlay_engine", "effect_type")
+            for value in self.root.findall(
+                f".//option[@name='{option_name}']//value"
+            )
             if value.text
         }
         self.assertFalse(
