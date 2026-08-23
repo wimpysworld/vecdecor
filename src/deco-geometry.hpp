@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 namespace wf
@@ -88,6 +89,12 @@ enum class maximize_state_t
 {
     maximize,
     restore,
+};
+
+enum class button_frame_cache_decision_t
+{
+    use_cached_texture,
+    schedule_idle_prepare,
 };
 
 struct button_state_t
@@ -202,6 +209,19 @@ button_group_positions_t resolve_right_group_positions(const button_group_input_
 
 raster_size_t resolve_raster_size(const logical_size_t& logical_size, double output_scale);
 button_cache_key_t resolve_cache_key(const cache_key_input_t& input);
+
+template<class ScheduleIdlePrepare, class Prepare>
+button_frame_cache_decision_t resolve_button_frame_cache_decision(bool cache_hit,
+    ScheduleIdlePrepare&& schedule_idle_prepare, Prepare&& prepare)
+{
+    if (cache_hit)
+    {
+        return button_frame_cache_decision_t::use_cached_texture;
+    }
+
+    std::forward<ScheduleIdlePrepare>(schedule_idle_prepare)(std::forward<Prepare>(prepare));
+    return button_frame_cache_decision_t::schedule_idle_prepare;
+}
 }
 }
 }
