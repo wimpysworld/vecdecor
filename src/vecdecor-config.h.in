@@ -1,0 +1,3 @@
+#pragma once
+
+#define VECDECOR_ASSET_DIR @VECDECOR_ASSET_DIR@
