@@ -44,8 +44,9 @@ constexpr std::array<geometry::maximize_state_t, 2> ALL_MAXIMIZE_STATES = {
     geometry::maximize_state_t::maximize,
     geometry::maximize_state_t::restore,
 };
-constexpr std::size_t MAX_CACHE_ENTRIES = 8 * ALL_KINDS.size() *
-    ALL_FOCUS_STATES.size() * ALL_INTERACTION_STATES.size() * ALL_MAXIMIZE_STATES.size();
+constexpr std::size_t UNIQUE_CONTROL_VARIANTS = ALL_KINDS.size() - 1 + ALL_MAXIMIZE_STATES.size();
+constexpr std::size_t MAX_CACHE_ENTRIES = 8 * UNIQUE_CONTROL_VARIANTS *
+    ALL_FOCUS_STATES.size() * ALL_INTERACTION_STATES.size();
 constexpr std::array<const char*, 4> ASSET_FILENAMES = {
     "minimize.svg",
     "maximize.svg",
@@ -56,6 +57,16 @@ constexpr std::array<const char*, 4> ASSET_FILENAMES = {
 std::size_t asset_index(button_asset_t asset)
 {
     return static_cast<std::size_t>(asset);
+}
+
+geometry::button_cache_key_t canonical_cache_key(geometry::button_cache_key_t key)
+{
+    if (key.state.kind != geometry::button_kind_t::maximize)
+    {
+        key.state.maximize = geometry::maximize_state_t::maximize;
+    }
+
+    return key;
 }
 
 std::uint64_t hash_bytes(const unsigned char *data, std::size_t size)
@@ -537,7 +548,11 @@ bool button_renderer_t::prepare(const button_prepare_config_t& config)
             {
                 for (auto maximize : ALL_MAXIMIZE_STATES)
                 {
-                    desired.push_back(resolve_key({kind, focus, interaction, maximize}, config));
+                    const auto key = resolve_key({kind, focus, interaction, maximize}, config);
+                    if (std::find(desired.begin(), desired.end(), key) == desired.end())
+                    {
+                        desired.push_back(key);
+                    }
                 }
             }
         }
@@ -630,15 +645,16 @@ geometry::button_cache_key_t button_renderer_t::resolve_key(
     input.output_scale     = config.output_scale;
     input.line_thickness   = config.line_thickness;
     input.theme_generation = config.theme_generation;
-    return geometry::resolve_cache_key(input);
+    return canonical_cache_key(geometry::resolve_cache_key(input));
 }
 
 const uploaded_button_texture_t*button_renderer_t::lookup(
     const geometry::button_cache_key_t& key) const
 {
+    const auto canonical_key = canonical_cache_key(key);
     const auto found = std::find_if(cache.begin(), cache.end(), [&] (const cache_entry_t& entry)
     {
-        return entry.key == key;
+        return entry.key == canonical_key;
     });
     return found == cache.end() ? nullptr : found->texture.get();
 }
