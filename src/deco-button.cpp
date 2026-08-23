@@ -98,10 +98,12 @@ void button_t::render(const wf::scene::render_instruction_t& data, wf::geometry_
     state.interaction = is_pressed ? geometry::interaction_state_t::pressed :
         geometry::interaction_state_t::normal;
     const geometry::logical_size_t logical_size = {button_geometry.width, button_geometry.height};
-    const auto normal_texture = theme.get_button_texture(state, logical_size, data.target.scale);
+    const auto normal_texture = theme.get_button_texture(
+        state, logical_size, data.target.scale, damage_callback);
 
     state.interaction = geometry::interaction_state_t::hover;
-    const auto hovered_texture = theme.get_button_texture(state, logical_size, data.target.scale);
+    const auto hovered_texture = theme.get_button_texture(
+        state, logical_size, data.target.scale, damage_callback);
     if (!normal_texture || !hovered_texture)
     {
         add_idle_damage();
