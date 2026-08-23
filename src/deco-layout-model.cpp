@@ -237,7 +237,8 @@ layout_input_response_t layout_input_model_t::motion(int x, int y)
     const auto previous_target = current_target;
     const auto next_target     = find_target(x, y);
 
-    if ((previous_target == next_target) && grabbed && next_target &&
+    if ((previous_target == next_target) && grabbed && grab_target &&
+        (grab_target->kind == layout_target_kind_t::move) && next_target &&
         (next_target->kind == layout_target_kind_t::move))
     {
         grabbed     = false;
