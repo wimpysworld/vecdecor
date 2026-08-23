@@ -343,7 +343,57 @@ void verify_full_matrix(button_renderer_t& renderer, const button_prepare_config
     }
 
     require(count == 36, "The prepared matrix has the wrong size");
-    require(renderer.cache_size() == count, "The cache does not contain the full matrix");
+    require(renderer.cache_size() == 24, "The cache does not contain 24 unique textures");
+
+    for (auto focus : focuses)
+    {
+        for (auto interaction : interactions)
+        {
+            const auto minimize = texture_for(renderer, {
+                    button_kind_t::minimize, focus, interaction, maximize_state_t::maximize,
+                }, config).identity();
+            const auto minimize_restore = texture_for(renderer, {
+                    button_kind_t::minimize, focus, interaction, maximize_state_t::restore,
+                }, config).identity();
+            require(minimize == minimize_restore,
+                "A minimise control duplicated an irrelevant maximise state");
+
+            const auto close = texture_for(renderer, {
+                    button_kind_t::close, focus, interaction, maximize_state_t::maximize,
+                }, config).identity();
+            const auto close_restore = texture_for(renderer, {
+                    button_kind_t::close, focus, interaction, maximize_state_t::restore,
+                }, config).identity();
+            require(close == close_restore,
+                "A close control duplicated an irrelevant maximise state");
+
+            const auto maximize = texture_for(renderer, {
+                    button_kind_t::maximize, focus, interaction, maximize_state_t::maximize,
+                }, config).identity();
+            const auto restore = texture_for(renderer, {
+                    button_kind_t::maximize, focus, interaction, maximize_state_t::restore,
+                }, config).identity();
+            require(maximize != restore,
+                "The maximise and restore controls share one texture");
+        }
+    }
+
+    auto noncanonical_key = renderer.resolve_key({
+            button_kind_t::minimize,
+            focus_state_t::active,
+            interaction_state_t::normal,
+            maximize_state_t::maximize,
+        }, config);
+    noncanonical_key.state.maximize = maximize_state_t::restore;
+    const auto *canonical_texture = renderer.lookup(noncanonical_key);
+    require(canonical_texture != nullptr,
+        "A non-canonical minimise cache key missed its prepared texture");
+    require(canonical_texture->identity() == texture_for(renderer, {
+            button_kind_t::minimize,
+            focus_state_t::active,
+            interaction_state_t::normal,
+            maximize_state_t::maximize,
+        }, config).identity(), "A cache-key lookup did not normalise an irrelevant maximise state");
 }
 }
 
@@ -437,8 +487,8 @@ int main(int argc, char **argv)
 
             auto config = preparation();
             require(renderer.prepare(config), "The initial matrix preparation failed");
-            require((lifecycle.rasters == 36) && (lifecycle.uploads == 36),
-                "The initial matrix did not rasterise and upload each key once");
+            require((lifecycle.rasters == 24) && (lifecycle.uploads == 24),
+                "The initial matrix did not rasterise and upload 24 unique textures");
             verify_full_matrix(renderer, config);
 
             const button_state_t active_normal = {
@@ -497,12 +547,12 @@ int main(int argc, char **argv)
             recoloured.palette.active = {0.7, 0.6, 0.1, 1.0};
             require(renderer.prepare(recoloured), "The colour matrix preparation failed");
             require(lifecycle.loads == frame_loads, "A colour change reloaded an SVG");
-            require((lifecycle.rasters == exact_rasters + 6) &&
-                (lifecycle.uploads == exact_uploads + 6),
+            require((lifecycle.rasters == exact_rasters + 4) &&
+                (lifecycle.uploads == exact_uploads + 4),
                 "A colour change did not replace only active normal textures");
             require(texture_for(renderer, active_normal, recoloured).digest != active_digest,
                 "A colour change did not change the pixels");
-            require(renderer.cache_size() == 42,
+            require(renderer.cache_size() == 28,
                 "A colour change removed reusable entries from the current generation");
 
             const int before_scale_rasters = lifecycle.rasters;
@@ -510,8 +560,8 @@ int main(int argc, char **argv)
             auto scaled = recoloured;
             scaled.output_scale = 1.5;
             require(renderer.prepare(scaled), "The scaled matrix preparation failed");
-            require((lifecycle.rasters == before_scale_rasters + 36) &&
-                (lifecycle.uploads == before_scale_uploads + 36),
+            require((lifecycle.rasters == before_scale_rasters + 24) &&
+                (lifecycle.uploads == before_scale_uploads + 24),
                 "A scale change did not replace the complete matrix");
             require(texture_for(renderer, active_normal, scaled).width == 27,
                 "A scale change produced the wrong raster width");
@@ -541,10 +591,10 @@ int main(int argc, char **argv)
             auto regenerated = scaled;
             regenerated.theme_generation = 2;
             require(renderer.prepare(regenerated), "The theme matrix preparation failed");
-            require(lifecycle.rasters == before_theme_rasters + 36,
+            require(lifecycle.rasters == before_theme_rasters + 24,
                 "A theme generation did not replace the complete matrix");
             require(lifecycle.loads == frame_loads, "A theme generation reloaded an SVG");
-            require(renderer.cache_size() == 36, "A theme generation left stale cache entries");
+            require(renderer.cache_size() == 24, "A theme generation left stale cache entries");
 
             auto fallback_sources = valid_sources(argv[1], 2);
             fallback_sources.paths[1] = std::string(argv[1]) + "/missing-maximize.svg";
@@ -578,7 +628,7 @@ int main(int argc, char **argv)
                 "A replaced source identity remained in the cache");
             require(texture_for(renderer, active_normal, regenerated).identity() ==
                 close_texture_identity, "A maximise reload replaced a reusable close texture");
-            require(renderer.cache_size() == 30,
+            require(renderer.cache_size() == 18,
                 "A source reload removed cache entries for other controls");
 
             const int before_direct_reload = lifecycle.loads;
@@ -590,7 +640,7 @@ int main(int argc, char **argv)
                 "The malformed SVG did not select the procedural fallback");
             require(renderer.source(button_asset_t::close).identity == close_identity,
                 "A restore reload replaced the close source identity");
-            require(renderer.cache_size() == 24,
+            require(renderer.cache_size() == 12,
                 "A second source reload removed cache entries for other controls");
 
             auto fallback_config = preparation(3);
@@ -636,7 +686,7 @@ int main(int argc, char **argv)
                 output_config.output_scale = 1.0 + index * 0.125;
                 require(renderer.prepare(output_config),
                     "A bounded output matrix preparation failed");
-                require(renderer.cache_size() <= 288,
+                require(renderer.cache_size() <= 192,
                     "Output matrix changes exceeded the cache bound");
                 require(renderer.lookup(active_normal, output_config) != nullptr,
                     "Cache eviction removed the current output matrix");
@@ -648,7 +698,7 @@ int main(int argc, char **argv)
                 current_config.theme_generation = generation;
                 require(renderer.prepare(current_config),
                     "A repeated theme generation preparation failed");
-                require(renderer.cache_size() == 36,
+                require(renderer.cache_size() == 24,
                     "A repeated theme generation retained stale entries");
             }
 
@@ -664,11 +714,11 @@ int main(int argc, char **argv)
                     "A repeated source generation reload failed");
                 require(lifecycle.loads == loads + 1,
                     "A repeated source generation loaded more than one SVG");
-                require(renderer.cache_size() == 30,
+                require(renderer.cache_size() == 18,
                     "A repeated source generation removed another control");
                 require(renderer.prepare(current_config),
                     "A repeated source generation preparation failed");
-                require(renderer.cache_size() == 36,
+                require(renderer.cache_size() == 24,
                     "A repeated source generation retained stale entries");
                 require(texture_for(renderer, active_normal, current_config).identity() ==
                     reusable_close_texture,
@@ -687,14 +737,14 @@ int main(int argc, char **argv)
                 "The teardown test source load failed");
             require(renderer.prepare(preparation(20)),
                 "The teardown test matrix preparation failed");
-            require(lifecycle.live_textures == 36,
+            require(lifecycle.live_textures == 24,
                 "The teardown test did not prepare the full texture matrix");
             lifecycle.context_available = false;
         }
 
         require(lifecycle.destroyed_outside_context == 0,
             "Failed context entry destroyed an uploaded texture outside the GL context");
-        require(lifecycle.live_textures == 36,
+        require(lifecycle.live_textures == 24,
             "Failed context entry did not retain the bounded texture cache");
     } catch (const std::exception& error)
     {
