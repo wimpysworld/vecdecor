@@ -1,6 +1,7 @@
 #include "deco-geometry.hpp"
 
 #include <cmath>
+#include <functional>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -533,6 +534,39 @@ void test_complete_cache_key_contract()
         (invalid_identity.resolved_asset_identity == geometry::resolved_asset_identity_t{}),
         "an unresolved asset identity uses the safe identity");
 }
+
+void test_button_frame_cache_decision()
+{
+    int idle_schedules = 0;
+    int prepare_calls  = 0;
+    std::function<void()> deferred_prepare;
+    auto schedule_idle_prepare = [&] (auto prepare)
+    {
+        ++idle_schedules;
+        deferred_prepare = std::move(prepare);
+    };
+    auto prepare = [&]
+    {
+        ++prepare_calls;
+    };
+
+    expect(geometry::resolve_button_frame_cache_decision(true,
+        schedule_idle_prepare, prepare) ==
+        geometry::button_frame_cache_decision_t::use_cached_texture,
+        "a frame cache hit uses the cached texture");
+    expect((idle_schedules == 0) && (prepare_calls == 0) && !deferred_prepare,
+        "a frame cache hit neither schedules nor prepares a texture");
+
+    expect(geometry::resolve_button_frame_cache_decision(false,
+        schedule_idle_prepare, prepare) ==
+        geometry::button_frame_cache_decision_t::schedule_idle_prepare,
+        "a frame cache miss schedules preparation for idle time");
+    expect((idle_schedules == 1) && (prepare_calls == 0) && bool(deferred_prepare),
+        "a frame cache miss does not prepare a texture synchronously");
+
+    deferred_prepare();
+    expect(prepare_calls == 1, "the scheduled idle callback performs preparation");
+}
 }
 
 int main()
@@ -545,5 +579,6 @@ int main()
     test_svg_cache_contracts();
     test_scale_and_cache_contracts();
     test_complete_cache_key_contract();
+    test_button_frame_cache_decision();
     return failures == 0 ? 0 : 1;
 }
