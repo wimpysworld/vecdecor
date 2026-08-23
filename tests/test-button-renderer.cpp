@@ -23,6 +23,7 @@ struct lifecycle_t
     int context_runs  = 0;
     int live_textures = 0;
     int destroyed_outside_context = 0;
+    bool context_available = true;
     bool in_context = false;
     std::uint64_t next_identity = 1;
 };
@@ -383,6 +384,11 @@ int main(int argc, char **argv)
         dependencies.run_in_context = [&] (const std::function<void()>& callback)
         {
             ++lifecycle.context_runs;
+            if (!lifecycle.context_available)
+            {
+                return false;
+            }
+
             lifecycle.in_context = true;
             callback();
             lifecycle.in_context = false;
@@ -674,6 +680,22 @@ int main(int argc, char **argv)
         require(lifecycle.live_textures == 0, "The renderer leaked an uploaded texture");
         require(lifecycle.destroyed_outside_context == 0,
             "The renderer destroyed an uploaded texture outside the GL context");
+
+        {
+            button_renderer_t renderer(dependencies);
+            require(renderer.reload_sources(valid_sources(argv[1], 20)),
+                "The teardown test source load failed");
+            require(renderer.prepare(preparation(20)),
+                "The teardown test matrix preparation failed");
+            require(lifecycle.live_textures == 36,
+                "The teardown test did not prepare the full texture matrix");
+            lifecycle.context_available = false;
+        }
+
+        require(lifecycle.destroyed_outside_context == 0,
+            "Failed context entry destroyed an uploaded texture outside the GL context");
+        require(lifecycle.live_textures == 36,
+            "Failed context entry did not retain the bounded texture cache");
     } catch (const std::exception& error)
     {
         std::cerr << error.what() << '\n';
