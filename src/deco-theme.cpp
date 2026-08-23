@@ -255,17 +255,21 @@ const wf::owned_texture_t*pixdecor_theme_t::get_button_texture(
 {
     const auto requested = get_button_prepare_config(logical_size, output_scale);
     auto texture = button_renderer.lookup(state, requested);
-    if (!texture)
+    const auto cache_decision = geometry::resolve_button_frame_cache_decision(texture != nullptr,
+        [this, &requested] (auto prepare)
     {
         pending_button_config = requested;
-        idle_prepare_buttons.run_once([this]
+        idle_prepare_buttons.run_once(std::move(prepare));
+    }, [this]
+    {
+        if (button_renderer.prepare(pending_button_config))
         {
-            if (button_renderer.prepare(pending_button_config))
-            {
-                prepared_button_config = pending_button_config;
-                buttons_prepared = true;
-            }
-        });
+            prepared_button_config = pending_button_config;
+            buttons_prepared = true;
+        }
+    });
+    if (cache_decision == geometry::button_frame_cache_decision_t::schedule_idle_prepare)
+    {
         texture = get_prepared_fallback(state, requested);
     }
 
