@@ -251,6 +251,20 @@ class SourceContractTest(unittest.TestCase):
                         f"retained production identifier {identifier} is missing",
                     )
 
+    def test_wlroots_xcursor_header_keeps_c_linkage(self):
+        source = self.sources[SOURCE_ROOT / "deco-layout.cpp"]
+        include = "#include <wlr/xcursor.h>"
+        self.assertEqual(
+            source.count(include),
+            1,
+            "deco-layout.cpp must include wlr/xcursor.h exactly once",
+        )
+        self.assertIn(
+            f'extern "C"\n{{\n{include}\n}}',
+            source,
+            "wlr/xcursor.h must retain C linkage",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
