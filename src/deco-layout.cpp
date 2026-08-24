@@ -6,7 +6,10 @@
 #include <string>
 #include <utility>
 #include <wayfire/core.hpp>
+extern "C"
+{
 #include <wlr/xcursor.h>
+}
 #include <wayfire/toplevel.hpp>
 #include <wayfire/util.hpp>
 
