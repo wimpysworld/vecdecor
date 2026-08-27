@@ -81,6 +81,12 @@ class button_state_model_t
     bool is_pressed = false;
 };
 
+/**
+ * The hover cross-fade easing: CSS cubic-bezier(0, 0, 0.2, 1), the ease-out curve the catppuccin-gtk theme
+ * uses for titlebutton transitions.
+ */
+double button_hover_easing(double progress);
+
 class button_animation_backend_t
 {
   public:

@@ -30,7 +30,11 @@ enum class button_state_variant_t
     active_hover,
     inactive,
     inactive_hover,
+    active_pressed,
+    inactive_pressed,
 };
+
+constexpr std::size_t BUTTON_VARIANT_COUNT = 6;
 
 enum class button_render_mode_t
 {
@@ -46,7 +50,7 @@ struct button_source_spec_t
 
 struct button_source_config_t
 {
-    std::array<std::array<button_source_spec_t, 4>, 4> sources;
+    std::array<std::array<button_source_spec_t, BUTTON_VARIANT_COUNT>, 4> sources;
     std::uint64_t generation = 0;
 };
 
@@ -115,7 +119,7 @@ loaded_button_asset_t load_svg_button_asset(
     const button_source_spec_t& source, button_asset_t asset,
     button_state_variant_t variant, std::uint64_t source_generation);
 std::string default_button_asset_directory();
-std::array<button_source_spec_t, 4> resolve_button_source_specs(
+std::array<button_source_spec_t, BUTTON_VARIANT_COUNT> resolve_button_source_specs(
     const std::string& configured_path, button_asset_t asset);
 button_state_variant_t resolve_button_state_variant(const geometry::button_state_t& state);
 button_surface_t rasterize_button_asset(
@@ -135,7 +139,7 @@ class button_renderer_t
 
     bool reload_sources(const button_source_config_t& config);
     bool reload_source(button_asset_t asset,
-        const std::array<button_source_spec_t, 4>& sources,
+        const std::array<button_source_spec_t, BUTTON_VARIANT_COUNT>& sources,
         std::uint64_t source_generation);
     bool prepare(const button_prepare_config_t& config);
 
@@ -165,15 +169,15 @@ class button_renderer_t
     geometry::rgba_t background_colour_for_state(
         const geometry::button_state_t& state, const button_palette_t& palette) const;
     bool reload_source(button_asset_t asset,
-        const std::array<button_source_spec_t, 4>& requested_sources,
+        const std::array<button_source_spec_t, BUTTON_VARIANT_COUNT>& requested_sources,
         std::uint64_t source_generation,
         const button_renderer_dependencies_t::decoder_t& decoder);
     bool clear_cache();
 
     button_renderer_dependencies_t dependencies;
     button_source_config_t source_config;
-    std::array<std::array<loaded_button_asset_t, 4>, 4> sources;
-    std::array<std::array<bool, 4>, 4> source_loaded = {};
+    std::array<std::array<loaded_button_asset_t, BUTTON_VARIANT_COUNT>, 4> sources;
+    std::array<std::array<bool, BUTTON_VARIANT_COUNT>, 4> source_loaded = {};
     std::vector<cache_entry_t> cache;
     bool sources_loaded = false;
     std::uint64_t prepare_serial = 0;

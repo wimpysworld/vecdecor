@@ -73,13 +73,34 @@ button_render_plan_t button_state_model_t::render_plan(button_type_t type, bool 
     };
 }
 
+double button_hover_easing(double progress)
+{
+    const double x = std::clamp(progress, 0.0, 1.0);
+    // Invert the Bezier x(t) = 0.6 t^2 + 0.4 t^3 with Newton iterations,
+    // then evaluate y(t) = 3 t^2 - 2 t^3.
+    double t = x;
+    for (int i = 0; i < 8; ++i)
+    {
+        const double error = (0.6 * t * t) + (0.4 * t * t * t) - x;
+        const double slope = (1.2 * t) + (1.2 * t * t);
+        if (slope <= 0.0)
+        {
+            break;
+        }
+
+        t = std::clamp(t - (error / slope), 0.0, 1.0);
+    }
+
+    return t * t * (3.0 - (2.0 * t));
+}
+
 class button_animation_t::impl
 {
   public:
     wf::animation::simple_animation_t animation;
 
     explicit impl(std::shared_ptr<wf::config::option_t<int>> duration) :
-        animation(std::move(duration))
+        animation(std::move(duration), &button_hover_easing)
     {}
 };
 
