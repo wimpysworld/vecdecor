@@ -10,6 +10,7 @@
 #include "deco-subsurface.hpp"
 #include "deco-button-renderer.hpp"
 #include "deco-options.hpp"
+#include "deco-theme.hpp"
 #include "wayfire/core.hpp"
 #include "wayfire/plugin.hpp"
 #include "wayfire/signal-provider.hpp"
@@ -85,7 +86,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
     wf::view_matcher_t ignore_views{"vecdecor/ignore_views"};
     wf::view_matcher_t always_decorate{"vecdecor/always_decorate"};
     wf::option_wrapper_t<wf::keybinding_t> shade_modifier{"vecdecor/shade_modifier"};
-    wf::option_wrapper_t<int> csd_titlebar_height{"vecdecor/csd_titlebar_height"};
     wf::option_wrapper_t<bool> enable_shade{"vecdecor/enable_shade"};
     wf::ipc_activator_t pixdecor_toggle_shade{"vecdecor/shade_toggle"};
     wf::wl_idle_call idle_update_views;
@@ -238,6 +238,32 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             actions);
     }
 
+    int get_shade_titlebar_height(wayfire_toplevel_view toplevel)
+    {
+        auto deco = toplevel->toplevel()->get_data<simple_decorator_t>();
+        return deco ? deco->get_titlebar_height() : pixdecor_theme_t::get_base_title_height();
+    }
+
+    void update_csd_shade_titlebar_heights()
+    {
+        const int titlebar_height = pixdecor_theme_t::get_base_title_height();
+        for (auto& view : wf::get_core().get_all_views())
+        {
+            auto toplevel = toplevel_cast(view);
+            if (!toplevel || toplevel->toplevel()->get_data<simple_decorator_t>())
+            {
+                continue;
+            }
+
+            if (auto tr =
+                    view->get_transformed_node()->get_transformer<pixdecor_shade>(
+                        shade_transformer_name))
+            {
+                tr->set_titlebar_height(titlebar_height);
+            }
+        }
+    }
+
   public:
 
     void init() override
@@ -264,7 +290,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             if (auto toplevel = wf::toplevel_cast(view))
             {
                 bool direction = true;
-                auto deco = toplevel->toplevel()->get_data<simple_decorator_t>();
                 if (auto tr =
                         view->get_transformed_node()->get_transformer<pixdecor_shade>(
                             shade_transformer_name))
@@ -272,8 +297,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                     direction = !tr->get_direction();
                 }
 
-                init_shade(view, direction,
-                    deco ? deco->get_titlebar_height() : csd_titlebar_height);
+                init_shade(view, direction, get_shade_titlebar_height(toplevel));
                 return true;
             }
 
@@ -287,9 +311,8 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             {
                 if (auto toplevel = wf::toplevel_cast(v))
                 {
-                    auto deco = toplevel->toplevel()->get_data<simple_decorator_t>();
                     init_shade(v, ev->delta < 0 ? true : false,
-                        deco ? deco->get_titlebar_height() : csd_titlebar_height);
+                        get_shade_titlebar_height(toplevel));
                     return true;
                 }
 
@@ -308,26 +331,6 @@ class wayfire_pixdecor : public wf::plugin_interface_t
             {
                 wf::get_core().bindings->rem_binding(&shade_axis_cb);
                 remove_shade_transformers();
-            }
-        });
-
-        csd_titlebar_height.set_callback([=] ()
-        {
-            for (auto& view : wf::get_core().get_all_views())
-            {
-                if (auto tr =
-                        view->get_transformed_node()->get_transformer<pixdecor_shade>(
-                            shade_transformer_name))
-                {
-                    auto toplevel = toplevel_cast(view);
-                    if (toplevel)
-                    {
-                        if (!toplevel->toplevel()->get_data<simple_decorator_t>())
-                        {
-                            tr->set_titlebar_height(csd_titlebar_height);
-                        }
-                    }
-                }
             }
         });
 
@@ -397,7 +400,11 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         right_button_spacing.set_callback([=] {recreate_frames();});
         left_button_x_offset.set_callback([=] {recreate_frames();});
         right_button_x_offset.set_callback([=] {recreate_frames();});
-        button_y_offset.set_callback([=] {recreate_frames();});
+        button_y_offset.set_callback([=]
+        {
+            recreate_frames();
+            update_csd_shade_titlebar_heights();
+        });
         register_button_svg_option_callbacks(button_minimize_svg, button_maximize_svg,
             button_restore_svg, button_close_svg, [=] (std::size_t source)
         {
@@ -410,9 +417,17 @@ class wayfire_pixdecor : public wf::plugin_interface_t
                 view->damage();
             }
         });
-        title_font.set_callback([=] {recreate_frames();});
+        title_font.set_callback([=]
+        {
+            recreate_frames();
+            update_csd_shade_titlebar_heights();
+        });
         rounded_corner_radius.set_callback([=] {recreate_frames();});
-        register_size_option_callbacks(button_size, title_height, [=] {recreate_decorations();});
+        register_size_option_callbacks(button_size, title_height, [=]
+        {
+            recreate_decorations();
+            update_csd_shade_titlebar_heights();
+        });
         maximized_borders.set_callback([=]
         {
             for (auto& view : wf::get_core().get_all_views())

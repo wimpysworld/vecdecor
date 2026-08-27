@@ -202,12 +202,6 @@
 				<_long>Toggles shade for the active window.</_long>
 				<default></default>
 			</option>
-			<option name="csd_titlebar_height" type="int">
-				<_short>CSD Titlebar Height</_short>
-				<_long>Because there is no way to know the client surface titlebar height, this is an option to adjust it.</_long>
-				<default>32</default>
-				<min>0</min>
-			</option>
 		</group>
 	</plugin>
 </wayfire>

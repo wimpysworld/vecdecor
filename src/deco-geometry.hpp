@@ -202,6 +202,8 @@ svg_proportions_t full_box_svg_proportions();
 /** Return full-box proportions when the supplied proportions are invalid. */
 svg_proportions_t resolve_svg_proportions(const svg_proportions_t& proportions);
 geometry_result_t resolve_geometry(const geometry_input_t& input);
+/** Resolve the title height without server-side border extensions. */
+int resolve_base_title_height(const geometry_input_t& input);
 
 bool contains(const logical_bounds_t& bounds, const logical_point_t& point);
 bool contains(const logical_bounds_t& outer, const logical_bounds_t& inner);

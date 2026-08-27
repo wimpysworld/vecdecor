@@ -396,6 +396,13 @@ geometry_result_t resolve_geometry(const geometry_input_t& input)
     return result;
 }
 
+int resolve_base_title_height(const geometry_input_t& input)
+{
+    auto base_input = input;
+    base_input.title_height_extension = 0;
+    return resolve_geometry(base_input).title_height;
+}
+
 bool contains(const logical_bounds_t& bounds, const logical_point_t& point)
 {
     int right, bottom;

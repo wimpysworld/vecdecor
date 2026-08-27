@@ -37,7 +37,6 @@ namespace wf
 namespace pixdecor
 {
 wf::option_wrapper_t<bool> titlebar_opt{"vecdecor/titlebar"};
-wf::option_wrapper_t<int> csd_titlebar_height{"vecdecor/csd_titlebar_height"};
 wf::option_wrapper_t<bool> enable_shade{"vecdecor/enable_shade"};
 wf::option_wrapper_t<std::string> title_font{"vecdecor/title_font"};
 wf::option_wrapper_t<bool> maximized_borders{"vecdecor/maximized_borders"};

@@ -381,13 +381,3 @@ msgstr "切换窗口卷影"
 #: metadata/vecdecor.xml:202
 msgid "Toggles shade for the active window."
 msgstr "切换活动窗口的卷影状态。"
-
-#. (itstool) path: option/_short
-#: metadata/vecdecor.xml:206
-msgid "CSD Titlebar Height"
-msgstr "CSD 标题栏高度"
-
-#. (itstool) path: option/_long
-#: metadata/vecdecor.xml:207
-msgid "Because there is no way to know the client surface titlebar height, this is an option to adjust it."
-msgstr "由于无法知道客户端表面标题栏的高度，此选项用于调整该高度。"

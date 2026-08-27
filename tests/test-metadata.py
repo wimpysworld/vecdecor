@@ -10,6 +10,7 @@ ASSET_DIRECTORY = Path(sys.argv.pop())
 METADATA_PATH = Path(sys.argv.pop())
 
 REMOVED_OPTIONS = {
+    "csd_titlebar_height",
     "overlay_engine",
     "effect_type",
     "effect_color",

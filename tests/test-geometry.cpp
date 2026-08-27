@@ -81,6 +81,22 @@ void test_legacy_automatic_sizes_preserve_title_height()
         "legacy automatic sizes preserve the font-derived title height with an offset");
 }
 
+void test_base_title_height_ignores_server_side_extension()
+{
+    geometry::geometry_input_t input;
+    input.font_height = 12;
+    input.title_height_extension = 7;
+
+    expect(geometry::resolve_base_title_height(input) == 26,
+        "automatic base title height is derived from the font");
+
+    input.requested_title_height = 41;
+    expect(geometry::resolve_base_title_height(input) == 41,
+        "explicit base title height uses the requested value");
+    expect(geometry::resolve_geometry(input).title_height == 48,
+        "server-side title height keeps its border extension");
+}
+
 void test_positive_inputs_and_containment()
 {
     auto input = valid_geometry_input();
@@ -608,6 +624,7 @@ int main()
 {
     test_automatic_sizes();
     test_legacy_automatic_sizes_preserve_title_height();
+    test_base_title_height_ignores_server_side_extension();
     test_positive_inputs_and_containment();
     test_invalid_inputs_and_view_boxes();
     test_group_positions();

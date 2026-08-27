@@ -5,7 +5,6 @@
 #include <cmath>
 #include <iterator>
 #include <map>
-#include <mutex>
 #include <stdlib.h>
 
 namespace wf
@@ -29,6 +28,8 @@ wf::option_wrapper_t<double> button_line_thickness{"vecdecor/button_line_thickne
 
 namespace
 {
+wf::option_wrapper_t<std::string> title_font_option{"vecdecor/title_font"};
+
 bool same_button_prepare_config(
     const button_prepare_config_t& lhs, const button_prepare_config_t& rhs)
 {
@@ -75,7 +76,7 @@ PangoFontDescription*pixdecor_theme_t::create_font_description()
 {
     GSettings *gs = g_settings_new("org.gnome.desktop.interface");
 
-    std::string title_font_val(title_font);
+    std::string title_font_val(title_font_option);
     bool using_system_font{};
 
     if (title_font_val.empty())
@@ -136,17 +137,16 @@ PangoFontDescription*pixdecor_theme_t::create_font_description()
  */
 PangoFontDescription*pixdecor_theme_t::get_font_description()
 {
+    static std::string configured_font(title_font_option);
     static std::unique_ptr<PangoFontDescription, decltype(& pango_font_description_free)> font_desc(
         create_font_description(), &pango_font_description_free);
 
-    static std::once_flag once_flag;
-    std::call_once(once_flag, [&]
+    const std::string current_font(title_font_option);
+    if (current_font != configured_font)
     {
-        title_font.set_callback([&]
-        {
-            font_desc.reset(create_font_description());
-        });
-    });
+        font_desc.reset(create_font_description());
+        configured_font = current_font;
+    }
 
     return font_desc.get();
 }
@@ -166,32 +166,38 @@ int pixdecor_theme_t::get_font_height_px()
     return font_height / PANGO_SCALE;
 }
 
+geometry::geometry_input_t pixdecor_theme_t::get_title_geometry_input(
+    int title_height_extension)
+{
+    return {
+        .font_height = get_font_height_px(),
+        .requested_button_size  = button_size,
+        .requested_title_height = title_height,
+        .title_height_extension = title_height_extension,
+        .button_y_offset = button_y_offset,
+        .output_scale    = 1.0,
+        .svg_proportions = geometry::full_box_svg_proportions(),
+    };
+}
+
+int pixdecor_theme_t::get_base_title_height()
+{
+    return geometry::resolve_base_title_height(get_title_geometry_input(0));
+}
+
 int pixdecor_theme_t::get_title_height()
 {
-    const int height = geometry::resolve_geometry({
-                .font_height = get_font_height_px(),
-                .requested_button_size  = button_size,
-                .requested_title_height = title_height,
-                .title_height_extension = (maximized && !maximized_borders) ? border_size : 0,
-                .button_y_offset = button_y_offset,
-                .output_scale    = 1.0,
-                .svg_proportions = geometry::full_box_svg_proportions(),
-            }).title_height;
+    const int extension = (maximized && !maximized_borders) ? border_size : 0;
+    const int height    = geometry::resolve_geometry(
+        get_title_geometry_input(extension)).title_height;
 
     return titlebar ? height : 0;
 }
 
 geometry::logical_bounds_t pixdecor_theme_t::get_button_bounds()
 {
-    return geometry::resolve_geometry({
-                .font_height = get_font_height_px(),
-                .requested_button_size  = button_size,
-                .requested_title_height = title_height,
-                .title_height_extension = (maximized && !maximized_borders) ? border_size : 0,
-                .button_y_offset = button_y_offset,
-                .output_scale    = 1.0,
-                .svg_proportions = geometry::full_box_svg_proportions(),
-            }).button_bounds;
+    const int extension = (maximized && !maximized_borders) ? border_size : 0;
+    return geometry::resolve_geometry(get_title_geometry_input(extension)).button_bounds;
 }
 
 geometry::svg_proportions_t pixdecor_theme_t::get_svg_proportions() const

@@ -28,7 +28,6 @@ namespace pixdecor
 class pixdecor_theme_t
 {
   public:
-    wf::option_wrapper_t<std::string> title_font{"vecdecor/title_font"};
     wf::option_wrapper_t<int> rounded_corner_radius{"vecdecor/rounded_corner_radius"};
     wf::option_wrapper_t<bool> maximized_borders{"vecdecor/maximized_borders"};
     wf::option_wrapper_t<int> title_text_align{"vecdecor/title_text_align"};
@@ -37,7 +36,9 @@ class pixdecor_theme_t
     ~pixdecor_theme_t();
 
     /** @return The height of the system font in pixels */
-    int get_font_height_px();
+    static int get_font_height_px();
+    /** @return The resolved title height before visibility and border adjustments */
+    static int get_base_title_height();
     /** @return The available height for displaying the title */
     int get_title_height();
     /** @return The logical bounds for a button in the titlebar */
@@ -58,8 +59,8 @@ class pixdecor_theme_t
     int get_input_size() const;
     /** @return The decoration color */
     wf::color_t get_decor_color(bool active) const;
-    PangoFontDescription *create_font_description();
-    PangoFontDescription *get_font_description();
+    static PangoFontDescription *create_font_description();
+    static PangoFontDescription *get_font_description();
 
     void update_colors(void);
 
@@ -83,6 +84,8 @@ class pixdecor_theme_t
     void set_maximize(bool state);
 
   private:
+
+    static geometry::geometry_input_t get_title_geometry_input(int title_height_extension);
 
     struct pending_button_prepare_t
     {
