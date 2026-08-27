@@ -98,6 +98,19 @@ void shade_production_adapter_t::init_animation(bool shade)
     }
 }
 
+void shade_production_adapter_t::request_refresh()
+{
+    if (actions.add_frame_callback)
+    {
+        actions.add_frame_callback();
+    }
+
+    if (actions.damage)
+    {
+        actions.damage();
+    }
+}
+
 shade_frame_plan_t shade_production_adapter_t::frame(
     const std::function<void(const shade_frame_plan_t&)>& before_actions)
 {

@@ -266,6 +266,51 @@ void test_production_animation_and_frame_actions()
         "the completed unshade frame keeps final-frame damage off and removes its resources");
 }
 
+void test_completed_shade_height_refresh()
+{
+    fake_animation_t animation;
+    int add_frame_calls    = 0;
+    int remove_frame_calls = 0;
+    int damage_calls = 0;
+    int remove_transformer_calls = 0;
+    pixdecor::shade_state_model_t state;
+    pixdecor::shade_production_adapter_t production(state, animation,
+        {
+            [&] () { ++add_frame_calls; },
+            [&] () { ++remove_frame_calls; },
+            [&] () { ++damage_calls; },
+            [&] () { ++remove_transformer_calls; },
+        });
+
+    production.init_animation(true);
+    animation.progress_value = 1.0;
+    animation.running_value  = false;
+    production.frame();
+    const auto direction = production.direction();
+    const auto progress  = production.progress();
+    const auto reverse_calls = animation.reverse_calls;
+    const auto start_calls   = animation.start_calls;
+
+    production.request_refresh();
+    int refreshed_margin  = 0;
+    const int view_height = 100;
+    const int titlebar_height = 30;
+    production.frame([&] (const pixdecor::shade_frame_plan_t& frame)
+    {
+        refreshed_margin = int((view_height - titlebar_height) * frame.progress);
+    });
+
+    expect(refreshed_margin == 70,
+        "a completed shaded frame refreshes its margin with the new title height");
+    expect(production.direction() == direction &&
+        std::abs(production.progress() - progress) < 0.000001 &&
+        animation.reverse_calls == reverse_calls && animation.start_calls == start_calls,
+        "a height refresh preserves shade progress and direction without restarting animation");
+    expect(add_frame_calls == 2 && remove_frame_calls == 2 && damage_calls == 1 &&
+        remove_transformer_calls == 0,
+        "a completed height refresh damages once and removes its one-frame callback");
+}
+
 void test_shade_animation_duration_wiring()
 {
     const wf::animation_description_t duration{
@@ -295,6 +340,7 @@ int main()
     test_direction_and_reversal();
     test_progress_duration_and_redraw();
     test_production_animation_and_frame_actions();
+    test_completed_shade_height_refresh();
     test_shade_animation_duration_wiring();
     return failures == 0 ? 0 : 1;
 }

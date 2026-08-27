@@ -78,6 +78,7 @@ class shade_production_adapter_t
         shade_animation_backend_t& animation, shade_runtime_actions_t actions);
 
     void init_animation(bool shade);
+    void request_refresh();
     shade_frame_plan_t frame(
         const std::function<void(const shade_frame_plan_t&)>& before_actions = {});
     bool direction() const;
