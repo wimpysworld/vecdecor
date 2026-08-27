@@ -430,6 +430,13 @@ void test_button_hover_easing()
     }
 
     expect(monotonic, "the hover easing is monotonic");
+
+    expect_close(pixdecor::button_hover_easing(0.001), 0.0047384424,
+        "the hover easing is accurate at progress 0.001");
+    expect_close(pixdecor::button_hover_easing(0.0001), 0.0004915028,
+        "the hover easing is accurate at progress 0.0001");
+    expect_close(pixdecor::button_hover_easing(0.000001), 0.0000049914,
+        "the hover easing is accurate at progress 0.000001");
 }
 
 void test_button_adapter_state_and_render()
