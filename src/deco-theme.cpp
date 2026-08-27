@@ -3,7 +3,9 @@
 #include <wayfire/opengl.hpp>
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <iterator>
+#include <limits>
 #include <map>
 #include <stdlib.h>
 
@@ -29,6 +31,29 @@ wf::option_wrapper_t<double> button_line_thickness{"vecdecor/button_line_thickne
 namespace
 {
 wf::option_wrapper_t<std::string> title_font_option{"vecdecor/title_font"};
+
+int resolve_font_height_px(int font_size, bool size_is_absolute)
+{
+    std::int64_t font_height = font_size;
+
+    if (!size_is_absolute)
+    {
+        font_height = font_height * 4 / 3;
+    }
+
+    font_height /= PANGO_SCALE;
+    if (font_height > std::numeric_limits<int>::max())
+    {
+        return std::numeric_limits<int>::max();
+    }
+
+    if (font_height < std::numeric_limits<int>::min())
+    {
+        return std::numeric_limits<int>::min();
+    }
+
+    return static_cast<int>(font_height);
+}
 
 bool same_button_prepare_config(
     const button_prepare_config_t& lhs, const button_prepare_config_t& rhs)
@@ -155,15 +180,9 @@ PangoFontDescription*pixdecor_theme_t::get_font_description()
 int pixdecor_theme_t::get_font_height_px()
 {
     PangoFontDescription *font_desc = get_font_description();
-    int font_height = pango_font_description_get_size(font_desc);
-
-    if (!pango_font_description_get_size_is_absolute(font_desc))
-    {
-        font_height *= 4;
-        font_height /= 3;
-    }
-
-    return font_height / PANGO_SCALE;
+    return resolve_font_height_px(
+        pango_font_description_get_size(font_desc),
+        pango_font_description_get_size_is_absolute(font_desc));
 }
 
 geometry::geometry_input_t pixdecor_theme_t::get_title_geometry_input(
