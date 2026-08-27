@@ -24,6 +24,7 @@ REMOVED_FILES = {
 }
 
 REMOVED_OPTIONS = {
+    "csd_titlebar_height",
     "overlay_engine",
     "effect_type",
     "effect_color",
@@ -305,6 +306,31 @@ class SourceContractTest(unittest.TestCase):
             f'extern "C"\n{{\n{include}\n}}',
             source,
             "wlr/xcursor.h must retain C linkage",
+        )
+
+    def test_csd_shade_height_uses_base_geometry_and_live_updates(self):
+        source = self.sources[SOURCE_ROOT / "decoration.cpp"]
+        self.assertIn(
+            "pixdecor_theme_t::get_base_title_height()",
+            source,
+            "CSD Shade must use the resolved base title height",
+        )
+        self.assertEqual(
+            source.count("get_shade_titlebar_height(toplevel)"), 2,
+            "axis and activator shade paths must resolve the shared title height",
+        )
+        self.assertEqual(
+            source.count("update_csd_shade_titlebar_heights();"), 3,
+            "font, button geometry, and title height changes must update CSD Shade",
+        )
+
+        update_start = source.index("void update_csd_shade_titlebar_heights()")
+        update_end = source.index("\n    }", update_start) + len("\n    }")
+        update_source = source[update_start:update_end]
+        self.assertIn("tr->set_titlebar_height(titlebar_height);", update_source)
+        self.assertNotIn(
+            "init_animation", update_source,
+            "live CSD height updates must not reset shade animation state",
         )
 
 

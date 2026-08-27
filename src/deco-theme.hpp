@@ -38,6 +38,8 @@ class pixdecor_theme_t
 
     /** @return The height of the system font in pixels */
     int get_font_height_px();
+    /** @return The resolved title height before visibility and border adjustments */
+    static int get_base_title_height();
     /** @return The available height for displaying the title */
     int get_title_height();
     /** @return The logical bounds for a button in the titlebar */

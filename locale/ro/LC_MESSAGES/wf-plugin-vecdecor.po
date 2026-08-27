@@ -318,14 +318,6 @@ msgid "Toggles shade for the active window."
 msgstr "Comută restrângerea ferestrei active."
 
 #. (itstool) path: option/_short
-msgid "CSD Titlebar Height"
-msgstr "Înălțimea barei de titlu CSD"
-
-#. (itstool) path: option/_long
-msgid "Because there is no way to know the client surface titlebar height, this is an option to adjust it."
-msgstr "Pentru că nu se poate ști dimensiunea barei de titlu furnizată de client, această opțiune o poate regla."
-
-#. (itstool) path: option/_short
 #: metadata/vecdecor.xml:21
 msgid "Titlebar Height"
 msgstr ""
