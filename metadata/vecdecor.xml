@@ -145,13 +145,13 @@
 			<option name="left_button_spacing" type="int">
 				<_short>Left Button Spacing</_short>
 				<_long>The space between each button on the left.</_long>
-				<default>5</default>
+				<default>8</default>
 				<min>0</min>
 			</option>
 			<option name="right_button_spacing" type="int">
 				<_short>Right Button Spacing</_short>
 				<_long>The space between each button on the right.</_long>
-				<default>5</default>
+				<default>8</default>
 				<min>0</min>
 			</option>
 			<option name="left_button_x_offset" type="int">
@@ -172,7 +172,7 @@
 			<option name="button_hover_duration" type="int">
 				<_short>Button Hover Animation Duration</_short>
 				<_long>The time the hover animation will last, in milliseconds.</_long>
-				<default>500</default>
+				<default>75</default>
 				<min>0</min>
 			</option>
 			<option name="button_minimize_svg" type="string">

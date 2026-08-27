@@ -48,21 +48,27 @@ constexpr std::array<geometry::maximize_state_t, 2> ALL_MAXIMIZE_STATES = {
 constexpr std::size_t UNIQUE_CONTROL_VARIANTS = ALL_KINDS.size() - 1 + ALL_MAXIMIZE_STATES.size();
 constexpr std::size_t MAX_CACHE_ENTRIES = 8 * UNIQUE_CONTROL_VARIANTS *
     ALL_FOCUS_STATES.size() * ALL_INTERACTION_STATES.size();
-constexpr std::array<std::array<const char*, 4>, 4> ASSET_FILENAMES = {{
+constexpr std::array<std::array<const char*, BUTTON_VARIANT_COUNT>, 4> ASSET_FILENAMES = {{
     {{"minimize.svg", "minimize-hover.svg", "minimize-inactive.svg",
-        "minimize-inactive-hover.svg"}},
+        "minimize-inactive-hover.svg", "minimize-pressed.svg",
+        "minimize-inactive-pressed.svg"}},
     {{"maximize.svg", "maximize-hover.svg", "maximize-inactive.svg",
-        "maximize-inactive-hover.svg"}},
+        "maximize-inactive-hover.svg", "maximize-pressed.svg",
+        "maximize-inactive-pressed.svg"}},
     {{"restore.svg", "restore-hover.svg", "restore-inactive.svg",
-        "restore-inactive-hover.svg"}},
+        "restore-inactive-hover.svg", "restore-pressed.svg",
+        "restore-inactive-pressed.svg"}},
     {{"close.svg", "close-hover.svg", "close-inactive.svg",
-        "close-inactive-hover.svg"}},
+        "close-inactive-hover.svg", "close-pressed.svg",
+        "close-inactive-pressed.svg"}},
 }};
-constexpr std::array<button_state_variant_t, 4> ALL_VARIANTS = {
+constexpr std::array<button_state_variant_t, BUTTON_VARIANT_COUNT> ALL_VARIANTS = {
     button_state_variant_t::active,
     button_state_variant_t::active_hover,
     button_state_variant_t::inactive,
     button_state_variant_t::inactive_hover,
+    button_state_variant_t::active_pressed,
+    button_state_variant_t::inactive_pressed,
 };
 constexpr double PI = 3.14159265358979323846;
 constexpr double MINIMUM_GLYPH_CONTRAST = 4.5;
@@ -78,7 +84,7 @@ std::size_t variant_index(button_state_variant_t variant)
 }
 
 const loaded_button_asset_t& matrix_source(
-    const std::array<std::array<loaded_button_asset_t, 4>, 4>& sources,
+    const std::array<std::array<loaded_button_asset_t, BUTTON_VARIANT_COUNT>, 4>& sources,
     button_asset_t asset, button_state_variant_t variant)
 {
     return sources[asset_index(asset)][variant_index(variant)];
@@ -434,10 +440,10 @@ std::string default_button_asset_directory()
     return VECDECOR_ASSET_DIR;
 }
 
-std::array<button_source_spec_t, 4> resolve_button_source_specs(
+std::array<button_source_spec_t, BUTTON_VARIANT_COUNT> resolve_button_source_specs(
     const std::string& configured_path, button_asset_t asset)
 {
-    std::array<button_source_spec_t, 4> result;
+    std::array<button_source_spec_t, BUTTON_VARIANT_COUNT> result;
     if (!configured_path.empty())
     {
         for (auto& source : result)
@@ -462,14 +468,22 @@ std::array<button_source_spec_t, 4> resolve_button_source_specs(
 
 button_state_variant_t resolve_button_state_variant(const geometry::button_state_t& state)
 {
-    const bool hover = state.interaction != geometry::interaction_state_t::normal;
-    if (state.focus == geometry::focus_state_t::active)
+    const bool active = state.focus == geometry::focus_state_t::active;
+    switch (state.interaction)
     {
-        return hover ? button_state_variant_t::active_hover :
-               button_state_variant_t::active;
+      case geometry::interaction_state_t::hover:
+        return active ? button_state_variant_t::active_hover :
+               button_state_variant_t::inactive_hover;
+
+      case geometry::interaction_state_t::pressed:
+        return active ? button_state_variant_t::active_pressed :
+               button_state_variant_t::inactive_pressed;
+
+      case geometry::interaction_state_t::normal:
+        break;
     }
 
-    return hover ? button_state_variant_t::inactive_hover :
+    return active ? button_state_variant_t::active :
            button_state_variant_t::inactive;
 }
 
@@ -684,7 +698,7 @@ bool button_renderer_t::reload_sources(const button_source_config_t& config)
 }
 
 bool button_renderer_t::reload_source(button_asset_t asset,
-    const std::array<button_source_spec_t, 4>& requested_sources,
+    const std::array<button_source_spec_t, BUTTON_VARIANT_COUNT>& requested_sources,
     std::uint64_t source_generation)
 {
     if (!dependencies.decoder)
@@ -709,7 +723,7 @@ bool button_renderer_t::reload_source(button_asset_t asset,
 }
 
 bool button_renderer_t::reload_source(button_asset_t asset,
-    const std::array<button_source_spec_t, 4>& requested_sources,
+    const std::array<button_source_spec_t, BUTTON_VARIANT_COUNT>& requested_sources,
     std::uint64_t source_generation,
     const button_renderer_dependencies_t::decoder_t& decoder)
 {
@@ -736,7 +750,7 @@ bool button_renderer_t::reload_source(button_asset_t asset,
         return false;
     }
 
-    std::array<loaded_button_asset_t, 4> loaded_sources;
+    std::array<loaded_button_asset_t, BUTTON_VARIANT_COUNT> loaded_sources;
     for (auto variant : ALL_VARIANTS)
     {
         const auto variant_value = variant_index(variant);
@@ -907,12 +921,6 @@ geometry::button_cache_key_t button_renderer_t::resolve_key(
         (source.render_mode == button_render_mode_t::full_colour);
     geometry::cache_key_input_t input;
     input.state = state;
-    if (fixed_full_colour &&
-        (input.state.interaction == geometry::interaction_state_t::pressed))
-    {
-        input.state.interaction = geometry::interaction_state_t::hover;
-    }
-
     input.resolved_asset_identity = source.identity;
     input.colour = fixed_full_colour ? geometry::rgba_t{} :
     colour_for_state(state, config.palette);

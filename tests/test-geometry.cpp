@@ -42,10 +42,10 @@ geometry::cache_key_input_t valid_cache_input()
 
 void test_automatic_sizes()
 {
-    expect(geometry::resolve_automatic_button_size(19) == 18,
-        "automatic button size below the threshold is 18");
-    expect(geometry::resolve_automatic_button_size(20) == 26,
-        "automatic button size at the threshold is 26");
+    expect(geometry::resolve_automatic_button_size(19) == 16,
+        "automatic button size below the threshold is 16");
+    expect(geometry::resolve_automatic_button_size(20) == 24,
+        "automatic button size at the threshold is 24");
     expect(geometry::resolve_automatic_title_height(0) == 20,
         "automatic title height has a minimum of 20");
     expect(geometry::resolve_automatic_title_height(12) == 26,
@@ -53,8 +53,8 @@ void test_automatic_sizes()
 
     auto input  = valid_geometry_input();
     auto result = geometry::resolve_geometry(input);
-    expect(result.button_size == geometry::logical_size_t{18, 18},
-        "zero button size selects the automatic 18 size");
+    expect(result.button_size == geometry::logical_size_t{16, 16},
+        "zero button size selects the automatic 16 size");
     expect(result.title_height == 26,
         "zero title height selects the font-derived height");
     expect(!result.used_automatic_fallback,
@@ -62,8 +62,8 @@ void test_automatic_sizes()
 
     input.font_height = 20;
     result = geometry::resolve_geometry(input);
-    expect(result.button_size == geometry::logical_size_t{26, 26},
-        "a large font selects the automatic 26 size");
+    expect(result.button_size == geometry::logical_size_t{24, 24},
+        "a large font selects the automatic 24 size");
     expect(result.title_height == 38,
         "a large font produces the corresponding title height");
 }
@@ -77,7 +77,7 @@ void test_legacy_automatic_sizes_preserve_title_height()
     const auto result = geometry::resolve_geometry(input);
 
     expect((result.title_height == 26) &&
-        (result.button_bounds == geometry::logical_bounds_t{0, 14, 18, 18}),
+        (result.button_bounds == geometry::logical_bounds_t{0, 15, 16, 16}),
         "legacy automatic sizes preserve the font-derived title height with an offset");
 }
 
@@ -120,7 +120,7 @@ void test_positive_inputs_and_containment()
     input.requested_button_size  = 0;
     input.requested_title_height = 44;
     result = geometry::resolve_geometry(input);
-    expect(result.button_size == geometry::logical_size_t{18, 18},
+    expect(result.button_size == geometry::logical_size_t{16, 16},
         "automatic button sizing works with an independent title request");
     expect(result.title_height == 44,
         "the independent title request remains unchanged");
@@ -129,7 +129,7 @@ void test_positive_inputs_and_containment()
     result = geometry::resolve_geometry(input);
     expect(result.title_height == 49,
         "the title height includes its runtime extension");
-    expect(result.button_bounds == geometry::logical_bounds_t{0, 15, 18, 18},
+    expect(result.button_bounds == geometry::logical_bounds_t{0, 16, 16, 16},
         "the button remains centred in the extended title height");
 }
 
@@ -140,7 +140,7 @@ void test_invalid_inputs_and_view_boxes()
     auto result = geometry::resolve_geometry(input);
     expect(result.used_automatic_fallback,
         "a negative button request uses the automatic fallback");
-    expect(result.button_size == geometry::logical_size_t{18, 18},
+    expect(result.button_size == geometry::logical_size_t{16, 16},
         "the negative button fallback uses a safe logical size");
 
     input = valid_geometry_input();
