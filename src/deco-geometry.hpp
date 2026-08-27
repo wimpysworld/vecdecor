@@ -12,8 +12,8 @@ namespace pixdecor
 namespace geometry
 {
 constexpr int AUTOMATIC_BUTTON_LARGE_FONT_THRESHOLD = 20;
-constexpr int SMALL_AUTOMATIC_BUTTON_SIZE = 18;
-constexpr int LARGE_AUTOMATIC_BUTTON_SIZE = 26;
+constexpr int SMALL_AUTOMATIC_BUTTON_SIZE = 16;
+constexpr int LARGE_AUTOMATIC_BUTTON_SIZE = 24;
 constexpr int MINIMUM_TITLE_HEIGHT = 20;
 constexpr double DEFAULT_BUTTON_LINE_THICKNESS = 0.7;
 

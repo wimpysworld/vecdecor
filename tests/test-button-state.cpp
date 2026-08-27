@@ -407,6 +407,31 @@ void test_production_button_animation_wiring()
         "the production animation keeps a constant hover texture weight");
 }
 
+void test_button_hover_easing()
+{
+    expect_close(pixdecor::button_hover_easing(0.0), 0.0,
+        "the hover easing starts at zero");
+    expect_close(pixdecor::button_hover_easing(1.0), 1.0,
+        "the hover easing ends at one");
+    expect_close(pixdecor::button_hover_easing(-0.5), 0.0,
+        "the hover easing clamps progress below zero");
+    expect_close(pixdecor::button_hover_easing(1.5), 1.0,
+        "the hover easing clamps progress above one");
+    expect(pixdecor::button_hover_easing(0.5) > 0.75,
+        "the hover easing is an ease-out curve");
+
+    double previous = 0.0;
+    bool monotonic  = true;
+    for (int step = 1; step <= 100; ++step)
+    {
+        const double value = pixdecor::button_hover_easing(step / 100.0);
+        monotonic = monotonic && (value >= previous);
+        previous  = value;
+    }
+
+    expect(monotonic, "the hover easing is monotonic");
+}
+
 void test_button_adapter_state_and_render()
 {
     int redraw_count = 0;
@@ -522,6 +547,7 @@ int main()
     test_deterministic_progress_and_redraws();
     test_missing_textures_request_redraw();
     test_production_button_animation_wiring();
+    test_button_hover_easing();
     test_button_adapter_state_and_render();
     test_button_adapter_animation_redraws();
     return failures == 0 ? 0 : 1;

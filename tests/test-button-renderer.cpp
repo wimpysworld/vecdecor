@@ -27,21 +27,27 @@ constexpr std::array<button_asset_t, 4> ASSETS = {
     button_asset_t::restore,
     button_asset_t::close,
 };
-constexpr std::array<button_state_variant_t, 4> VARIANTS = {
+constexpr std::array<button_state_variant_t, BUTTON_VARIANT_COUNT> VARIANTS = {
     button_state_variant_t::active,
     button_state_variant_t::active_hover,
     button_state_variant_t::inactive,
     button_state_variant_t::inactive_hover,
+    button_state_variant_t::active_pressed,
+    button_state_variant_t::inactive_pressed,
 };
-constexpr std::array<std::array<const char*, 4>, 4> FILENAMES = {{
+constexpr std::array<std::array<const char*, BUTTON_VARIANT_COUNT>, 4> FILENAMES = {{
     {{"minimize.svg", "minimize-hover.svg", "minimize-inactive.svg",
-        "minimize-inactive-hover.svg"}},
+        "minimize-inactive-hover.svg", "minimize-pressed.svg",
+        "minimize-inactive-pressed.svg"}},
     {{"maximize.svg", "maximize-hover.svg", "maximize-inactive.svg",
-        "maximize-inactive-hover.svg"}},
+        "maximize-inactive-hover.svg", "maximize-pressed.svg",
+        "maximize-inactive-pressed.svg"}},
     {{"restore.svg", "restore-hover.svg", "restore-inactive.svg",
-        "restore-inactive-hover.svg"}},
+        "restore-inactive-hover.svg", "restore-pressed.svg",
+        "restore-inactive-pressed.svg"}},
     {{"close.svg", "close-hover.svg", "close-inactive.svg",
-        "close-inactive-hover.svg"}},
+        "close-inactive-hover.svg", "close-pressed.svg",
+        "close-inactive-pressed.svg"}},
 }};
 
 std::size_t index(button_asset_t asset)
@@ -215,14 +221,23 @@ button_state_t state_for(button_asset_t asset, button_state_variant_t variant,
     state.maximize = asset == button_asset_t::restore ? maximize_state_t::restore :
         maximize_state_t::maximize;
     state.focus = (variant == button_state_variant_t::active ||
-        variant == button_state_variant_t::active_hover) ?
+        variant == button_state_variant_t::active_hover ||
+        variant == button_state_variant_t::active_pressed) ?
         focus_state_t::active : focus_state_t::inactive;
     state.interaction = interaction;
-    if (((variant == button_state_variant_t::active_hover) ||
-         (variant == button_state_variant_t::inactive_hover)) &&
-        (interaction == interaction_state_t::normal))
+    if (interaction == interaction_state_t::normal)
     {
-        state.interaction = interaction_state_t::hover;
+        if ((variant == button_state_variant_t::active_hover) ||
+            (variant == button_state_variant_t::inactive_hover))
+        {
+            state.interaction = interaction_state_t::hover;
+        }
+
+        if ((variant == button_state_variant_t::active_pressed) ||
+            (variant == button_state_variant_t::inactive_pressed))
+        {
+            state.interaction = interaction_state_t::pressed;
+        }
     }
 
     return state;
@@ -266,10 +281,14 @@ void verify_source_mapping()
             button_state_t state = {button_kind_t::close, focus, interaction,
                 maximize_state_t::maximize};
             const bool active   = focus == focus_state_t::active;
-            const bool hover    = interaction != interaction_state_t::normal;
-            const auto expected = active ?
-                (hover ? button_state_variant_t::active_hover : button_state_variant_t::active) :
-                (hover ? button_state_variant_t::inactive_hover :
+            const auto expected =
+                interaction == interaction_state_t::hover ?
+                (active ? button_state_variant_t::active_hover :
+                    button_state_variant_t::inactive_hover) :
+                interaction == interaction_state_t::pressed ?
+                (active ? button_state_variant_t::active_pressed :
+                    button_state_variant_t::inactive_pressed) :
+                (active ? button_state_variant_t::active :
                     button_state_variant_t::inactive);
             require(resolve_button_state_variant(state) == expected,
                 "A button state selected the wrong source variant");
@@ -292,7 +311,7 @@ void verify_asset_directory(const std::string& directory)
     }
 
     closedir(handle);
-    require(files.size() == 16, "The button asset directory does not contain exactly 16 SVGs");
+    require(files.size() == 24, "The button asset directory does not contain exactly 24 SVGs");
 
     const auto key = resolve_cache_key({
             .state = {},
@@ -358,13 +377,18 @@ void verify_svg_fallbacks(const std::string& directory)
                     for (auto interaction : {interaction_state_t::normal,
                          interaction_state_t::hover, interaction_state_t::pressed})
                     {
-                        const auto variant = focus == focus_state_t::active ?
-                            (interaction == interaction_state_t::normal ?
+                        const auto variant =
+                            interaction == interaction_state_t::hover ?
+                            (focus == focus_state_t::active ?
+                                button_state_variant_t::active_hover :
+                                button_state_variant_t::inactive_hover) :
+                            interaction == interaction_state_t::pressed ?
+                            (focus == focus_state_t::active ?
+                                button_state_variant_t::active_pressed :
+                                button_state_variant_t::inactive_pressed) :
+                            (focus == focus_state_t::active ?
                                 button_state_variant_t::active :
-                                button_state_variant_t::active_hover) :
-                            (interaction == interaction_state_t::normal ?
-                                button_state_variant_t::inactive :
-                                button_state_variant_t::inactive_hover);
+                                button_state_variant_t::inactive);
                         const auto state = state_for(asset, variant, interaction);
                         const button_source_spec_t source = {source_case.first, mode};
                         const auto loaded = load_svg_button_asset(source, asset, variant, 1);
@@ -759,12 +783,12 @@ void verify_renderer_regressions(const std::string& directory)
             "The failed-context source matrix did not load");
         require(renderer.prepare(preparation(20)),
             "The failed-context texture matrix did not prepare");
-        require(failed_context.live_textures == 16,
+        require(failed_context.live_textures == 24,
             "The failed-context texture matrix is incomplete");
         failed_context.context_available = false;
     }
 
-    require((failed_context.live_textures == 16) &&
+    require((failed_context.live_textures == 24) &&
         (failed_context.destroyed_outside_context == 0),
         "Failed context entry did not retain all textures safely");
 }
@@ -775,7 +799,7 @@ void verify_renderer(const std::string& directory)
     button_renderer_t renderer(dependencies(lifecycle));
     auto sources = bundled_sources(directory);
     require(renderer.reload_sources(sources), "The bundled matrix did not load");
-    require(lifecycle.parses == 16, "The renderer did not parse all 16 bundled sources");
+    require(lifecycle.parses == 24, "The renderer did not parse all 24 bundled sources");
     for (auto asset : ASSETS)
     {
         for (auto variant : VARIANTS)
@@ -789,13 +813,20 @@ void verify_renderer(const std::string& directory)
 
     auto config = preparation();
     require(renderer.prepare(config), "The bundled matrix did not prepare");
-    require((lifecycle.rasters == 16) && (lifecycle.uploads == 16) &&
-        (renderer.cache_size() == 16), "The bundled matrix did not create 16 textures");
+    require((lifecycle.rasters == 24) && (lifecycle.uploads == 24) &&
+        (renderer.cache_size() == 24), "The bundled matrix did not create 24 textures");
 
     constexpr std::array<std::uint32_t, 4> ACTIVE_CIRCLES = {
         0xfff9e2afU, 0xffa6e3a1U, 0xffa6e3a1U, 0xfff38ba8U,
     };
-    std::array<std::array<std::uint64_t, 4>, 4> digests;
+    constexpr std::array<std::uint32_t, 4> PRESSED_CIRCLES = {
+        0xffd9caaaU, 0xffa2cba0U, 0xffa2cba0U, 0xffd591a5U,
+    };
+    const auto inactive_disc = texture_for(renderer,
+        state_for(button_asset_t::minimize, button_state_variant_t::inactive), config).centre;
+    require(((inactive_disc >> 24) != 0xffU) && ((inactive_disc >> 24) != 0U),
+        "The inactive disc is not translucent");
+    std::array<std::array<std::uint64_t, BUTTON_VARIANT_COUNT>, 4> digests;
     for (auto asset : ASSETS)
     {
         for (auto variant : VARIANTS)
@@ -803,29 +834,63 @@ void verify_renderer(const std::string& directory)
             const auto state    = state_for(asset, variant);
             const auto& texture = texture_for(renderer, state, config);
             digests[index(asset)][index(variant)] = texture.digest;
-            const bool active = variant == button_state_variant_t::active ||
-                variant == button_state_variant_t::active_hover;
-            require(texture.centre == (active ? ACTIVE_CIRCLES[index(asset)] : 0xff45475aU),
-                "A bundled circle colour changed during rendering");
-            const bool hover = variant == button_state_variant_t::active_hover ||
-                variant == button_state_variant_t::inactive_hover;
-            require(texture.corner == (hover ? 0xff313244U : 0U),
-                "A bundled hover background colour changed during rendering");
+            switch (variant)
+            {
+              case button_state_variant_t::active:
+              case button_state_variant_t::active_hover:
+                require(texture.centre == ACTIVE_CIRCLES[index(asset)],
+                    "A bundled circle colour changed during rendering");
+                require(texture.corner == ACTIVE_CIRCLES[index(asset)],
+                    "A bundled disc does not fill the button box");
+                break;
+
+              case button_state_variant_t::active_pressed:
+                require(texture.centre == PRESSED_CIRCLES[index(asset)],
+                    "A bundled pressed circle colour changed during rendering");
+                break;
+
+              case button_state_variant_t::inactive:
+              case button_state_variant_t::inactive_hover:
+              case button_state_variant_t::inactive_pressed:
+                require(texture.centre == inactive_disc,
+                    "An inactive bundled disc is not the shared translucent grey");
+                break;
+            }
         }
+
+        require(digests[index(asset)][index(button_state_variant_t::active)] !=
+            digests[index(asset)][index(button_state_variant_t::active_hover)],
+            "The hover glyph does not change the rest texture");
+        require(digests[index(asset)][index(button_state_variant_t::active_hover)] !=
+            digests[index(asset)][index(button_state_variant_t::active_pressed)],
+            "The pressed disc does not change the hover texture");
+        require(digests[index(asset)][index(button_state_variant_t::inactive)] !=
+            digests[index(asset)][index(button_state_variant_t::inactive_hover)],
+            "The inactive hover glyph does not change the inactive texture");
 
         for (auto focus : {focus_state_t::active, focus_state_t::inactive})
         {
-            const auto variant = focus == focus_state_t::active ?
+            const auto hover_variant = focus == focus_state_t::active ?
                 button_state_variant_t::active_hover : button_state_variant_t::inactive_hover;
-            const auto hover   = state_for(asset, variant, interaction_state_t::hover);
-            const auto pressed = state_for(asset, variant, interaction_state_t::pressed);
-            require(texture_for(renderer, hover, config).identity() ==
+            const auto pressed_variant = focus == focus_state_t::active ?
+                button_state_variant_t::active_pressed :
+                button_state_variant_t::inactive_pressed;
+            const auto hover   = state_for(asset, hover_variant, interaction_state_t::hover);
+            const auto pressed = state_for(asset, pressed_variant,
+                interaction_state_t::pressed);
+            require(texture_for(renderer, hover, config).identity() !=
                 texture_for(renderer, pressed, config).identity(),
-                "A bundled pressed state did not reuse its hover texture");
+                "A bundled pressed state reused its hover texture");
         }
     }
 
-    for (auto variant : VARIANTS)
+    constexpr std::array<button_state_variant_t, 4> GLYPH_VARIANTS = {
+        button_state_variant_t::active_hover,
+        button_state_variant_t::inactive_hover,
+        button_state_variant_t::active_pressed,
+        button_state_variant_t::inactive_pressed,
+    };
+    for (auto variant : GLYPH_VARIANTS)
     {
         for (std::size_t first = 0; first < ASSETS.size(); ++first)
         {
@@ -846,7 +911,7 @@ void verify_renderer(const std::string& directory)
         {0.0, 1.0, 1.0, 1.0},
     };
     require(renderer.prepare(recoloured), "The palette-independent matrix did not prepare");
-    require((lifecycle.rasters == 16) && (lifecycle.uploads == 16),
+    require((lifecycle.rasters == 24) && (lifecycle.uploads == 24),
         "A palette change rerendered full-colour bundled assets");
     for (auto asset : ASSETS)
     {

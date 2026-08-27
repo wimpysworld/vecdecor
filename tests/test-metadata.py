@@ -130,10 +130,19 @@ class MetadataTest(unittest.TestCase):
             "restore": "#a6e3a1",
             "close": "#f38ba8",
         }
+        pressed_circle = {
+            "minimize": "#d9caaa",
+            "maximize": "#a2cba0",
+            "restore": "#a2cba0",
+            "close": "#d591a5",
+        }
         expected_files = {
             f"{control}{suffix}.svg"
             for control in glyphs
-            for suffix in ("", "-hover", "-inactive", "-inactive-hover")
+            for suffix in (
+                "", "-hover", "-pressed",
+                "-inactive", "-inactive-hover", "-inactive-pressed",
+            )
         }
         self.assertEqual(
             {path.name for path in ASSET_DIRECTORY.glob("*.svg")}, expected_files
@@ -142,29 +151,37 @@ class MetadataTest(unittest.TestCase):
             with self.subTest(filename=filename):
                 root = ET.parse(ASSET_DIRECTORY / filename).getroot()
                 self.assertEqual(root.attrib, {
-                    "width": "34", "height": "34", "viewBox": "0 0 34 34"
+                    "width": "16", "height": "16", "viewBox": "0 0 16 16"
                 })
                 control = filename.split("-")[0].removesuffix(".svg")
                 inactive = "inactive" in filename
-                hover = "hover" in filename
+                pressed = "pressed" in filename
+                glyph_visible = "hover" in filename or pressed
                 elements = list(root)
-                self.assertEqual(len(elements), 3 if hover else 2)
-                if hover:
-                    self.assertEqual(elements.pop(0).attrib, {
-                        "x": "2", "y": "2", "width": "29", "height": "29",
-                        "rx": "6", "ry": "6", "fill": "#313244",
-                    })
-                circle, group = elements
+                self.assertEqual(len(elements), 2 if glyph_visible else 1)
+                circle = elements[0]
                 self.assertEqual(circle.tag, namespace + "circle")
-                self.assertEqual(circle.attrib, {
-                    "cx": "16.5", "cy": "16.5", "r": "7",
-                    "fill": "#45475a" if inactive else active_circle[control],
-                })
+                if inactive:
+                    self.assertEqual(circle.attrib, {
+                        "cx": "8", "cy": "8", "r": "8",
+                        "fill": "#eff1f5", "fill-opacity": "0.3",
+                    })
+                else:
+                    self.assertEqual(circle.attrib, {
+                        "cx": "8", "cy": "8", "r": "8",
+                        "fill": pressed_circle[control] if pressed
+                        else active_circle[control],
+                    })
+                if not glyph_visible:
+                    continue
+                group = elements[1]
                 self.assertEqual(group.tag, namespace + "g")
-                self.assertEqual(group.attrib, {
-                    "transform": "translate(9 9)",
-                    "fill": "#878892" if inactive else "#cdd6f4",
-                })
+                if inactive:
+                    self.assertEqual(group.attrib, {
+                        "fill": "#eff1f5", "fill-opacity": "0.5",
+                    })
+                else:
+                    self.assertEqual(group.attrib, {"fill": "#ffffff"})
                 geometry = glyphs[control]
                 self.assertEqual(len(group), len(geometry))
                 for element, (tag, attributes) in zip(group, geometry):
