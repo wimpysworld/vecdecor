@@ -167,7 +167,7 @@ class wayfire_pixdecor : public wf::plugin_interface_t
         update_view_decoration(ev->view);
     };
 
-    std::array<button_source_spec_t, 4> resolve_button_sources(
+    std::array<button_source_spec_t, BUTTON_VARIANT_COUNT> resolve_button_sources(
         const wf::option_wrapper_t<std::string>& option, button_asset_t asset) const
     {
         return resolve_button_source_specs(std::string(option), asset);
