@@ -3,7 +3,9 @@
 #include <wayfire/opengl.hpp>
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <iterator>
+#include <limits>
 #include <map>
 #include <mutex>
 #include <stdlib.h>
@@ -33,15 +35,25 @@ wf::option_wrapper_t<std::string> title_font_option{"vecdecor/title_font"};
 
 int resolve_font_height_px(const PangoFontDescription *font_desc)
 {
-    int font_height = pango_font_description_get_size(font_desc);
+    std::int64_t font_height = pango_font_description_get_size(font_desc);
 
     if (!pango_font_description_get_size_is_absolute(font_desc))
     {
-        font_height *= 4;
-        font_height /= 3;
+        font_height = font_height * 4 / 3;
     }
 
-    return font_height / PANGO_SCALE;
+    font_height /= PANGO_SCALE;
+    if (font_height > std::numeric_limits<int>::max())
+    {
+        return std::numeric_limits<int>::max();
+    }
+
+    if (font_height < std::numeric_limits<int>::min())
+    {
+        return std::numeric_limits<int>::min();
+    }
+
+    return static_cast<int>(font_height);
 }
 
 geometry::geometry_input_t get_title_geometry_input(
