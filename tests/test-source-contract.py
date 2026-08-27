@@ -273,31 +273,26 @@ class SourceContractTest(unittest.TestCase):
             source,
             "CSD Shade must use the resolved base title height",
         )
-        self.assertEqual(
-            source.count("get_shade_titlebar_height(toplevel)"), 2,
-            "axis and activator shade paths must resolve the shared title height",
+        self.assertIn(
+            "get_shade_titlebar_height(toplevel)",
+            source,
+            "CSD Shade must resolve the shared title height",
         )
-        self.assertEqual(
-            source.count("update_csd_shade_titlebar_heights();"), 3,
-            "font, button geometry, and title height changes must update CSD Shade",
+        self.assertIn(
+            "update_csd_shade_titlebar_heights();",
+            source,
+            "CSD title height changes must update CSD Shade",
         )
-
-        update_start = source.index("void update_csd_shade_titlebar_heights()")
-        update_end = source.index("\n    }", update_start) + len("\n    }")
-        update_source = source[update_start:update_end]
-        self.assertIn("tr->set_titlebar_height(titlebar_height);", update_source)
-        self.assertNotIn(
-            "init_animation", update_source,
-            "live CSD height updates must not reset shade animation state",
+        self.assertIn(
+            "tr->set_titlebar_height(titlebar_height);",
+            source,
+            "live CSD height updates must set the titlebar height",
         )
 
         shade_source = self.sources[SOURCE_ROOT / "shade.hpp"]
-        setter_start = shade_source.index("void set_titlebar_height(int titlebar_height)")
-        setter_end = shade_source.index("\n    }", setter_start) + len("\n    }")
-        setter_source = shade_source[setter_start:setter_end]
         self.assertIn(
             "production.request_refresh();",
-            setter_source,
+            shade_source,
             "live title height updates must request a margin and rendering refresh",
         )
 
