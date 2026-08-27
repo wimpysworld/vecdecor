@@ -45,7 +45,7 @@ button_pressed_color = 0.270588 0.278431 0.352941 1.0
 
 | Option | Role |
 | --- | --- |
-| `title_height` | Non-negative titlebar height in logical pixels. `0` uses an automatic height derived from the title font. |
+| `title_height` | Non-negative titlebar height in logical pixels. `0` uses an automatic height derived from the title font. CSD Shade uses this resolved height. |
 | `button_size` | Non-negative square button size in logical pixels. `0` selects `18` or `26`, based on the title font. |
 | `button_minimize_svg` | Custom SVG mask for every minimise state. Leave empty to use the bundled controls. |
 | `button_maximize_svg` | Custom SVG mask for every maximise state. Leave empty to use the bundled controls. |
