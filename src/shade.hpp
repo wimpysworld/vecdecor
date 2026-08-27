@@ -299,7 +299,13 @@ class pixdecor_shade : public wf::scene::view_2d_transformer_t
 
     void set_titlebar_height(int titlebar_height)
     {
+        if (this->titlebar_height == titlebar_height)
+        {
+            return;
+        }
+
         this->titlebar_height = titlebar_height;
+        production.request_refresh();
     }
 
     int get_shadow_margin()

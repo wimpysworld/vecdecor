@@ -291,6 +291,16 @@ class SourceContractTest(unittest.TestCase):
             "live CSD height updates must not reset shade animation state",
         )
 
+        shade_source = self.sources[SOURCE_ROOT / "shade.hpp"]
+        setter_start = shade_source.index("void set_titlebar_height(int titlebar_height)")
+        setter_end = shade_source.index("\n    }", setter_start) + len("\n    }")
+        setter_source = shade_source[setter_start:setter_end]
+        self.assertIn(
+            "production.request_refresh();",
+            setter_source,
+            "live title height updates must request a margin and rendering refresh",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
