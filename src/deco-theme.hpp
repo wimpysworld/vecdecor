@@ -78,8 +78,8 @@ class pixdecor_theme_t
      * Render the given text on a cairo_surface_t with the given size. The caller is responsible for freeing
      * the memory afterwards.
      */
-    cairo_surface_t *render_text(std::string text, int width, int height, int t_width, int border,
-        int buttons_width, bool active);
+    cairo_surface_t *render_text(std::string text, int width, int height, int title_width, int border,
+        bool active);
 
     void set_maximize(bool state);
 
