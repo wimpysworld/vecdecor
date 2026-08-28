@@ -411,7 +411,7 @@ void pixdecor_theme_t::render_background(const wf::scene::render_instruction_t& 
  * memory afterwards.
  */
 cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
-    int width, int height, int t_width, int border, int buttons_width, bool active)
+    int width, int height, int title_width, int border, bool active)
 {
     const auto format = CAIRO_FORMAT_ARGB32;
     auto surface = cairo_image_surface_create(format, width, height);
@@ -445,13 +445,13 @@ cairo_surface_t*pixdecor_theme_t::render_text(std::string text,
 
       // right
       case 2:
-        x = t_width - (w + buttons_width + border);
+        x = title_width - (w + border);
         break;
 
       // center
       case 1:
       default:
-        x = (t_width - w) / 2;
+        x = (title_width - w) / 2;
         break;
     }
 
