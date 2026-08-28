@@ -88,7 +88,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
         }
     }
 
-    void update_title(int width, int height, int t_width, int border, int buttons_width, double scale)
+    void update_title(int width, int height, int border, double scale)
     {
         if (auto view = _view.lock())
         {
@@ -103,7 +103,7 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 (view->activated != title_texture.rendered_for_activated_state))
             {
                 auto surface = theme.render_text(view->get_title(),
-                    target_width, target_height, t_width, border, buttons_width, view->activated);
+                    target_width, target_height, width, border, view->activated);
                 title_texture.tex = owned_texture_t{surface};
                 cairo_surface_destroy(surface);
                 title_texture.title_font_string = title_font;
@@ -187,9 +187,9 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
     }
 
     void render_title(const wf::scene::render_instruction_t& data,
-        const wf::geometry_t& geometry, int t_width, int border, int buttons_width)
+        const wf::geometry_t& geometry, int border)
     {
-        update_title(geometry.width, geometry.height, t_width, border, buttons_width, data.target.scale);
+        update_title(geometry.width, geometry.height, border, data.target.scale);
         OpenGL::render_texture(wf::gles_texture_t{title_texture.tex.get_texture()}, data.target, geometry,
             glm::vec4(1.0f), OpenGL::RENDER_FLAG_CACHED);
 
@@ -244,23 +244,12 @@ class simple_decoration_node_t : public wf::scene::node_t, public wf::pointer_in
                 return;
             }
 
-            int buttons_width = 0;
-            for (auto item : renderables)
-            {
-                if (item->get_type() != DECORATION_AREA_TITLE)
-                {
-                    buttons_width += item->get_geometry().width;
-                }
-            }
-
             /* Draw title & buttons */
             for (auto item : renderables)
             {
                 if (item->get_type() == DECORATION_AREA_TITLE)
                 {
-                    render_title(data,
-                        item->get_geometry() + wf::pointf_t{offset}, size.width - border * 2, border,
-                        buttons_width);
+                    render_title(data, item->get_geometry() + wf::pointf_t{offset}, border);
                 } else // button
                 {
                     item->as_button().render(data,
