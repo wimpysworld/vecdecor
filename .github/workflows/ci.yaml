@@ -36,9 +36,9 @@ jobs:
         with:
           persist-credentials: false
       - name: Install Determinate Nix
-        uses: DeterminateSystems/determinate-nix-action@527f17dd63d2d60d3e5552934bc84b9a33a14d11
+        uses: DeterminateSystems/determinate-nix-action@92957199488000b908fdad19f63711000965d8f3
       - name: Use the FlakeHub cache
-        uses: DeterminateSystems/flakehub-cache-action@83293488abfd33fbfb2ab084097467491c029962
+        uses: DeterminateSystems/flakehub-cache-action@3ac6f3c19fc52eeb1408fd434bd1b4ed4266bf25
       - name: Run ${{ matrix.task }}
         env:
           TASK: ${{ matrix.task }}
